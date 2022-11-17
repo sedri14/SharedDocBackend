@@ -1,6 +1,8 @@
-package docSharing.Entities;
+package docSharing.entities;
 
 import javax.persistence.*;
+import java.nio.file.Path;
+import java.util.List;
 import java.util.Objects;
 
 @Entity
@@ -13,6 +15,8 @@ public class User {
     @Column(unique = true)
     private String email;
     private String password;
+    private List<Path> myDocs;
+
 
 
     public void setId(int id) {
@@ -46,6 +50,12 @@ public class User {
     public void setPassword(String password) {
         this.password = password;
     }
+
+    public List<Path> getMyDocs() {
+        return myDocs;
+    }
+
+    public void setMyDocs(List<Path> myDocs) {this.myDocs = myDocs;}
 
     @Override
     public boolean equals(Object o) {

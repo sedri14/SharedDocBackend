@@ -5,7 +5,7 @@ import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.stereotype.Controller;
 
 @Controller
-public class ChatController {
+public class DocController {
     @MessageMapping("/join")
     public void sendPlainMessage(JoinMessage message) {
         System.out.println(message.user + " joined");
@@ -60,7 +60,7 @@ public class ChatController {
         }
     }
 
-    public enum UpdateType{
+    public enum UpdateType {
         DELETE,
         APPEND,
         DELETE_RANGE,
@@ -81,4 +81,22 @@ public class ChatController {
             this.user = user;
         }
     }
+
+
+
+
+//methods:
+    //create new document
+
+    //change user permmision (Permission ,User)
+
+    //insert viewer to viewer list
+    // insert editor to editor list
+
+    //boolean isEditor(User user)
+    //boolean isViewer(User user)
+
+    // updateUsersList
+
+
 }
