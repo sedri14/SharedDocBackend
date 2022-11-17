@@ -1,14 +1,11 @@
 package docSharing.controller;
 
-import docSharing.Entities.User;
+import docSharing.entities.User;
 import docSharing.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
-
-import java.sql.SQLDataException;
 
 @RestController
 @CrossOrigin
@@ -18,16 +15,6 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-
-    @RequestMapping(method = RequestMethod.POST)
-    public ResponseEntity<String> createUser(@RequestBody User user){
-        try {
-            return new ResponseEntity<>(userService.addUser(user).toString(), HttpStatus.OK);
-        } catch (SQLDataException e) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST, "Email already exists", e);
-        }
-    }
 
     @RequestMapping(method = RequestMethod.GET)
 

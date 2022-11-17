@@ -5,7 +5,7 @@ import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.stereotype.Controller;
 
 @Controller
-public class ChatController {
+public class DocController {
     @MessageMapping("/join")
     public void sendPlainMessage(JoinMessage message) {
         System.out.println(message.user + " joined");
@@ -81,4 +81,8 @@ public class ChatController {
             this.user = user;
         }
     }
+
+
+
+
 }
