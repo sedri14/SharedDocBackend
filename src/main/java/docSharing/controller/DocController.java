@@ -60,7 +60,7 @@ public class DocController {
         }
     }
 
-    public enum UpdateType{
+    public enum UpdateType {
         DELETE,
         APPEND,
         DELETE_RANGE,
@@ -83,6 +83,20 @@ public class DocController {
     }
 
 
+
+
+//methods:
+    //create new document
+
+    //change user permmision (Permission ,User)
+
+    //insert viewer to viewer list
+    // insert editor to editor list
+
+    //boolean isEditor(User user)
+    //boolean isViewer(User user)
+
+    // updateUsersList
 
 
 }
