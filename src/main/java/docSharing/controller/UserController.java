@@ -41,9 +41,21 @@ public class UserController {
         return ResponseEntity.ok(userService.updateUserEmail(email, newEmail));
     }
 
+    @RequestMapping(value = "password", method = RequestMethod.PATCH)
+    public ResponseEntity<User> updateUserPassword(@RequestParam String email, @RequestParam String password, @RequestHeader String token){
+        if (!Validation.isValidPassword(password)) {
+            return ResponseEntity.badRequest().build();
+        }
+        //validateToken(email, token);
+        return ResponseEntity.ok(userService.updateUserEmail(email, password));
+    }
 
-
-
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<?> deleteUserByEmail(@PathVariable("email") String email){
+        //validateToken(email,token);
+        userService.deleteUser(email);
+        return ResponseEntity.noContent().build();
+    }
 
 
 

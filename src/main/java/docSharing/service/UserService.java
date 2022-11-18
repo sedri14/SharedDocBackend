@@ -28,12 +28,35 @@ public class UserService {
         User user = userRepository.findByEmail(email);
 
         if (user!= null) {
-            user.setEmail(email);
+            user.setEmail(newEmail);
             return userRepository.save(user);
         } else {
             throw new IllegalArgumentException(String.format("Email address: %s does not exist", email));
         }
     }
+
+    public User updateUserPassword(String email, String password) {
+        User user = userRepository.findByEmail(email);
+
+        if (user!= null) {
+            user.setPassword(password);
+            return userRepository.save(user);
+        } else {
+            throw new IllegalArgumentException(String.format("Email address: %s does not exist", email));
+        }
+    }
+
+
+    public void deleteUser(String email) {
+        User user = userRepository.findByEmail(email);
+
+        if (user != null) {
+            userRepository.delete(user);
+        } else {
+            throw new IllegalArgumentException(String.format("Email address %s does not match any user", email));
+        }
+    }
+
 
 
 }
