@@ -22,32 +22,40 @@ public class UserController {
     @Autowired
     private AuthService authService;
 
-    @RequestMapping(value = "name", method = RequestMethod.PATCH)
+    /**
+     *Method updates user's name
+     * @param email
+     * @param name
+     * @param token
+     * @return
+     */
+
+    @RequestMapping(value = "/name", method = RequestMethod.PATCH)
     public ResponseEntity<User> updateUserName(@RequestParam String email, @RequestParam String name, @RequestHeader String token){
         if (!Validation.isValidName(name)) {
             return ResponseEntity.badRequest().build();
         }
         //validateToken(email, token);
-        return ResponseEntity.ok(userService.updateUserName(email, name));
+        return ResponseEntity.status(HttpStatus.OK).body(userService.updateUserName(email, name));
     }
 
 
-    @RequestMapping(value = "email", method = RequestMethod.PATCH)
+    @RequestMapping(value = "/email", method = RequestMethod.PATCH)
     public ResponseEntity<User> updateUserEmail(@RequestParam String email, @RequestParam String newEmail, @RequestHeader String token){
         if (!Validation.isValidEmail(newEmail)) {
             return ResponseEntity.badRequest().build();
         }
         //validateToken(email, token);
-        return ResponseEntity.ok(userService.updateUserEmail(email, newEmail));
+        return ResponseEntity.status(HttpStatus.OK).body(userService.updateUserEmail(email, newEmail));
     }
 
-    @RequestMapping(value = "password", method = RequestMethod.PATCH)
+    @RequestMapping(value = "/password", method = RequestMethod.PATCH)
     public ResponseEntity<User> updateUserPassword(@RequestParam String email, @RequestParam String password, @RequestHeader String token){
         if (!Validation.isValidPassword(password)) {
             return ResponseEntity.badRequest().build();
         }
         //validateToken(email, token);
-        return ResponseEntity.ok(userService.updateUserEmail(email, password));
+        return ResponseEntity.status(HttpStatus.OK).body(userService.updateUserPassword(email, password));
     }
 
     @DeleteMapping("/delete/{id}")
