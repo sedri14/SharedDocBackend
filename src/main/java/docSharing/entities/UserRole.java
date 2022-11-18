@@ -1,6 +1,6 @@
 package docSharing.entities;
 
-public enum Permission {
+public enum UserRole {
     EDITOR,
     VIEWER,
     OWNER

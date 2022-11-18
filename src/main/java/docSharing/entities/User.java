@@ -1,7 +1,7 @@
 package docSharing.entities;
 
 import javax.persistence.*;
-import java.nio.file.Path;
+//import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
 
@@ -10,14 +10,31 @@ import java.util.Objects;
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    //change the id to Long...
     private int id;
+    @Column(nullable = false)
     private String name;
-    @Column(unique = true)
+    @Column(nullable = false,unique = true)
     private String email;
     private String password;
-    private List<Path> myDocs;
 
+    @Enumerated(EnumType.STRING)
+    private UserRole userRole;
 
+//    private List<Path> myDocs;
+
+    public User() {}
+
+    private User(String name, String email, String password) {
+        this.name = name;
+        this.email = email;
+        this.password = password;
+    }
+
+    public User createUser(String name, String email, String password)
+    {
+        return new User(name,email,password);
+    }
 
     public void setId(int id) {
         this.id = id;
@@ -51,12 +68,15 @@ public class User {
         this.password = password;
     }
 
-    public List<Path> getMyDocs() {
-        return myDocs;
-    }
+//    public List<Path> getMyDocs() {
+//        return myDocs;
+//    }
 
-    public void setMyDocs(List<Path> myDocs) {this.myDocs = myDocs;}
+//    public void setMyDocs(List<Path> myDocs) {
+//        this.myDocs = myDocs;
+//    }
 
+    //rewrite the equal and hashcode and the toString.
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -88,4 +108,5 @@ public class User {
                 ", password='" + password + '\'' +
                 '}';
     }
+
 }
