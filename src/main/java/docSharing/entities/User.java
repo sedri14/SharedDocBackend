@@ -14,10 +14,13 @@ public class User {
     private int id;
     @Column(nullable = false)
     private String name;
+
     @Column(nullable = false,unique = true)
     private String email;
     private String password;
 
+//    @ManyToOne
+//    @JoinColumn(name="role_id")
     @Enumerated(EnumType.STRING)
     private UserRole userRole;
 

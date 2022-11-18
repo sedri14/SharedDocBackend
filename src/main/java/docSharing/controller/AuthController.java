@@ -1,5 +1,7 @@
 package docSharing.controller;
 
+import com.google.gson.Gson;
+import docSharing.Utils.Validation;
 import docSharing.entities.User;
 import docSharing.service.AuthService;
 import org.apache.logging.log4j.LogManager;
@@ -11,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.sql.SQLDataException;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @RestController
@@ -18,42 +21,35 @@ import java.util.regex.Pattern;
 @RequestMapping("/auth")
 public class AuthController {
 
+
     @Autowired
     private AuthService authService;
+    private static final Gson gson = new Gson();
 
     private static Logger logger = LogManager.getLogger(AuthController.class.getName());
 
 
-    @RequestMapping(method = RequestMethod.POST)
+    @RequestMapping(value = "/register", method = RequestMethod.POST)
     public ResponseEntity<String> createUser(@RequestBody User user) {
-        try {
-            return new ResponseEntity<>(authService.addUser(user).toString(), HttpStatus.OK);
-        } catch (SQLDataException e) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST, "Email already exists", e);
+        logger.debug("in AuthenticationController.register() - int Level:500");
+
+        if (!Validation.isValidEmail(user.getEmail())) {
+            logger.error("In AuthenticationController.register: invalid email - int Level:200");
+            throw new IllegalArgumentException("Invalid email address!");
         }
+        if (!Validation.isValidName(user.getName())) {
+            logger.error("In AuthenticationController.register: invalid name - int Level:200");
+            throw new IllegalArgumentException("Invalid name!");
+        }
+        if (!Validation.isValidPassword(user.getPassword())) {
+            logger.error("In AuthenticationController.register: invalid password - int Level:200");
+            throw new IllegalArgumentException("Invalid password!");
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(gson.toJson(authService.createUser(user.getName(), user.getEmail(), user.getPassword())));
+
     }
 
 
-    public boolean isValidPassword(String password) {
-        logger.debug("in AuthenticationController.isValidPassword() - int Level:500");
 
-        return password.matches(".*[A-Z].*") && password.length() >= 6;
-    }
 
-    public boolean isValidName(String Name) {
-        logger.debug("in AuthenticationController.isValidName() - int Level:500");
-
-        return Name.matches("^[ A-Za-z]+$");
-    }
-
-    public static boolean isValidEmail(String emailAddress) {
-        logger.debug("in AuthenticationController.isValidEmail() - int Level:500");
-
-        String regexPattern = "^(.+)@(\\S+)$";
-
-        return Pattern.compile(regexPattern)
-                .matcher(emailAddress)
-                .matches();
-    }
 }
