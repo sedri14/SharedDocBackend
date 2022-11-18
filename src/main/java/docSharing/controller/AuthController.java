@@ -10,11 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
-import java.sql.SQLDataException;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @RestController
 @CrossOrigin
@@ -49,7 +45,16 @@ public class AuthController {
 
     }
 
+    @RequestMapping(value = "/login", method = RequestMethod.POST)//we should add header.
+    public ResponseEntity<String> logIn(@RequestBody User user , @RequestParam String password) {
 
+        logger.debug("in AuthenticationController.login() - int Level:500");
 
+        if (!Validation.isValidEmail(user.getEmail())) {
+            logger.error("In AuthenticationController.login: invalid email - int Level:200");
+            throw new IllegalArgumentException("Your email address is invalid!");
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(gson.toJson(authService.login(user,password)));
+    }
 
 }

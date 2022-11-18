@@ -3,8 +3,6 @@ package docSharing.Utils;
 import docSharing.controller.AuthController;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import java.util.Optional;
 import java.util.regex.Pattern;
 
 public class Validation {
@@ -32,6 +30,8 @@ public class Validation {
                 .matcher(emailAddress)
                 .matches();
     }
+
+
 
 
 }
