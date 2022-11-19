@@ -1,30 +1,33 @@
 package docSharing.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import javax.persistence.*;
 //import java.nio.file.Path;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 @Entity
-@Table(name = "user")
+@Table(name = "User")
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    //change the id to Long...
-    private int id;
+    private Long id;
     @Column(nullable = false)
     private String name;
-
-    @Column(nullable = false,unique = true)
+    @Column(name = "email", nullable = false, unique = true)
     private String email;
+    @Column(name = "password", nullable = false)
     private String password;
 
-//    @ManyToOne
-//    @JoinColumn(name="role_id")
     @Enumerated(EnumType.STRING)
     private UserRole userRole;
 
-//    private List<Path> myDocs;
+    @JsonIgnore
+    @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL)
+    private Set<Document> myDocs;
 
     public User() {}
 
@@ -39,11 +42,11 @@ public class User {
         return new User(name,email,password);
     }
 
-    public void setId(int id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
-    public int getId() {
+    public Long getId() {
         return id;
     }
 
@@ -71,35 +74,25 @@ public class User {
         this.password = password;
     }
 
-//    public List<Path> getMyDocs() {
-//        return myDocs;
-//    }
+    public Set<Document> getDocs() {
+        return myDocs;
+    }
 
 //    public void setMyDocs(List<Path> myDocs) {
 //        this.myDocs = myDocs;
 //    }
 
     //rewrite the equal and hashcode and the toString.
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof User)) return false;
 
-        User user = (User) o;
-
-        if (id != user.id) return false;
-        if (!Objects.equals(name, user.name)) return false;
-        if (!Objects.equals(email, user.email)) return false;
-        return Objects.equals(password, user.password);
-    }
 
     @Override
     public int hashCode() {
-        int result = id;
-        result = 31 * result + (name != null ? name.hashCode() : 0);
-        result = 31 * result + (email != null ? email.hashCode() : 0);
-        result = 31 * result + (password != null ? password.hashCode() : 0);
-        return result;
+        return super.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return super.equals(obj);
     }
 
     @Override
