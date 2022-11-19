@@ -27,7 +27,7 @@ public class UserController {
      * @param email
      * @param name
      * @param token
-     * @return
+     * @return User in case of success OR Error
      */
 
     @RequestMapping(value = "/name", method = RequestMethod.PATCH)
@@ -39,6 +39,13 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).body(userService.updateUserName(email, name));
     }
 
+    /**
+     *  Method updates user's email
+     * @param email
+     * @param newEmail
+     * @param token
+     * @return User in case of success OR Error
+     */
 
     @RequestMapping(value = "/email", method = RequestMethod.PATCH)
     public ResponseEntity<User> updateUserEmail(@RequestParam String email, @RequestParam String newEmail, @RequestHeader String token){
@@ -49,6 +56,13 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).body(userService.updateUserEmail(email, newEmail));
     }
 
+    /**
+     * Method updates user's password
+     * @param email
+     * @param password
+     * @param token
+     * @return User in case of success OR Error
+     */
     @RequestMapping(value = "/password", method = RequestMethod.PATCH)
     public ResponseEntity<User> updateUserPassword(@RequestParam String email, @RequestParam String password, @RequestHeader String token){
         if (!Validation.isValidPassword(password)) {
@@ -58,13 +72,13 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).body(userService.updateUserPassword(email, password));
     }
 
+
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<?> deleteUserByEmail(@PathVariable("email") String email){
         //validateToken(email,token);
         userService.deleteUser(email);
         return ResponseEntity.noContent().build();
     }
-
 
 
     @RequestMapping(method = RequestMethod.GET)

@@ -14,7 +14,7 @@ public class UserService {
     private UserRepository userRepository;
 
     public User updateUserName(String email, String name) {
-        User user = userRepository.findByEmail(email);
+        User user = UserRepository.findByEmail(email);
 
         if (user!= null) {
             user.setName(name);
@@ -25,7 +25,7 @@ public class UserService {
     }
 
     public User updateUserEmail(String email, String newEmail) {
-        User user = userRepository.findByEmail(email);
+        User user = UserRepository.findByEmail(email);
 
         if (user!= null) {
             user.setEmail(newEmail);
@@ -36,7 +36,7 @@ public class UserService {
     }
 
     public User updateUserPassword(String email, String password) {
-        User user = userRepository.findByEmail(email);
+        User user = UserRepository.findByEmail(email);
 
         if (user!= null) {
             user.setPassword(password);
@@ -48,7 +48,7 @@ public class UserService {
 
 
     public void deleteUser(String email) {
-        User user = userRepository.findByEmail(email);
+        User user = UserRepository.findByEmail(email);
 
         if (user != null) {
             userRepository.delete(user);
