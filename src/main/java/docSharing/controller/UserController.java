@@ -64,12 +64,12 @@ public class UserController {
      * @return User in case of success OR Error
      */
     @RequestMapping(value = "/password", method = RequestMethod.PATCH)
-    public ResponseEntity<User> updateUserPassword(@RequestParam String email, @RequestParam String password, @RequestHeader String token){
+    public ResponseEntity<User> updateUserPassword(@RequestBody User user, @RequestParam String password, @RequestHeader String token){
         if (!Validation.isValidPassword(password)) {
             return ResponseEntity.badRequest().build();
         }
         //validateToken(email, token);
-        return ResponseEntity.status(HttpStatus.OK).body(userService.updateUserPassword(email, password));
+        return ResponseEntity.status(HttpStatus.OK).body(userService.updateUserPassword(user.getEmail(), password));
     }
 
 
