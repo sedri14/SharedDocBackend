@@ -1,11 +1,10 @@
 package docSharing.controller;
 
-import docSharing.Utils.Validation;
-import docSharing.entities.User;
-import docSharing.entities.abstracts.INode;
+import docSharing.DTO.DirNavigateDTO;
+import docSharing.DTO.AddINodeDTO;
+import docSharing.entities.INode;
 import docSharing.service.FileSystemService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,26 +12,26 @@ import java.util.List;
 
 @RestController
 @CrossOrigin
-@RequestMapping("/user")
+@RequestMapping("/dir")
 public class FileSystemController {
 
     @Autowired
     private FileSystemService fsService;
 
-    @RequestMapping(value = "/dir", method = RequestMethod.POST)
-    public ResponseEntity<List<INode>> getInodesInLevel(@RequestParam Long id){
-        //validate parameter
-        //validate token
+    //TODO- this doesn't work
+    @RequestMapping(value = "/id", method = RequestMethod.POST)
+    public ResponseEntity<List<INode>> getInodesInLevel(@RequestHeader("token") String token, @RequestBody DirNavigateDTO dirNavigate){
+        //validate parameters (legal id)
+        //validate token (dirNavigate.token)
 
-        return ResponseEntity.ok(fsService.getInodesInLevel(id));
+        return ResponseEntity.ok(fsService.getInodesInLevel(dirNavigate.id));
     }
 
-//    @RequestMapping(value = "/name", method = RequestMethod.PATCH)
-//    public ResponseEntity<User> updateUserName(@RequestParam String email, @RequestParam String name, @RequestHeader String token){
-//        if (!Validation.isValidName(name)) {
-//            return ResponseEntity.badRequest().build();
-//        }
-//        //validateToken(email, token);
-//        return ResponseEntity.status(HttpStatus.OK).body(userService.updateUserName(email, name));
-//    }
+    @RequestMapping(value = "/add", method = RequestMethod.POST)
+    public ResponseEntity<INode> addInode(@RequestBody AddINodeDTO addINodeDTO) {
+        //validation
+
+        return ResponseEntity.ok(fsService.addInode(addINodeDTO));
+    }
+
 }

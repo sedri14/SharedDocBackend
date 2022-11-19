@@ -1,11 +1,8 @@
 package docSharing.entities;
 
-import docSharing.entities.abstracts.INode;
-import org.aspectj.weaver.Dump;
-
 import javax.persistence.*;
 import java.time.LocalDate;
-import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name="Document")
@@ -33,6 +30,17 @@ public class Document extends INode {
 
     //isDocumentPrivate. if private just who is in the viewing list and the editing list can access it, else get an error message
 
+    Document (){
+        super();
+
+    }
+
+    public Document(String name, INodeType type, LocalDate creationDate, Set<INode> children, INode parent, User owner, LocalDate lastEdited, String content) {
+        super(name, type, creationDate, children, parent);
+        this.owner = owner;
+        this.lastEdited = lastEdited;
+        this.content = content;
+    }
 
     public User getOwner() {
         return owner;

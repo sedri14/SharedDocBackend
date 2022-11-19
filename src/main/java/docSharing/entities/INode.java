@@ -1,6 +1,4 @@
-package docSharing.entities.abstracts;
-
-import docSharing.entities.INodeType;
+package docSharing.entities;
 
 import javax.persistence.*;
 import java.time.LocalDate;
@@ -26,6 +24,17 @@ public class INode {
     @JoinColumn(name = "parent_id", referencedColumnName = "id")
     protected INode parent;
 
+    INode(){
+
+    }
+
+    public INode(String name, INodeType type, LocalDate creationDate, Set<INode> children, INode parent) {
+        this.name = name;
+        this.type = type;
+        this.creationDate = creationDate;
+        this.children = children;
+        this.parent = parent;
+    }
 
     public Long getId() {
         return id;
