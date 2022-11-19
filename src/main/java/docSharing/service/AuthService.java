@@ -11,17 +11,18 @@ import java.util.Optional;
 @Service
 public class AuthService {
 
-
     @Autowired
     private UserRepository userRepository;
 
-
-    public User addUser(User user) throws SQLDataException {
-        if (userRepository.findByEmail(user.getEmail()) != null) {
-            throw new SQLDataException(String.format("Email %s exists in users table", user.getEmail()));
+    public User createUser(String name, String email, String password) {
+        if (UserRepository.isExist(email)) {
+            throw new IllegalArgumentException("the user has already registered");
         }
-        return userRepository.save(user);
+        User user = createUser(name, email, password);
+        userRepository.save(user);
+        return user;
     }
+
 
 
 }
