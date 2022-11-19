@@ -15,8 +15,6 @@ public class Document extends INode {
     @JoinColumn(name="owner_id", referencedColumnName = "id")
     private User owner;
 
-    @Column(name = "creation_date")
-    private LocalDate creationDate;
     @Column(name = "last_edited")
     private LocalDate lastEdited;
 
@@ -32,10 +30,7 @@ public class Document extends INode {
     //we should change the path for the document each time
     //private String path;
 
-    @Override
-    public boolean isDirectory() {
-        return false;
-    }
+
     //isDocumentPrivate. if private just who is in the viewing list and the editing list can access it, else get an error message
 
 
