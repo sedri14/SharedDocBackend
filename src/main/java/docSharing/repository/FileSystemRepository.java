@@ -12,8 +12,13 @@ public interface FileSystemRepository extends JpaRepository<INode, Long> {
 
 
     @Query(nativeQuery = true,
-            value = "select *" +
-                    "from fs_inodes" +
-                    "where parent_id = :parentId")
+            value = "select *, 0 AS clazz_ " +
+                    "from fs_inodes " +
+                    "where parent_id =:parentId")
     List<INode> retrieveInodesInLevel(@Param("parentId") Long parentId);
+
+
+//    @Query(nativeQuery = true,
+//            value = "select * from fs_inodes")
+//    List<INode> retrieveInodesInLevel();
 }

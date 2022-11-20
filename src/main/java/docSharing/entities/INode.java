@@ -1,5 +1,7 @@
 package docSharing.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import javax.persistence.*;
 import java.time.LocalDate;
 import java.util.Set;
@@ -20,6 +22,7 @@ public class INode {
     private LocalDate creationDate;
     @OneToMany(mappedBy = "parent")
     protected Set<INode> children;
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "parent_id", referencedColumnName = "id")
     protected INode parent;

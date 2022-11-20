@@ -29,6 +29,10 @@ public class FileSystemService {
         return fsRepository.retrieveInodesInLevel(id);
     }
 
+    public List<INode> findAll(){
+        return fsRepository.findAll();
+    }
+
 //    public INode getById(Long id) {
 //
 //        INode inode = null;

@@ -1,5 +1,7 @@
 package docSharing.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import javax.persistence.*;
 import java.time.LocalDate;
 import java.util.Set;
@@ -8,6 +10,7 @@ import java.util.Set;
 @Table(name="Document")
 public class Document extends INode {
 
+    @JsonIgnore
     @ManyToOne (fetch = FetchType.LAZY)
     @JoinColumn(name="owner_id", referencedColumnName = "id")
     private User owner;
