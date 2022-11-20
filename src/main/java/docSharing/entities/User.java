@@ -1,28 +1,33 @@
 package docSharing.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import javax.persistence.*;
 //import java.nio.file.Path;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 @Entity
-@Table(name = "user")
+@Table(name = "User")
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     @Column(nullable = false)
     private String name;
-
-    @Column(nullable = false,unique = true)
+    @Column(name = "email", nullable = false, unique = true)
     private String email;
+    @Column(name = "password", nullable = false)
     private String password;
 
-//    @ManyToOne
-//    @JoinColumn(name="role_id")
     @Enumerated(EnumType.STRING)
     private UserRole userRole;
 
-//    private List<Path> myDocs;
+    @JsonIgnore
+    @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL)
+    private Set<Document> myDocs;
 
     public User() {}
 
@@ -69,13 +74,14 @@ public class User {
         this.password = password;
     }
 
-//    public List<Path> getMyDocs() {
-//        return myDocs;
-//    }
+    public Set<Document> getDocs() {
+        return myDocs;
+    }
 
 //    public void setMyDocs(List<Path> myDocs) {
 //        this.myDocs = myDocs;
 //    }
+
 
 
     @Override
@@ -89,6 +95,7 @@ public class User {
     @Override
     public int hashCode() {
         return Objects.hash(id, name, email, password, userRole);
+
     }
 
     @Override
