@@ -13,14 +13,14 @@ import java.util.List;
 
 @RestController
 @CrossOrigin
-@RequestMapping("/dir")
+@RequestMapping("/fs")
 public class FileSystemController {
 
     @Autowired
     private FileSystemService fsService;
 
     @RequestMapping(value = "/add", method = RequestMethod.POST)
-    public ResponseEntity<INode> addInode(@RequestBody AddINodeDTO addINodeDTO) {
+    public ResponseEntity<INode> addInode(@RequestBody AddINodeDTO addINodeDTO, @RequestHeader String token) {
         //validation
 
         return ResponseEntity.ok(fsService.addInode(addINodeDTO));

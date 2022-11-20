@@ -19,7 +19,10 @@ public class SpringApp {
     @Bean
     public CommandLineRunner initData(FileSystemRepository fsRepository) {
         return args -> {
-            fsRepository.save(new INode("root", INodeType.DIR, LocalDate.now(), null,null));
+            //TODO: make it better
+            if (!fsRepository.existsById(1L)) {
+                fsRepository.save(new INode("root", INodeType.DIR, LocalDate.now(), null, null));
+            }
         };
     }
 }
