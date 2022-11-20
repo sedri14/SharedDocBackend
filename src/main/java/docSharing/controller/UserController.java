@@ -1,5 +1,6 @@
 package docSharing.controller;
 
+import docSharing.UserDTO.UserDTO;
 import docSharing.Utils.Validation;
 import docSharing.entities.User;
 import docSharing.service.AuthService;
@@ -7,8 +8,13 @@ import docSharing.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.request.WebRequest;
 
+import java.io.IOException;
+import java.nio.file.AccessDeniedException;
 import java.util.Optional;
 
 @RestController
@@ -22,73 +28,58 @@ public class UserController {
     @Autowired
     private AuthService authService;
 
+
     /**
      *Method updates user's name
-     * @param email
-     * @param name
      * @param token
      * @return User in case of success OR Error
      */
 
     @RequestMapping(value = "/name", method = RequestMethod.PATCH)
-    public ResponseEntity<User> updateUserName(@RequestParam String email, @RequestParam String name, @RequestHeader String token){
-        if (!Validation.isValidName(name)) {
+    public ResponseEntity<User> updateUserName(@RequestBody UserDTO user, @RequestHeader String token) throws IOException {
+        if (!Validation.isValidName(user.name)) {
             return ResponseEntity.badRequest().build();
         }
-        //validateToken(email, token);
-        return ResponseEntity.status(HttpStatus.OK).body(userService.updateUserName(email, name));
+        validateToken(user.email, token);
+        return ResponseEntity.status(HttpStatus.OK).body(userService.updateUserName(user.email, user.name));
     }
 
-    /**
-     *  Method updates user's email
-     * @param email
-     * @param newEmail
-     * @param token
-     * @return User in case of success OR Error
-     */
+    private void validateToken(String email, String token) throws IOException {
+        if (!authService.isValidToken(email, token)) {
+            throw new AccessDeniedException(String.format("User with email address: %s is not logged in!", email));
+        }
+    }
+
 
     @RequestMapping(value = "/email", method = RequestMethod.PATCH)
-    public ResponseEntity<User> updateUserEmail(@RequestParam String email, @RequestParam String newEmail, @RequestHeader String token){
-        if (!Validation.isValidEmail(newEmail)) {
-            return ResponseEntity.badRequest().build();
+    public ResponseEntity<User> updateUserEmail(@RequestBody UserDTO user, @RequestHeader String token)  {
+        if (!Validation.isValidEmail(user.email)) {return ResponseEntity.badRequest().build();}
+        try {
+            validateToken(user.email, token);
+        } catch (IOException e) {
+            ResponseEntity.badRequest(); //TODO: check how to wrap it with responser entity with user
         }
-        //validateToken(email, token);
-        return ResponseEntity.status(HttpStatus.OK).body(userService.updateUserEmail(email, newEmail));
+        return ResponseEntity.status(HttpStatus.OK).body(userService.updateUserEmail(user.id, user.email));
     }
 
-    /**
-     * Method updates user's password
-     * @param email
-     * @param password
-     * @param token
-     * @return User in case of success OR Error
-     */
+
     @RequestMapping(value = "/password", method = RequestMethod.PATCH)
-    public ResponseEntity<User> updateUserPassword(@RequestParam String email, @RequestParam String password, @RequestHeader String token){
+    public ResponseEntity<User> updateUserPassword(@RequestBody User user, @RequestParam String password, @RequestHeader String token){
         if (!Validation.isValidPassword(password)) {
             return ResponseEntity.badRequest().build();
         }
         //validateToken(email, token);
-        return ResponseEntity.status(HttpStatus.OK).body(userService.updateUserPassword(email, password));
+        return ResponseEntity.status(HttpStatus.OK).body(userService.updateUserPassword(user.getEmail(), password));
     }
 
 
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<?> deleteUserByEmail(@PathVariable("email") String email){
-        //validateToken(email,token);
+    public ResponseEntity<Void> deleteUser(@RequestParam String email, @RequestHeader String token) throws IOException {
+        validateToken(email, token);
         userService.deleteUser(email);
+
         return ResponseEntity.noContent().build();
     }
 
 
-    @RequestMapping(method = RequestMethod.GET)
-
-    public ResponseEntity<User> getUserById(@RequestParam int id) {
-        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    }
-
-    @RequestMapping(value = "/delete/{id}")
-    public ResponseEntity<?> deleteUserById(@PathVariable("id") int id) {
-        return ResponseEntity.noContent().build();
-    }
 }

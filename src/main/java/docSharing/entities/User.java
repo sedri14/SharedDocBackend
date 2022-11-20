@@ -37,7 +37,7 @@ public class User {
         this.password = password;
     }
 
-    public User createUser(String name, String email, String password)
+    public static User createUserFactory(String name, String email, String password)
     {
         return new User(name,email,password);
     }
@@ -82,27 +82,23 @@ public class User {
 //        this.myDocs = myDocs;
 //    }
 
-    //rewrite the equal and hashcode and the toString.
 
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        User user = (User) o;
+        return Objects.equals(id, user.id) && Objects.equals(name, user.name) && Objects.equals(email, user.email) && Objects.equals(password, user.password) && userRole == user.userRole;
+    }
 
     @Override
     public int hashCode() {
-        return super.hashCode();
+        return Objects.hash(id, name, email, password, userRole);
+
     }
 
     @Override
-    public boolean equals(Object obj) {
-        return super.equals(obj);
-    }
-
-    @Override
-    public String toString() {
-        return "User{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", email='" + email + '\'' +
-                ", password='" + password + '\'' +
-                '}';
-    }
+    public String toString() {return "User: id=" + id + ", name='" + name + ", email='" + email + ", password='" + password; }
 
 }
