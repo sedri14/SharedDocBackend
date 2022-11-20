@@ -71,4 +71,13 @@ public class UserService {
         return userRepository.findByEmail(email);
     }
 
+    public User getById(Long id) {
+
+        Optional<User> opUser = userRepository.findById(id);
+        if (!opUser.isPresent()) {
+            throw new IllegalArgumentException("User not found");
+        }
+
+        return opUser.get();
+    }
 }

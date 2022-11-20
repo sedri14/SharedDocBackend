@@ -25,8 +25,8 @@ public class FileSystemController {
 
         return ResponseEntity.ok(fsService.addInode(addINodeDTO));
     }
-    @RequestMapping(value = "/id", method = RequestMethod.POST)
-    public ResponseEntity<List<INode>> getChildren(@RequestHeader("token") String token, @RequestBody DirNavigateDTO dirNavigate){
+    @RequestMapping(value = "/level", method = RequestMethod.POST)
+    public ResponseEntity<List<INode>> getChildren(@RequestBody DirNavigateDTO dirNavigate, @RequestHeader("token") String token){
         //validate parameters (legal id)
         //validate token (dirNavigate.token)
 
