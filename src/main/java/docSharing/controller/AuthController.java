@@ -52,11 +52,10 @@ public class AuthController {
     }
 
 
-
     @RequestMapping(value = "login", method = RequestMethod.POST)//
     public ResponseEntity<String> logIn(@RequestBody UserDTO user) {
 
-      //  logger.debug("in AuthenticationController.login() - int Level:500");
+       logger.debug("in AuthenticationController.login() - int Level:500");
 
         if (!Validation.isValidEmail(user.email)) {
             logger.error("In AuthenticationController.login: invalid email - int Level:200");
