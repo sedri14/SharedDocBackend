@@ -2,7 +2,6 @@ package docSharing.entities;
 
 import javax.persistence.*;
 //import java.nio.file.Path;
-import java.util.List;
 import java.util.Objects;
 
 @Entity
@@ -10,7 +9,6 @@ import java.util.Objects;
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    //change the id to Long...
     private int id;
     @Column(nullable = false)
     private String name;
@@ -34,7 +32,7 @@ public class User {
         this.password = password;
     }
 
-    public User createUser(String name, String email, String password)
+    public static User createUserFactory(String name, String email, String password)
     {
         return new User(name,email,password);
     }

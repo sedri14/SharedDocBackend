@@ -1,18 +1,18 @@
 package docSharing.service;
 
-import docSharing.Utils.GenerateToken;
-import docSharing.Utils.Validation;
+import com.google.gson.Gson;
+import docSharing.UserDTO.UserDTO;
 import docSharing.entities.User;
-import docSharing.repository.AuthRepository;
+
 import docSharing.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.sql.SQLDataException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
+import java.util.UUID;
+import static docSharing.entities.User.createUserFactory;
+
 @Service
 public class AuthService {
 
@@ -20,31 +20,67 @@ public class AuthService {
     @Autowired
     private UserRepository userRepository;
 
-//    public User createUser(String name, String email, String password) {
-//        if (UserRepository.isExist(email)) {
-//            throw new IllegalArgumentException("the user has already registered");
-//        }
-//        User user = createUser(name, email, password);
-//        userRepository.save(user);
-//        return user;
-//    }
-//
-//
-//    public String login(User user, String password) {
-//        String token = isValidCredentials(user, password) ? GenerateToken.generateToken() : null;
-//
-//        if (token != null) {
-//            tokens.put(user.getEmail(),token);
-//
-//        }
-//        return token;
-//    }
+    private static final Gson gson = new Gson();
+    public AuthService() {}
 
-    private boolean isValidCredentials(User user, String password) {
-        Optional<User> newUser = Optional.of(UserRepository.findByEmail(user.getEmail()));
-       if (!newUser.equals(Optional.empty()) && user.getPassword().equals(password))
-           return true;
-        else return false;
+    public User createUser(String name, String email, String password) {
+       if (userRepository.findByEmail(email)!= null)
+           throw new IllegalArgumentException("the user has already registered");
+
+        User user = createUserFactory(name, email, password);
+        userRepository.save(user);
+        return user;
     }
+
+
+    private boolean isExistingEmail (String email)
+    {
+        User user = userRepository.findByEmail(email);
+        return (user!=null)?true:false;
+    }
+
+    public String generateToken()
+    {
+        UUID uuid = UUID.randomUUID();
+        return uuid.toString();
+    }
+
+
+    public String login(String email, String password) {
+
+        String token = isValidCredentials(email, password) ? generateToken() : null;
+
+        if (token != null) {
+            tokens.put(email, token);
+        }
+
+        return token;
+    }
+
+    public boolean isValidToken(String email, String token) {
+        return tokens.get(email).compareTo(token) == 0;
+    }
+
+    public UserDTO updateTokenEmailKey(UserDTO user, String newEmail) {
+        tokens.put(newEmail, tokens.get(user.email));
+        tokens.remove(user.email);
+        return user;
+    }
+
+    private boolean isValidCredentials(String email, String password) {
+        User user = userRepository.findByEmail(email);
+
+        if (user!= null) {
+            return user.getPassword().equals(password);
+        }
+
+        return false;
+    }
+
+    public void updateTokenEmailKey(String oldEmail, String newEmail) {
+        tokens.put(newEmail, tokens.get(oldEmail));
+        tokens.remove(oldEmail);
+    }
+
 
 }
