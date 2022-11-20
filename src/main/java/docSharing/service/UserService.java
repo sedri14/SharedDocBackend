@@ -71,13 +71,4 @@ public class UserService {
         return userRepository.findByEmail(email);
     }
 
-    public User getById(Long id) {
-        User user = null;
-        try {
-            user = userRepository.getReferenceById(id);
-        } catch (EntityNotFoundException e) {
-            throw new IllegalArgumentException("User not found");
-        }
-        return user;
-    }
 }
