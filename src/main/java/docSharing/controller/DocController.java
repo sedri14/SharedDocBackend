@@ -1,5 +1,6 @@
 package docSharing.controller;
 
+import docSharing.DTO.ReturnDocumentMessage;
 import docSharing.service.DocService;
 import docSharing.test.OnlineUser;
 import docSharing.test.ManipulatedText;
@@ -23,10 +24,9 @@ public class DocController {
 
     @MessageMapping("/update")
     @SendTo("/topic/updates")
-    public ManipulatedText sendUpdatedText(ManipulatedText text) {
+    public ReturnDocumentMessage sendUpdatedText(ManipulatedText text) {
         return docService.sendUpdatedText(text);
     }
-
 
 
 //methods:
