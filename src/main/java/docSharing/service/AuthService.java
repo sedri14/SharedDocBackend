@@ -20,25 +20,25 @@ public class AuthService {
     @Autowired
     private UserRepository userRepository;
 
-    public User createUser(String name, String email, String password) {
-        if (UserRepository.isExist(email)) {
-            throw new IllegalArgumentException("the user has already registered");
-        }
-        User user = createUser(name, email, password);
-        userRepository.save(user);
-        return user;
-    }
-
-
-    public String login(User user, String password) {
-        String token = isValidCredentials(user, password) ? GenerateToken.generateToken() : null;
-
-        if (token != null) {
-            tokens.put(user.getEmail(),token);
-
-        }
-        return token;
-    }
+//    public User createUser(String name, String email, String password) {
+//        if (UserRepository.isExist(email)) {
+//            throw new IllegalArgumentException("the user has already registered");
+//        }
+//        User user = createUser(name, email, password);
+//        userRepository.save(user);
+//        return user;
+//    }
+//
+//
+//    public String login(User user, String password) {
+//        String token = isValidCredentials(user, password) ? GenerateToken.generateToken() : null;
+//
+//        if (token != null) {
+//            tokens.put(user.getEmail(),token);
+//
+//        }
+//        return token;
+//    }
 
     private boolean isValidCredentials(User user, String password) {
         Optional<User> newUser = Optional.of(UserRepository.findByEmail(user.getEmail()));
