@@ -3,8 +3,6 @@ package docSharing.Utils;
 import docSharing.controller.AuthController;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import java.util.Optional;
 import java.util.regex.Pattern;
 
 public class Validation {
@@ -13,7 +11,7 @@ public class Validation {
     public static boolean isValidPassword(String password) {
         logger.debug("in AuthenticationController.isValidPassword() - int Level:500");
 
-        return password.matches("(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z]).{6,12}$");
+        return password.matches("(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z]).{6,12}");
 //        return password.matches(".*[A-Z].*") && password.length() >= 6;
     }
 
@@ -32,6 +30,8 @@ public class Validation {
                 .matcher(emailAddress)
                 .matches();
     }
+
+
 
 
 }
