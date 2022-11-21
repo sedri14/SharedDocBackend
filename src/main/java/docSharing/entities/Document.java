@@ -35,7 +35,6 @@ public class Document extends INode {
 
     Document (){
         super();
-
     }
 
     public Document(String name, INodeType type, LocalDate creationDate, Set<INode> children, INode parent, User owner, LocalDate lastEdited, String content) {

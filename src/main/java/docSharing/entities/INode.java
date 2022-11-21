@@ -67,9 +67,9 @@ public class INode implements Serializable {
         return parent;
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+//    public void setId(Long id) {
+//        this.id = id;
+//    }
 
     public void setName(String name) {
         this.name = name;
