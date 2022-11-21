@@ -2,8 +2,6 @@ package docSharing.emailActivation;
 
 import docSharing.entities.User;
 import docSharing.service.AuthService;
-import docSharing.utils.emailActivation.GMailer;
-import docSharing.utils.emailActivation.OnRegistrationCompleteEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;

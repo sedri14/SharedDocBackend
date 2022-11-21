@@ -24,6 +24,7 @@ import java.io.InputStreamReader;
 import java.nio.file.Paths;
 import java.util.Properties;
 import java.util.Set;
+import java.util.UUID;
 
 import static com.google.api.services.gmail.GmailScopes.GMAIL_SEND;
 import static javax.mail.Message.RecipientType.TO;
@@ -31,20 +32,21 @@ import static javax.mail.Message.RecipientType.TO;
 
 public class GMailer {
 
-    private static final String TEST_EMAIL = "anaalamed@gmail.com";
+    private static final String TEST_EMAIL = "nitzan.la4@gmail.com";
     private final Gmail service;
 
     public GMailer() throws Exception {
         NetHttpTransport httpTransport = GoogleNetHttpTransport.newTrustedTransport();
         GsonFactory jsonFactory = GsonFactory.getDefaultInstance();
         service = new Gmail.Builder(httpTransport, jsonFactory, getCredentials(httpTransport, jsonFactory))
-                .setApplicationName("Test Mailer")
+                .setApplicationName("Shared Doc")
                 .build();
     }
 
     private static Credential getCredentials(final NetHttpTransport httpTransport, GsonFactory jsonFactory)
             throws IOException {
-        GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(jsonFactory, new InputStreamReader(GMailer.class.getResourceAsStream("/client_secret_695322809754-onh0sumimllsus0b2qotjfts1d9diflr.apps.googleusercontent.com.json")));
+        GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(jsonFactory, new InputStreamReader(GMailer.class.getResourceAsStream
+                ("/client_secret_89807580359-6t815ru72tfu3rrasrah72p8so26fmfa.apps.googleusercontent.com.json")));
 
         GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(
                 httpTransport, jsonFactory, clientSecrets, Set.of(GMAIL_SEND))
@@ -89,7 +91,7 @@ public class GMailer {
 //    public static void main(String[] args) throws Exception {
 //        String token = UUID.randomUUID().toString();
 //        String link ="http://localhost:8080" + "/registrationConfirm?token=" + token;
-//        new GMailer().sendMail("Email Activation", "Please follow the link to activate your account" + link );
+//        new GMailer().sendMail("nitzan.la4@gmail.com", "MEssage!!!!", "bla bla bla");
 //    }
 
 }

@@ -29,7 +29,7 @@ public class AuthService {
     private UserRepository userRepository;
 
     @Autowired
-    private final TokenRepository tokenRepository;
+    private TokenRepository tokenRepository;
     @Autowired
     ApplicationEventPublisher eventPublisher;
 
@@ -47,14 +47,13 @@ public class AuthService {
         this.tokenRepository = tokenRepository;
     }
 
+    public AuthService() {}
+
     public User createUser(UserDTO user) throws SQLDataException {
         logger.info("in createUser");
-       if (userRepository.findByEmail(user.getEmail())!= null)
-           throw new SQLDataException(String.format("Email %s exists in users table", user.getEmail()));
-        logger.debug("in createUser");
-
-        return userRepository.save(createUserFactory(user.getName(), user.getEmail(), user.getPassword()));
-
+       if (userRepository.findByEmail(user.getEmail())== null)
+           return userRepository.save(createUserFactory(user.getName(), user.getEmail(), user.getPassword()));
+       else throw new SQLDataException(String.format("Email %s exists in users table", user.getEmail()));
     }
 
 

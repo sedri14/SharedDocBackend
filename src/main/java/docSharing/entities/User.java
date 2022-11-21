@@ -23,7 +23,6 @@ public class User {
     @Column(name = "password", nullable = false)
     private String password;
 
-    @Enumerated(EnumType.STRING)
     private UserRole userRole;
 
     @Column(name = "enabled")

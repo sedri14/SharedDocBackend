@@ -7,6 +7,7 @@ import docSharing.entities.User;
 import docSharing.entities.VerificationToken;
 import docSharing.repository.UserRepository;
 import docSharing.service.AuthService;
+import docSharing.service.UserService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,7 +33,7 @@ public class AuthController {
     private AuthService authService;
 
     @Autowired
-    private UserRepository userRepository;
+    private UserService userService;
     private static final Gson gson = new Gson();
 
     private static Logger logger = LogManager.getLogger(AuthController.class.getName());
@@ -53,12 +54,11 @@ public class AuthController {
             return ResponseEntity.badRequest().body("Invalid password address!");
         }
 
-
         try {
             User createdUser =authService.createUser(user);
             String appUrl = request.getContextPath();
             authService.publishRegistrationEvent(createdUser, request.getLocale(), appUrl);
-            return ResponseEntity.status(HttpStatus.OK).body(gson.toJson(authService.createUser(user)));
+            return ResponseEntity.status(HttpStatus.OK).body(gson.toJson(createdUser));
         } catch (SQLDataException e) {
             return ResponseEntity.badRequest().body("Email already exist");
         }
@@ -95,7 +95,7 @@ public class AuthController {
     }
 
     @GetMapping("/registrationConfirm")
-    public String confirmRegistration(WebRequest request, Model model, @RequestParam("token") String token) {
+    public String confirmRegistration(WebRequest request, @RequestParam("token") String token) {
 
         Locale locale = request.getLocale();
 
@@ -110,13 +110,9 @@ public class AuthController {
             return "redirect:/badUser.html?lang=" + locale.getLanguage();
         }
 
-        user.setEnabled(true);
-        authService.saveRegisteredUser(user);
+        userService.updateEnabled(user.getId(), true);
         authService.deleteVerificationToken(token);
         return "redirect:/login.html?lang=" + request.getLocale().getLanguage();
     }
 
-
 }
-
-
