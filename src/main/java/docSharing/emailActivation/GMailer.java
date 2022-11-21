@@ -88,10 +88,5 @@ public class GMailer {
         }
     }
 
-//    public static void main(String[] args) throws Exception {
-//        String token = UUID.randomUUID().toString();
-//        String link ="http://localhost:8080" + "/registrationConfirm?token=" + token;
-//        new GMailer().sendMail("nitzan.la4@gmail.com", "MEssage!!!!", "bla bla bla");
-//    }
 
 }
