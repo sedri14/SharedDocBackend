@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
+import java.util.List;
 import java.util.Optional;
 
 
@@ -73,13 +74,17 @@ public class UserService {
     }
 
     public User getById(Long id) {
-        User user = null;
-        try {
-            user = userRepository.getReferenceById(id);
-        } catch (EntityNotFoundException e) {
+
+        Optional<User> opUser = userRepository.findById(id);
+        if (!opUser.isPresent()) {
             throw new IllegalArgumentException("User not found");
         }
-        return user;
+
+        return opUser.get();
+    }
+
+    public List<User> findAll() {
+        return userRepository.findAll();
     }
 
     public Optional<User> updateEnabled(Long id, Boolean enabled) {

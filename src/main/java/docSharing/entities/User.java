@@ -5,6 +5,7 @@ import docSharing.UserDTO.UserDTO;
 
 import javax.persistence.*;
 //import java.nio.file.Path;
+import java.io.Serializable;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -12,7 +13,7 @@ import java.util.Set;
 
 @Entity
 @Table(name = "User")
-public class User {
+public class User implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
@@ -23,16 +24,19 @@ public class User {
     @Column(name = "password", nullable = false)
     private String password;
 
-    private UserRole userRole;
-
     @Column(name = "enabled")
     private boolean enabled;
 
     @JsonIgnore
     @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL)
-    private Set<Document> myDocs;
+    private Set<Document> myDocs;   //my owned docs
 
-    public User() {}
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private Set<Permission> permissions = new HashSet<>(); //docs I have permission (viewer/editor).
+
+    User() {
+
+    }
 
     private User(String name, String email, String password) {
         this.name = name;
@@ -51,9 +55,9 @@ public class User {
     }
 
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+//    public void setId(Long id) {
+//        this.id = id;
+//    }
 
     public Long getId() {
         return id;
@@ -96,26 +100,38 @@ public class User {
 //    }
 
 
-@Override
-    public boolean equals(Object o)
-    {
+    @Override
+    public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof User)) return false;
 
         User user = (User) o;
 
-        if (id != user.id) return false;
+        if (enabled != user.enabled) return false;
+        if (!Objects.equals(id, user.id)) return false;
         if (!Objects.equals(name, user.name)) return false;
         if (!Objects.equals(email, user.email)) return false;
-        return Objects.equals(password, user.password);
+        if (!Objects.equals(password, user.password)) return false;
+        if (!Objects.equals(myDocs, user.myDocs)) return false;
+        return Objects.equals(permissions, user.permissions);
     }
+
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, email, password, userRole);
-
+        int result = id != null ? id.hashCode() : 0;
+        result = 31 * result + (name != null ? name.hashCode() : 0);
+        result = 31 * result + (email != null ? email.hashCode() : 0);
+        result = 31 * result + (password != null ? password.hashCode() : 0);
+        result = 31 * result + (enabled ? 1 : 0);
+        result = 31 * result + (myDocs != null ? myDocs.hashCode() : 0);
+        result = 31 * result + (permissions != null ? permissions.hashCode() : 0);
+        return result;
     }
 
     @Override
     public String toString() {return "User: id=" + id + ", name='" + name + ", email='" + email + ", password='" + password; }
 
+    public Set<Document> getMyDocs() {
+        return myDocs;
+    }
 }

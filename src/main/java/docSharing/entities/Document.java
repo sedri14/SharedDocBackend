@@ -1,13 +1,17 @@
 package docSharing.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import javax.persistence.*;
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
 @Table(name="Document")
 public class Document extends INode {
 
+    @JsonIgnore
     @ManyToOne (fetch = FetchType.LAZY)
     @JoinColumn(name="owner_id", referencedColumnName = "id")
     private User owner;
@@ -19,6 +23,8 @@ public class Document extends INode {
     @Column(name = "content")
     private String content;
 
+    @OneToMany (mappedBy = "document", cascade = CascadeType.ALL)
+    private Set<Permission> permissions = new HashSet<>();
 //    @OneToMany
 //    private List<User> editorUsers;
 
@@ -32,7 +38,6 @@ public class Document extends INode {
 
     Document (){
         super();
-
     }
 
     public Document(String name, INodeType type, LocalDate creationDate, Set<INode> children, INode parent, User owner, LocalDate lastEdited, String content) {
@@ -44,5 +49,13 @@ public class Document extends INode {
 
     public User getOwner() {
         return owner;
+    }
+
+    public LocalDate getLastEdited() {
+        return lastEdited;
+    }
+
+    public String getContent() {
+        return content;
     }
 }

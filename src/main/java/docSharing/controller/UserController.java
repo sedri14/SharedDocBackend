@@ -15,6 +15,7 @@ import org.springframework.web.context.request.WebRequest;
 
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -81,5 +82,11 @@ public class UserController {
         return ResponseEntity.noContent().build();
     }
 
+
+    @RequestMapping(value = "/all", method = RequestMethod.GET)
+    public ResponseEntity<List<User>> all(){
+
+        return ResponseEntity.status(HttpStatus.OK).body(userService.findAll());
+    }
 
 }

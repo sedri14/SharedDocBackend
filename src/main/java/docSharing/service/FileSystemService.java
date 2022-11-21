@@ -29,16 +29,20 @@ public class FileSystemService {
         return fsRepository.retrieveInodesInLevel(id);
     }
 
-//    public INode getById(Long id) {
-//
-//        INode inode = null;
-//        try {
-//            inode = fsRepository.getReferenceById(id);
-//        } catch (EntityNotFoundException e){
-//            throw new IllegalArgumentException("INode does not exist");
-//        }
-//        return inode;
-//    }
+    public List<INode> findAll(){
+        return fsRepository.findAll();
+    }
+
+    public INode getById(Long id) {
+
+        INode inode = null;
+        try {
+            inode = fsRepository.getReferenceById(id);
+        } catch (EntityNotFoundException e){
+            throw new IllegalArgumentException("INode does not exist");
+        }
+        return inode;
+    }
 
     public INode addInode(AddINodeDTO addInode) {
         //validation
@@ -62,4 +66,26 @@ public class FileSystemService {
     }
 
 
+    public INode move(Long inodeId, Long targetInodeId) {
+        INode inodeToMove = fsRepository.getReferenceById(inodeId);
+        INode targetINode = fsRepository.getReferenceById(targetInodeId);
+        if (inodeToMove == null || targetINode == null) {
+            throw new RuntimeException("Inode not found");
+        }
+        inodeToMove.setParent(targetINode);
+
+        return fsRepository.save(inodeToMove);
+    }
 }
+
+
+//    public User updateUserName(String email, String name) {
+//        User user = userRepository.findByEmail(email);
+//
+//        if (user != null) {
+//            user.setName(name);
+//            return userRepository.save(user);
+//        } else {
+//            throw new IllegalArgumentException(String.format("Email address: %s does not exist", email));
+//        }
+//    }
