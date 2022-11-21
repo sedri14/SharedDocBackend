@@ -38,11 +38,11 @@ public class UserController {
 
     @RequestMapping(value = "/name", method = RequestMethod.PATCH)
     public ResponseEntity<User> updateUserName(@RequestBody UserDTO user, @RequestHeader String token) throws IOException {
-        if (!Validation.isValidName(user.name)) {
+        if (!Validation.isValidName(user.getName())) {
             return ResponseEntity.badRequest().build();
         }
-        validateToken(user.email, token);
-        return ResponseEntity.status(HttpStatus.OK).body(userService.updateUserName(user.email, user.name));
+        validateToken(user.getEmail(), token);
+        return ResponseEntity.status(HttpStatus.OK).body(userService.updateUserName(user.getEmail(), user.getName()));
     }
 
     private void validateToken(String email, String token) throws IOException {
@@ -52,16 +52,16 @@ public class UserController {
     }
 
 
-    @RequestMapping(value = "/email", method = RequestMethod.PATCH)
-    public ResponseEntity<User> updateUserEmail(@RequestBody UserDTO user, @RequestHeader String token)  {
-        if (!Validation.isValidEmail(user.email)) {return ResponseEntity.badRequest().build();}
-        try {
-            validateToken(user.email, token);
-        } catch (IOException e) {
-            ResponseEntity.badRequest(); //TODO: check how to wrap it with responser entity with user
-        }
-        return ResponseEntity.status(HttpStatus.OK).body(userService.updateUserEmail(user.id, user.email));
-    }
+//    @RequestMapping(value = "/email", method = RequestMethod.PATCH)
+//    public ResponseEntity<User> updateUserEmail(@RequestBody UserDTO user, @RequestHeader String token)  {
+//        if (!Validation.isValidEmail(user.getEmail())) {return ResponseEntity.badRequest().build();}
+//        try {
+//            validateToken(user.getEmail(), token);
+//        } catch (IOException e) {
+//            ResponseEntity.badRequest(); //TODO: check how to wrap it with responser entity with user
+//        }
+//        return ResponseEntity.status(HttpStatus.OK).body(userService.updateUserEmail(user.id, user.getEmail()));
+//    }
 
 
     @RequestMapping(value = "/password", method = RequestMethod.PATCH)

@@ -1,6 +1,7 @@
 package docSharing.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import docSharing.UserDTO.UserDTO;
 
 import javax.persistence.*;
 //import java.nio.file.Path;
@@ -22,6 +23,10 @@ public class User implements Serializable {
     private String email;
     @Column(name = "password", nullable = false)
     private String password;
+
+    @Column(name = "enabled")
+    private boolean enabled;
+
     @JsonIgnore
     @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL)
     private Set<Document> myDocs;   //my owned docs
@@ -37,11 +42,18 @@ public class User implements Serializable {
         this.name = name;
         this.email = email;
         this.password = password;
+        this.enabled=false;
     }
 
-    public static User createUserFactory(String name, String email, String password) {
-        return new User(name, email, password);
+    public static User createUserFactory(String name, String email, String password)
+    {
+        return new User(name,email,password);
     }
+    public static User createUserFactory(UserDTO other)
+    {
+        return new User(other.getName(), other.getEmail(), other.getPassword());
+    }
+
 
 //    public void setId(Long id) {
 //        this.id = id;
@@ -75,42 +87,36 @@ public class User implements Serializable {
         this.password = password;
     }
 
-//    public Set<Document> getDocs() {
-//        return myDocs;
-//    }
+    public Set<Document> getDocs() {
+        return myDocs;
+    }
 
-//    public void setMyDocs(List<Path> myDocs) {
+    public boolean isEnabled() {return enabled;}
+
+    public void setEnabled(boolean enabled) {this.enabled = enabled;}
+
+    //    public void setMyDocs(List<Path> myDocs) {
 //        this.myDocs = myDocs;
 //    }
+
+
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof User)) return false;
-
+        if (o == null || getClass() != o.getClass()) return false;
         User user = (User) o;
-
-        if (!Objects.equals(id, user.id)) return false;
-        if (!Objects.equals(name, user.name)) return false;
-        if (!Objects.equals(email, user.email)) return false;
-        if (!Objects.equals(password, user.password)) return false;
-        return Objects.equals(myDocs, user.myDocs);
+        return Objects.equals(id, user.id) && Objects.equals(name, user.name) && Objects.equals(email, user.email) && Objects.equals(password, user.password) && userRole == user.userRole;
     }
 
     @Override
     public int hashCode() {
-        int result = id != null ? id.hashCode() : 0;
-        result = 31 * result + (name != null ? name.hashCode() : 0);
-        result = 31 * result + (email != null ? email.hashCode() : 0);
-        result = 31 * result + (password != null ? password.hashCode() : 0);
-        result = 31 * result + (myDocs != null ? myDocs.hashCode() : 0);
-        return result;
+        return Objects.hash(id, name, email, password);
+
     }
 
     @Override
-    public String toString() {
-        return "User: id=" + id + ", name='" + name + ", email='" + email + ", password='" + password;
-    }
+    public String toString() {return "User: id=" + id + ", name='" + name + ", email='" + email + ", password='" + password; }
 
     public Set<Document> getMyDocs() {
         return myDocs;
