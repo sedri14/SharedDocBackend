@@ -1,5 +1,6 @@
 package docSharing.service;
 
+import docSharing.controller.AuthController;
 import docSharing.entities.User;
 import docSharing.repository.UserRepository;
 import org.apache.logging.log4j.LogManager;
@@ -19,10 +20,9 @@ public class UserService {
     private UserRepository userRepository;
 
     // logger
-    private static final Logger logger = LogManager.getLogger(AuthService.class.getName());
+    private static Logger logger = LogManager.getLogger(AuthController.class.getName());
 
-    public UserService() {
-    }
+    public UserService() {}
 
     public User updateUserName(String email, String name) {
         User user = userRepository.findByEmail(email);
@@ -74,27 +74,23 @@ public class UserService {
     }
 
     public User getById(Long id) {
-
-        Optional<User> opUser = userRepository.findById(id);
-        if (!opUser.isPresent()) {
+        User user = null;
+        try {
+            user = userRepository.getReferenceById(id);
+        } catch (EntityNotFoundException e) {
             throw new IllegalArgumentException("User not found");
         }
-
-        return opUser.get();
-    }
-
-    public List<User> findAll() {
-        return userRepository.findAll();
+        return user;
     }
 
     public Optional<User> updateEnabled(Long id, Boolean enabled) {
-        int lines = userRepository.updateUserEnabledById(id, enabled);
+        Long lines = userRepository.updateUserEnabledById(id, enabled);
         logger.debug("lines updated: " + lines);
 
         return getUpdatedUser(id, lines);
     }
 
-    private Optional<User> getUpdatedUser(Long id, int lines) {
+    private Optional<User> getUpdatedUser(Long id, Long lines) {
         if (lines == 1) {
             User user = userRepository.findById(id).get();
             logger.debug("User #" + id + " updated: " + user);
@@ -103,4 +99,6 @@ public class UserService {
 
         return Optional.empty();
     }
+
+    public List<User> findAll() {return userRepository.findAll();}
 }

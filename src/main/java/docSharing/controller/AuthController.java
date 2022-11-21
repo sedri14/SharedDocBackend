@@ -38,6 +38,7 @@ public class AuthController {
 
     private static Logger logger = LogManager.getLogger(AuthController.class.getName());
 
+    public AuthController() {}
 
     @RequestMapping(value = "register", method = RequestMethod.POST)
     public ResponseEntity<String> createUser(@RequestBody UserDTO user, HttpServletRequest request) {
@@ -114,5 +115,11 @@ public class AuthController {
         authService.deleteVerificationToken(token);
         return "redirect:/login.html?lang=" + request.getLocale().getLanguage();
     }
+
+
+
+
+
+
 
 }
