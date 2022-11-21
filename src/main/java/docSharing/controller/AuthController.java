@@ -39,6 +39,7 @@ public class AuthController {
 
     private static Logger logger = LogManager.getLogger(AuthController.class.getName());
 
+    public AuthController() {}
 
     //make these error check in other utils class.
 
@@ -136,5 +137,11 @@ public class AuthController {
         authService.deleteVerificationToken(token);
         return "redirect:/login.html?lang=" + request.getLocale().getLanguage();
     }
+
+
+
+
+
+
 
 }
