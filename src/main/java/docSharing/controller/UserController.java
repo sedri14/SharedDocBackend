@@ -36,6 +36,11 @@ public class UserController {
      * @return User in case of success OR Error
      */
 
+    //here you should not throw exception you should return an error or something.
+    //check if things are null
+    //why i should send all the user to update the name?
+
+    //we cna send a String instead.
     @RequestMapping(value = "/name", method = RequestMethod.PATCH)
     public ResponseEntity<User> updateUserName(@RequestBody UserDTO user, @RequestHeader String token) throws IOException {
         if (!Validation.isValidName(user.getName())) {
@@ -63,7 +68,8 @@ public class UserController {
 //        return ResponseEntity.status(HttpStatus.OK).body(userService.updateUserEmail(user.id, user.getEmail()));
 //    }
 
-
+    //chante to requestBody ->
+    //change the response to string.
     @RequestMapping(value = "/password", method = RequestMethod.PATCH)
     public ResponseEntity<User> updateUserPassword(@RequestBody User user, @RequestParam String password, @RequestHeader String token){
         if (!Validation.isValidPassword(password)) {
@@ -73,10 +79,12 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).body(userService.updateUserPassword(user.getEmail(), password));
     }
 
-
+//don't throw an exception here.
+    //this should reutrn a string entity.
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Void> deleteUser(@RequestParam String email, @RequestHeader String token) throws IOException {
         validateToken(email, token);
+        //delete user should return something.
         userService.deleteUser(email);
 
         return ResponseEntity.noContent().build();
@@ -85,7 +93,7 @@ public class UserController {
 
     @RequestMapping(value = "/all", method = RequestMethod.GET)
     public ResponseEntity<List<User>> all(){
-
+    //userservice.fidall could return null
         return ResponseEntity.status(HttpStatus.OK).body(userService.findAll());
     }
 
