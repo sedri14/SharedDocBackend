@@ -46,7 +46,9 @@ public class FileSystemController {
 
     @RequestMapping(value = "/all", method = RequestMethod.GET)
     public ResponseEntity<List<INode>> findAll(){
-        return ResponseEntity.ok(fsService.findAll());
+        List<INode> all = fsService.findAll();
+        System.out.println(all); //this is ok
+        return ResponseEntity.ok(all);
     }
 
 

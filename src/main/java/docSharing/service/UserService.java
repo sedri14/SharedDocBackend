@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
+import java.util.List;
 import java.util.Optional;
 import java.util.logging.Logger;
 
@@ -79,5 +80,9 @@ public class UserService {
         }
 
         return opUser.get();
+    }
+
+    public List<User> findAll() {
+        return userRepository.findAll();
     }
 }

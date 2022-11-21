@@ -1,16 +1,18 @@
 package docSharing.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.Set;
 
 @Entity
-@DiscriminatorValue("0")
+//@DiscriminatorValue("0")
 @Table(name = "fs_inodes")
 @Inheritance(strategy = InheritanceType.JOINED)
-public class INode {
+public class INode implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -20,7 +22,8 @@ public class INode {
     @Enumerated(EnumType.STRING)
     protected INodeType type;
     @Column(name = "creation_date")
-    private LocalDate creationDate;
+    protected LocalDate creationDate;
+    @JsonIgnore
     @OneToMany(mappedBy = "parent")
     protected Set<INode> children;
     @JsonIgnore
@@ -46,6 +49,18 @@ public class INode {
 
     public String getName() {
         return name;
+    }
+
+    public INodeType getType() {
+        return type;
+    }
+
+    public LocalDate getCreationDate() {
+        return creationDate;
+    }
+
+    public Set<INode> getChildren() {
+        return children;
     }
 
     public INode getParent() {
