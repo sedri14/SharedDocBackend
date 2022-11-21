@@ -24,7 +24,10 @@ public class User implements Serializable {
     private String password;
     @JsonIgnore
     @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL)
-    private Set<Document> myDocs;
+    private Set<Document> myDocs;   //my owned docs
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private Set<Permission> permissions = new HashSet<>(); //docs I have permission (viewer/editor).
 
     User() {
 
@@ -109,4 +112,7 @@ public class User implements Serializable {
         return "User: id=" + id + ", name='" + name + ", email='" + email + ", password='" + password;
     }
 
+    public Set<Document> getMyDocs() {
+        return myDocs;
+    }
 }
