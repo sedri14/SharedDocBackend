@@ -1,6 +1,7 @@
 package docSharing.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import docSharing.UserDTO.UserDTO;
 
 import javax.persistence.*;
 //import java.nio.file.Path;
@@ -22,8 +23,10 @@ public class User {
     @Column(name = "password", nullable = false)
     private String password;
 
-    @Enumerated(EnumType.STRING)
     private UserRole userRole;
+
+    @Column(name = "enabled")
+    private boolean enabled;
 
     @JsonIgnore
     @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL)
@@ -35,12 +38,18 @@ public class User {
         this.name = name;
         this.email = email;
         this.password = password;
+        this.enabled=false;
     }
 
     public static User createUserFactory(String name, String email, String password)
     {
         return new User(name,email,password);
     }
+    public static User createUserFactory(UserDTO other)
+    {
+        return new User(other.getName(), other.getEmail(), other.getPassword());
+    }
+
 
     public void setId(Long id) {
         this.id = id;
@@ -78,20 +87,28 @@ public class User {
         return myDocs;
     }
 
-//    public void setMyDocs(List<Path> myDocs) {
+    public boolean isEnabled() {return enabled;}
+
+    public void setEnabled(boolean enabled) {this.enabled = enabled;}
+
+    //    public void setMyDocs(List<Path> myDocs) {
 //        this.myDocs = myDocs;
 //    }
 
 
-
-    @Override
-    public boolean equals(Object o) {
+@Override
+    public boolean equals(Object o)
+    {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        User user = (User) o;
-        return Objects.equals(id, user.id) && Objects.equals(name, user.name) && Objects.equals(email, user.email) && Objects.equals(password, user.password) && userRole == user.userRole;
-    }
+        if (!(o instanceof User)) return false;
 
+        User user = (User) o;
+
+        if (id != user.id) return false;
+        if (!Objects.equals(name, user.name)) return false;
+        if (!Objects.equals(email, user.email)) return false;
+        return Objects.equals(password, user.password);
+    }
     @Override
     public int hashCode() {
         return Objects.hash(id, name, email, password, userRole);
