@@ -7,6 +7,7 @@ import java.time.LocalDate;
 import java.util.Set;
 
 @Entity
+@DiscriminatorValue("0")
 @Table(name = "fs_inodes")
 @Inheritance(strategy = InheritanceType.JOINED)
 public class INode {

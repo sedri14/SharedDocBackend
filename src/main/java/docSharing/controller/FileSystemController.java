@@ -2,6 +2,7 @@ package docSharing.controller;
 
 import docSharing.DTO.DirNavigateDTO;
 import docSharing.DTO.AddINodeDTO;
+import docSharing.DTO.MoveINodeDTO;
 import docSharing.entities.INode;
 import docSharing.service.FileSystemService;
 import docSharing.service.UserService;
@@ -33,6 +34,14 @@ public class FileSystemController {
         //validate token (dirNavigate.token)
 
         return ResponseEntity.ok(fsService.getInodesInLevel(dirNavigate.parentId));
+    }
+
+    @RequestMapping(value = "/move", method = RequestMethod.POST)
+    public ResponseEntity<INode> move(@RequestBody MoveINodeDTO moveINode, @RequestHeader("token") String token){
+        //validate parameters: inodeId exists, targetInode exists and of type DIR, check that i am owener of inodeId.
+        //validate token (token)
+
+        return ResponseEntity.ok(fsService.move(moveINode.inodeId, moveINode.targetInodeId));
     }
 
     @RequestMapping(value = "/all", method = RequestMethod.GET)
