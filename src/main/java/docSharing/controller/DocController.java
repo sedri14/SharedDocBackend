@@ -5,6 +5,7 @@ import docSharing.service.DocService;
 import docSharing.test.OnlineUser;
 import docSharing.test.ManipulatedText;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.stereotype.Controller;
@@ -22,10 +23,14 @@ public class DocController {
     }
 
 
+    //    @MessageMapping("/update/{docId}")
+//    @SendTo("/topic/updates/{docId}") @DestinationVariable Long docId
     @MessageMapping("/update")
     @SendTo("/topic/updates")
     public ReturnDocumentMessage sendUpdatedText(ManipulatedText text) {
-        return docService.sendUpdatedText(text);
+        Long docId = 6L;
+        System.out.println(docId);
+        return docService.sendUpdatedText(docId, text);
     }
 
 
@@ -44,7 +49,6 @@ public class DocController {
 
 
     //export document
-
 
 
 }

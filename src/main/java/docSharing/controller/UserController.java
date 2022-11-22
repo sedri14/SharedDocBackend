@@ -81,6 +81,7 @@ public class UserController {
 
 //don't throw an exception here.
     //this should reutrn a string entity.
+    //PathVariables use id
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Void> deleteUser(@RequestParam String email, @RequestHeader String token) throws IOException {
         validateToken(email, token);

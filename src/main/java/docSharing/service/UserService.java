@@ -22,7 +22,8 @@ public class UserService {
     // logger
     private static Logger logger = LogManager.getLogger(AuthController.class.getName());
 
-    public UserService() {}
+    public UserService() {
+    }
 
     public User updateUserName(String email, String name) {
         User user = userRepository.findByEmail(email);
@@ -100,5 +101,7 @@ public class UserService {
         return Optional.empty();
     }
 
-    public List<User> findAll() {return userRepository.findAll();}
+    public List<User> findAll() {
+        return userRepository.findAll();
+    }
 }
