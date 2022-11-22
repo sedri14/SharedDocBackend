@@ -10,6 +10,8 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.stereotype.Controller;
 
+import java.util.List;
+
 @Controller
 public class DocController {
     @Autowired
@@ -17,9 +19,10 @@ public class DocController {
 
     @MessageMapping("/join")
     @SendTo("/topic/usersJoin")
-    public OnlineUser sendNewUserJoinMessage(OnlineUser user) {
+    public List<String> sendNewUserJoinMessage(OnlineUser user) {
+        Long docId = 6L;
         //add userName to the document list viewing users.
-        return user;
+        return docService.addUserToviewingUsers(docId, user.getUserName());
     }
 
 

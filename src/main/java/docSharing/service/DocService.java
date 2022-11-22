@@ -5,6 +5,7 @@ import docSharing.entities.Document;
 import docSharing.entities.UserRole;
 import docSharing.repository.DocRepository;
 import docSharing.test.ManipulatedText;
+import docSharing.test.OnlineUser;
 import docSharing.test.UpdateType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -172,5 +173,19 @@ public class DocService {
 
     private static void updateDocContentByDocId(Long docId, String documentContent) {
         docContentByDocId.put(docId, documentContent);
+    }
+
+    public static List<String> addUserToviewingUsers(Long docId, String userName) {
+
+        if (viewingUser.containsKey(docId)) {
+            viewingUser.get(docId).add(userName);
+        } else {
+            List<String> list = new ArrayList<>();
+            list.add(userName);
+            viewingUser.put(docId, list);
+        }
+        System.out.println(viewingUser.get(docId));
+        return viewingUser.get(docId);
+
     }
 }
