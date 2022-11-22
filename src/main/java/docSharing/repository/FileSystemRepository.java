@@ -19,6 +19,7 @@ public interface FileSystemRepository extends JpaRepository<INode, Long> {
 
 
 //    @Query(nativeQuery = true,
-//            value = "select * from fs_inodes")
-//    List<INode> retrieveInodesInLevel();
+//            value = "")
+//    List<INode> delete(@Param("id") Long id);
 }
+

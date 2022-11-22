@@ -76,6 +76,11 @@ public class FileSystemService {
 
         return fsRepository.save(inodeToMove);
     }
+
+//    public INode delete(Long id) {
+//         fsRepository.delete(id);
+//         return null;
+//    }
 }
 
 

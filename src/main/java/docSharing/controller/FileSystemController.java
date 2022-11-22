@@ -1,15 +1,13 @@
 package docSharing.controller;
 
-import docSharing.DTO.DirNavigateDTO;
+import docSharing.DTO.INodeDTO;
 import docSharing.DTO.AddINodeDTO;
 import docSharing.DTO.MoveINodeDTO;
 import docSharing.entities.INode;
 import docSharing.service.FileSystemService;
-import docSharing.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.w3c.dom.Node;
 
 import java.util.List;
 
@@ -28,12 +26,12 @@ public class FileSystemController {
         return ResponseEntity.ok(fsService.addInode(addINodeDTO));
     }
     @RequestMapping(value = "/level", method = RequestMethod.POST)
-    public ResponseEntity<List<INode>> getChildren(@RequestBody DirNavigateDTO dirNavigate, @RequestHeader("token") String token){
+    public ResponseEntity<List<INode>> getChildren(@RequestBody INodeDTO inodeDTO, @RequestHeader("token") String token){
         //validate parameters (legal id)
 
         //validate token (dirNavigate.token)
 
-        return ResponseEntity.ok(fsService.getInodesInLevel(dirNavigate.parentId));
+        return ResponseEntity.ok(fsService.getInodesInLevel(inodeDTO.id));
     }
 
     @RequestMapping(value = "/move", method = RequestMethod.POST)
@@ -41,8 +39,18 @@ public class FileSystemController {
         //validate parameters: inodeId exists, targetInode exists and of type DIR, check that i am owener of inodeId.
         //validate token (token)
 
+
         return ResponseEntity.ok(fsService.move(moveINode.inodeId, moveINode.targetInodeId));
     }
+
+    //TODO: delete doesnt work (recursive sql query is ready but there is a problem with the fk)
+//    @RequestMapping(value = "/delete", method = RequestMethod.POST)
+//    public ResponseEntity<INode> delete(@RequestBody INodeDTO inodeDTO, @RequestHeader("token") String token){
+//        //validate parameters: inodeId exists, validate user can delete.
+//        //validate token (token)
+//
+//        return ResponseEntity.ok(fsService.delete(inodeDTO.id));
+//    }
 
     @RequestMapping(value = "/all", method = RequestMethod.GET)
     public ResponseEntity<List<INode>> findAll(){
