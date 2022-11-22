@@ -1,15 +1,16 @@
 package docSharing.service;
 
 import docSharing.DTO.ReturnDocumentMessage;
+import docSharing.Utils.SaveToDBTimer;
 import docSharing.entities.Document;
 import docSharing.entities.UserRole;
+import docSharing.repository.DocRepository;
 import docSharing.test.ManipulatedText;
 import docSharing.test.UpdateType;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class DocService {
@@ -21,16 +22,23 @@ public class DocService {
      * */
 
     /*we need another table for document permission
-    * DocumentId
-    * Visibility permission "public, private"
-    * ownerId
-    * */
+     * DocumentId
+     * Visibility permission "public, private"
+     * ownerId
+     * */
+    @Autowired
+    private DocRepository docRepository;
 
     public static String res = "";
     //init document content hashMap()
     //init document viewing user hashMap().
-    static Map<Integer, String> documentContent = new HashMap<>();
-    static Map<Integer, List<String>> viewingUser = new HashMap<>();
+    static Map<Long, String> docContentByDocId = new HashMap<>();
+    static Map<Long, List<String>> viewingUser = new HashMap<>();
+
+    public DocService() {
+        Timer timer = new Timer();
+        timer.schedule(new SaveToDBTimer(docContentByDocId), 0, 5000);
+    }
 
     //buffer.
     public static boolean checkIfUserHasAccesToDoc(int DocumentId, int UserId) {
@@ -58,7 +66,7 @@ public class DocService {
         //insert to the viewingUsers list.
     }
 
-    public static void changeUserRollInDoc( String ownerUser, String user, UserRole userRole) {
+    public static void changeUserRollInDoc(String ownerUser, String user, UserRole userRole) {
 
         //check if user is the owner of the document
         // update permission table for the user
@@ -89,7 +97,9 @@ public class DocService {
             res = deleteRangeTextFromDoc(text);
 
         }
+
         System.out.println(res);
+        //TODO update the hashMap of the document content.
         return new ReturnDocumentMessage(text.getUser(), res);
     }
 
@@ -109,4 +119,13 @@ public class DocService {
         return res.substring(0, text.getStartPosition() + 1) + res.substring(text.getEndPosition() + 1);
     }
 
+    public void saveContentToDB(Long docId, String documentContent) {
+        Document doc = docRepository.findById(docId).get();
+        doc.setContent(documentContent);
+        docRepository.save(doc);
+    }
+
+    private static void updateDocContentByDocId(Long docId, String documentContent) {
+        docContentByDocId.put(docId, documentContent);
+    }
 }

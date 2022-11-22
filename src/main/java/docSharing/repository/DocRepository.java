@@ -1,6 +1,14 @@
 package docSharing.repository;
 
-public interface DocRepository {
+import docSharing.entities.Document;
+import docSharing.entities.INode;
+import docSharing.entities.User;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+
+@Repository
+public interface DocRepository extends JpaRepository<Document, Long> {
 
 //    create new document
 //    {
