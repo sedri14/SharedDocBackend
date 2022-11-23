@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
+import javax.transaction.Transactional;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -82,9 +83,9 @@ public class FileSystemService {
         return inode.getType() == INodeType.DIR;
     }
 
-    public INode delete(Long id) {
-         fsRepository.delete(id);
-         return null;
+
+    public List<INode> removeById(Long id) {
+        return fsRepository.removeById(id);
     }
 }
 

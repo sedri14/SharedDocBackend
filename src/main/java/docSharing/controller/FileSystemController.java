@@ -49,12 +49,12 @@ public class FileSystemController {
     }
 
     //TODO: delete doesnt work (recursive sql query is ready but there is a problem with the fk)
-    @RequestMapping(value = "/delete", method = RequestMethod.POST)
-    public ResponseEntity<INode> delete(@RequestBody INodeDTO inodeDTO, @RequestHeader("token") String token){
+    @RequestMapping(value = "/delete", method = RequestMethod.DELETE)
+    public ResponseEntity<List<INode>> delete(@RequestBody INodeDTO inodeDTO, @RequestHeader("token") String token){
         //validate parameters: inodeId exists, validate user is owner
         //validate token (token)
 
-        return ResponseEntity.ok(fsService.delete(inodeDTO.id));
+        return ResponseEntity.ok(fsService.removeById(inodeDTO.id));
     }
 
     @RequestMapping(value = "/all", method = RequestMethod.GET)
