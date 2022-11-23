@@ -96,4 +96,15 @@ public class FileSystemService {
 
         return fsRepository.save(inode);
     }
+
+    public boolean isExist(Long inodeId) {
+        return fsRepository.existsById(inodeId);
+    }
+
+    //TODO (ideas: like remove, find by )
+    public boolean isHierarchicallyLegalMove(Long sourceId, Long targetId) {
+        INode iNode = fsRepository.findById(sourceId).get();
+        return true;
+
+    }
 }

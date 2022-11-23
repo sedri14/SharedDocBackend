@@ -48,13 +48,25 @@ public class FileSystemController {
     }
 
     @RequestMapping(value = "/move", method = RequestMethod.POST)
-    public ResponseEntity<INode> move(@RequestBody MoveINodeDTO moveINode, @RequestHeader("token") String token) {
-        //validate parameters: inodeId exists, targetInode exists and of type DIR, check that i am owener of inodeId.
+    public ResponseEntity<INode> move(@RequestBody MoveINodeDTO moveINodeDTO, @RequestHeader("token") String token) {
         //validate: check target folder is not child of source folder.
         //validate token (token)
+        Long sourceId = moveINodeDTO.sourceId;
+        Long targetId = moveINodeDTO.targetId;
 
+        if (!fsService.isExist(sourceId) || !fsService.isExist(targetId)) {
+            //can't find files to move.
+        }
 
-        return ResponseEntity.ok(fsService.move(moveINode.inodeId, moveINode.targetInodeId));
+        if (!fsService.isDir(targetId)) {
+            //destination to move must be a directory.
+        }
+
+        if (!fsService.isHierarchicallyLegalMove(sourceId, targetId)) {
+            //can't move an ancestor directory to one of its descendants
+        }
+
+        return ResponseEntity.ok(fsService.move(sourceId, targetId));
     }
 
     //TODO: delete doesnt work (recursive sql query is ready but there is a problem with the fk)
