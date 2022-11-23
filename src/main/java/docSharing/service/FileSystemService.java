@@ -26,7 +26,7 @@ public class FileSystemService {
     public List<INode> getInodesInLevel(Long id) {
         //validation
 
-        return fsRepository.retrieveInodesInLevel(id);
+        return fsRepository.findByParentId(id);
     }
 
     public List<INode> findAll(){
@@ -77,10 +77,15 @@ public class FileSystemService {
         return fsRepository.save(inodeToMove);
     }
 
-//    public INode delete(Long id) {
-//         fsRepository.delete(id);
-//         return null;
-//    }
+    public boolean isDir(Long parentId) {
+        INode inode = fsRepository.findById(parentId).get();
+        return inode.getType() == INodeType.DIR;
+    }
+
+    public INode delete(Long id) {
+         fsRepository.delete(id);
+         return null;
+    }
 }
 
 

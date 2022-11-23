@@ -4,6 +4,7 @@ import docSharing.DTO.INodeDTO;
 import docSharing.DTO.AddINodeDTO;
 import docSharing.DTO.MoveINodeDTO;
 import docSharing.entities.INode;
+import docSharing.service.AuthService;
 import docSharing.service.FileSystemService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -19,9 +20,12 @@ public class FileSystemController {
     @Autowired
     private FileSystemService fsService;
 
+    @Autowired
+    private AuthService authService;
+
     @RequestMapping(value = "/add", method = RequestMethod.POST)
     public ResponseEntity<INode> addInode(@RequestBody AddINodeDTO addINodeDTO, @RequestHeader String token) {
-        //validation
+
 
         return ResponseEntity.ok(fsService.addInode(addINodeDTO));
     }
@@ -35,8 +39,9 @@ public class FileSystemController {
     }
 
     @RequestMapping(value = "/move", method = RequestMethod.POST)
-    public ResponseEntity<INode> move(@RequestBody MoveINodeDTO moveINode, @RequestHeader("token") String token){
+    public ResponseEntity<INode> move(@RequestBody MoveINodeDTO moveINode, @RequestHeader("token") String token) {
         //validate parameters: inodeId exists, targetInode exists and of type DIR, check that i am owener of inodeId.
+        //validate: check target folder is not child of source folder.
         //validate token (token)
 
 
@@ -44,13 +49,13 @@ public class FileSystemController {
     }
 
     //TODO: delete doesnt work (recursive sql query is ready but there is a problem with the fk)
-//    @RequestMapping(value = "/delete", method = RequestMethod.POST)
-//    public ResponseEntity<INode> delete(@RequestBody INodeDTO inodeDTO, @RequestHeader("token") String token){
-//        //validate parameters: inodeId exists, validate user can delete.
-//        //validate token (token)
-//
-//        return ResponseEntity.ok(fsService.delete(inodeDTO.id));
-//    }
+    @RequestMapping(value = "/delete", method = RequestMethod.POST)
+    public ResponseEntity<INode> delete(@RequestBody INodeDTO inodeDTO, @RequestHeader("token") String token){
+        //validate parameters: inodeId exists, validate user is owner
+        //validate token (token)
+
+        return ResponseEntity.ok(fsService.delete(inodeDTO.id));
+    }
 
     @RequestMapping(value = "/all", method = RequestMethod.GET)
     public ResponseEntity<List<INode>> findAll(){

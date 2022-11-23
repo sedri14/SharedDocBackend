@@ -24,10 +24,10 @@ public class INode implements Serializable {
     @Column(name = "creation_date")
     protected LocalDate creationDate;
     @JsonIgnore
-    @OneToMany(mappedBy = "parent", cascade = CascadeType.REMOVE)
+    @OneToMany(mappedBy = "parent" , cascade = CascadeType.ALL)
     protected Set<INode> children;
     @JsonIgnore
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     @JoinColumn(name = "parent_id", referencedColumnName = "id")
     protected INode parent;
 
