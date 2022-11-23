@@ -42,6 +42,7 @@ public class FileSystemService {
         } catch (EntityNotFoundException e){
             throw new IllegalArgumentException("INode does not exist");
         }
+
         return inode;
     }
 
@@ -80,6 +81,7 @@ public class FileSystemService {
 
     public boolean isDir(Long parentId) {
         INode inode = fsRepository.findById(parentId).get();
+
         return inode.getType() == INodeType.DIR;
     }
 
@@ -87,16 +89,11 @@ public class FileSystemService {
     public List<INode> removeById(Long id) {
         return fsRepository.removeById(id);
     }
+
+    public INode renameInode(Long id, String name) {
+        INode inode = fsRepository.findById(id).get();
+        inode.setName(name);
+
+        return fsRepository.save(inode);
+    }
 }
-
-
-//    public User updateUserName(String email, String name) {
-//        User user = userRepository.findByEmail(email);
-//
-//        if (user != null) {
-//            user.setName(name);
-//            return userRepository.save(user);
-//        } else {
-//            throw new IllegalArgumentException(String.format("Email address: %s does not exist", email));
-//        }
-//    }

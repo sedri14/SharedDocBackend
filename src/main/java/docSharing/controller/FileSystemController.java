@@ -3,6 +3,7 @@ package docSharing.controller;
 import docSharing.DTO.INodeDTO;
 import docSharing.DTO.AddINodeDTO;
 import docSharing.DTO.MoveINodeDTO;
+import docSharing.DTO.RenameINodeDTO;
 import docSharing.entities.INode;
 import docSharing.service.AuthService;
 import docSharing.service.FileSystemService;
@@ -29,6 +30,14 @@ public class FileSystemController {
 
         return ResponseEntity.ok(fsService.addInode(addINodeDTO));
     }
+
+    @RequestMapping(value = "/rename", method = RequestMethod.PATCH)
+    public ResponseEntity<INode> rename(@RequestBody RenameINodeDTO renameINodeDTO, @RequestHeader String token) {
+        //validations
+
+        return ResponseEntity.ok(fsService.renameInode(renameINodeDTO.id, renameINodeDTO.name));
+    }
+
     @RequestMapping(value = "/level", method = RequestMethod.POST)
     public ResponseEntity<List<INode>> getChildren(@RequestBody INodeDTO inodeDTO, @RequestHeader("token") String token){
         //validate parameters (legal id)
