@@ -1,9 +1,6 @@
 package docSharing.controller;
 
-import docSharing.DTO.INodeDTO;
-import docSharing.DTO.AddINodeDTO;
-import docSharing.DTO.MoveINodeDTO;
-import docSharing.DTO.RenameINodeDTO;
+import docSharing.DTO.*;
 import docSharing.entities.INode;
 import docSharing.service.AuthService;
 import docSharing.service.FileSystemService;
@@ -69,7 +66,6 @@ public class FileSystemController {
         return ResponseEntity.ok(fsService.move(sourceId, targetId));
     }
 
-    //TODO: delete doesnt work (recursive sql query is ready but there is a problem with the fk)
     @RequestMapping(value = "/delete", method = RequestMethod.DELETE)
     public ResponseEntity<List<INode>> delete(@RequestBody INodeDTO inodeDTO, @RequestHeader("token") String token){
         //validate parameters: inodeId exists, validate user is owner
@@ -84,6 +80,24 @@ public class FileSystemController {
         System.out.println(all); //this is ok
         return ResponseEntity.ok(all);
     }
+
+    @RequestMapping(value = "/upload", method = RequestMethod.POST)
+    public ResponseEntity<INode> upload(@RequestBody ImportDTO importDTO, @RequestHeader("token") String token) {
+
+        //get parameterS:
+        Long inodeId = importDTO.inodeId;
+        String fileName = "";
+        //file = file;
+
+        //validate file extention is .txt
+
+
+
+        return ResponseEntity.ok(fsService.upload(inodeId));
+    }
+
+
+
 
 
 }

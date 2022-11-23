@@ -101,10 +101,17 @@ public class FileSystemService {
         return fsRepository.existsById(inodeId);
     }
 
-    //TODO (ideas: like remove, find by )
+    //TODO: this doesn't work
     public boolean isHierarchicallyLegalMove(Long sourceId, Long targetId) {
         INode iNode = fsRepository.findById(sourceId).get();
         return true;
+
+    }
+
+    public INode upload(Long inodeId) {
+        //Stringify txt file
+
+        return null;
 
     }
 }

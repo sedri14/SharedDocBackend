@@ -18,8 +18,7 @@ public class Document extends INode {
 
     @Column(name = "last_edited")
     private LocalDate lastEdited;
-
-    //TODO: check how to save a very long string.
+    @Lob
     @Column(name = "content")
     private String content;
 
