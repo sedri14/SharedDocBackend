@@ -43,7 +43,7 @@ public class FileSystemController {
     }
 
     @RequestMapping(value = "/level", method = RequestMethod.POST)
-    public ResponseEntity<List<INode>> getChildren(@RequestBody INodeDTO inodeDTO, @RequestHeader("token") String token){
+    public ResponseEntity<List<INode>> getChildren(@RequestBody INodeDTO inodeDTO, @RequestHeader("token") String token) {
         //validate parameters (legal id)
 
         //validate token (dirNavigate.token)
@@ -74,7 +74,7 @@ public class FileSystemController {
     }
 
     @RequestMapping(value = "/delete", method = RequestMethod.DELETE)
-    public ResponseEntity<List<INode>> delete(@RequestBody INodeDTO inodeDTO, @RequestHeader("token") String token){
+    public ResponseEntity<List<INode>> delete(@RequestBody INodeDTO inodeDTO, @RequestHeader("token") String token) {
         //validate parameters: inodeId exists, validate user is owner
         //validate token (token)
 
@@ -82,7 +82,7 @@ public class FileSystemController {
     }
 
     @RequestMapping(value = "/all", method = RequestMethod.GET)
-    public ResponseEntity<List<INode>> findAll(){
+    public ResponseEntity<List<INode>> findAll() {
         List<INode> all = fsService.findAll();
         System.out.println(all); //this is ok
         return ResponseEntity.ok(all);
@@ -100,7 +100,6 @@ public class FileSystemController {
             return ResponseEntity.badRequest().build(); //file type is not supported.
         }
 
-        //String fileName = FilenameUtils.removeExtension(file.getOriginalFilename());
         String content = null;
         try {
             content = new String(file.getBytes());
@@ -108,6 +107,7 @@ public class FileSystemController {
             return ResponseEntity.badRequest().build(); //can not parse file content.
         }
 
-        return ResponseEntity.ok(fsService.uploadFile(file.getOriginalFilename(), content, parentId, userId));
+        return ResponseEntity.ok(fsService.uploadFile(FilenameUtils.removeExtension(file.getOriginalFilename()), content, parentId, userId));
     }
+
 }

@@ -6,15 +6,15 @@ import docSharing.entities.INode;
 import docSharing.entities.INodeType;
 import docSharing.entities.User;
 import docSharing.repository.FileSystemRepository;
+import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
-import javax.print.Doc;
-import javax.transaction.Transactional;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class FileSystemService {
@@ -80,12 +80,14 @@ public class FileSystemService {
         return fsRepository.save(inodeToMove);
     }
 
-    public boolean isDir(Long parentId) {
-        INode inode = fsRepository.findById(parentId).get();
-
+    public boolean isDir(INode inode) {
         return inode.getType() == INodeType.DIR;
     }
 
+    public boolean isDir(Long inodeId) {
+        INode inode = fsRepository.findById(inodeId).get();
+        return inode.getType() == INodeType.DIR;
+    }
 
     public List<INode> removeById(Long id) {
         return fsRepository.removeById(id);
@@ -109,20 +111,28 @@ public class FileSystemService {
 
     }
 
-    public INode upload(Long inodeId) {
-        //Stringify txt file
-
-        return null;
-
-    }
-
     public Document uploadFile(String nameWithExtension, String content, Long parentId, Long userId) {
 
         INode parent = fsRepository.findById(parentId).get();
+        if (!isDir(parent)) {
+            throw new RuntimeException("Files can be imported only to directory");
+        }
+        if (fileNameExistsInDir(parentId, nameWithExtension)) {
+            throw new RuntimeException(String.format("File name %s already exist in this directory", FilenameUtils.removeExtension(nameWithExtension)));
+        }
+
         User owner = userService.getById(userId);
         Document newDoc = Document.createNewImportedDocument(nameWithExtension, content, parent, owner);
         fsRepository.save(newDoc);
 
         return newDoc;
+    }
+
+    //This method checks whether a file name already exists in a specific directory.
+    public boolean fileNameExistsInDir(Long parentId, String fileName) {
+        Set<INode> allFilesInParentInode = fsRepository.findByParentIdAndTypeEquals(parentId, INodeType.FILE);
+        Set<String> names = allFilesInParentInode.stream().map(INode::getName).collect(Collectors.toSet());
+        return names.contains(fileName);
+
     }
 }
