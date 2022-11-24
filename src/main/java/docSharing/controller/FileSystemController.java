@@ -4,11 +4,18 @@ import docSharing.DTO.*;
 import docSharing.entities.INode;
 import docSharing.service.AuthService;
 import docSharing.service.FileSystemService;
+import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import upload.FileWithData;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @CrossOrigin
@@ -81,23 +88,26 @@ public class FileSystemController {
         return ResponseEntity.ok(all);
     }
 
-    @RequestMapping(value = "/upload", method = RequestMethod.POST)
-    public ResponseEntity<INode> upload(@RequestBody ImportDTO importDTO, @RequestHeader("token") String token) {
+    @RequestMapping(value = "/uploadFile", method = RequestMethod.POST)
+    public ResponseEntity<INode> uploadFile(@ModelAttribute FileWithData fileWithData, ModelMap modelMap, @RequestHeader("token") String token) {
 
-        //get parameterS:
-        Long inodeId = importDTO.inodeId;
-        String fileName = "";
-        //file = file;
+        Long parentId = fileWithData.getParentInodeId();
+        Long userId = fileWithData.getUserId();
+        MultipartFile file = fileWithData.getFile();
 
-        //validate file extention is .txt
+        String fileExtension = FilenameUtils.getExtension(file.getOriginalFilename());
+        if (!fileExtension.equals("txt")) {
+            return ResponseEntity.badRequest().build(); //file type is not supported.
+        }
 
+        //String fileName = FilenameUtils.removeExtension(file.getOriginalFilename());
+        String content = null;
+        try {
+            content = new String(file.getBytes());
+        } catch (IOException e) {
+            return ResponseEntity.badRequest().build(); //can not parse file content.
+        }
 
-
-        return ResponseEntity.ok(fsService.upload(inodeId));
+        return ResponseEntity.ok(fsService.uploadFile(file.getOriginalFilename(), content, parentId, userId));
     }
-
-
-
-
-
 }

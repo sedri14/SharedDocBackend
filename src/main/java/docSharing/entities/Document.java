@@ -46,6 +46,10 @@ public class Document extends INode {
         this.content = content;
     }
 
+    public static Document createNewImportedDocument (String nameWithExtension, String content, INode parent, User owner) {
+        return new Document(nameWithExtension, INodeType.FILE, LocalDate.now(),null, parent, owner, LocalDate.now(), content);
+    }
+
     public User getOwner() {
         return owner;
     }

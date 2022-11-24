@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
+import javax.print.Doc;
 import javax.transaction.Transactional;
 import java.time.LocalDate;
 import java.util.List;
@@ -113,5 +114,15 @@ public class FileSystemService {
 
         return null;
 
+    }
+
+    public Document uploadFile(String nameWithExtension, String content, Long parentId, Long userId) {
+
+        INode parent = fsRepository.findById(parentId).get();
+        User owner = userService.getById(userId);
+        Document newDoc = Document.createNewImportedDocument(nameWithExtension, content, parent, owner);
+        fsRepository.save(newDoc);
+
+        return newDoc;
     }
 }
