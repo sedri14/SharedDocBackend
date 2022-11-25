@@ -41,6 +41,16 @@ public class DocController {
         return docService.sendUpdatedText(docId, manipulatedText);
     }
 
+    /**
+     * @param docId document id
+     * @return the content of the document
+     */
+    @RequestMapping(value = "/{docId}", method = RequestMethod.GET)
+    public ResponseEntity<String> getDocument(@PathVariable Long docId) {
+        logger.info("start getDocument function");
+        return ResponseEntity.status(HttpStatus.OK).body(docService.getDocument(docId));
+    }
+
 
 //    @MessageMapping("/join")
 //    @SendTo("/topic/usersJoin")
@@ -51,12 +61,6 @@ public class DocController {
 //        return docService.addUserToViewingUsers(docId, user.getUserName());
 //    }
 
-
-//    @RequestMapping(value = "/{docId}", method = RequestMethod.GET)
-//    public ResponseEntity<String> getDocument(@PathVariable Long docId) {
-//        logger.info("start getDocument function");
-//        return ResponseEntity.status(HttpStatus.OK).body(docService.getDocument(docId));
-//    }
 
 //    @RequestMapping(value = "/changeUserRoll/{docId}")
 //    public ResponseEntity<Boolean> changeUserRollInDoc(@PathVariable Long docId, @RequestBody ChnageRole changeRole) {

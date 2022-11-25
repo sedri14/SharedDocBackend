@@ -32,6 +32,8 @@ public class DocService {
 
     public DocService() {
         logger.info("init Doc Service instance");
+        logger.info("get the document from the DB");
+
     }
 
 
@@ -41,7 +43,6 @@ public class DocService {
      * @return updated document
      */
     public ReturnDocumentMessage sendUpdatedText(Long docId, ManipulatedText manipulatedText) {
-
         logger.info("start sendUpdatedText function");
         logger.info("the client sent" + manipulatedText);
         switch (manipulatedText.getType()) {
@@ -114,41 +115,61 @@ public class DocService {
     }
 
 
-//    /**
-//     * @param documentId doument id
-//     * @return the document content from the repository
-//     */
-//    public String getDocument(Long documentId) {
-//        logger.info("start of getDocument function");
-//        boolean isDocument = docRepository.findById(documentId).isPresent();
+    /**
+     * @param map documents id by content hashMap.
+     */
+    public void saveAllChangesToDB(Map<Long, String> map) {
+        logger.info("start saveChangesToDB function");
+        for (Map.Entry<Long, String> entry : map.entrySet()) {
+            saveOneDocContentToDB(entry.getKey(), entry.getValue());
+        }
+    }
+
+    /**
+     * @param docId           document id
+     * @param documentContent document new content
+     */
+    private void saveOneDocContentToDB(Long docId, String documentContent) {
+        logger.info("start saveOneDocContentToDB function");
+        boolean isDocument = docRepository.findById(docId).isPresent();
+        if (!isDocument) {
+            logger.error("there is no document with this id");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "there is no document with this id");
+        }
+        Document doc = docRepository.findById(docId).get();
+        doc.setContent(documentContent);
+        docRepository.save(doc);
+        logger.info("document is saved");
+
+    }
+
+    /**
+     * @param documentId doument id
+     * @return the document content from the repository
+     */
+    public String getDocument(Long documentId) {
+        logger.info("start of getDocument function");
+        boolean isDocument = docRepository.findById(documentId).isPresent();
+
+        if (!isDocument) {
+            logger.error("there is no document with this id");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "there is no document with this id");
+        }
+
+        Document document = docRepository.findById(documentId).get();
+        String content = document.getContent();
+
+        if (!docContentByDocId.containsKey(documentId)) {
+            docContentByDocId.put(documentId, content);
+        }
+
+        logger.info("the content of the document is " + content);
+        return content;
+
+
+    }
 //
-//        if (!isDocument) {
-//            logger.error("there is no document with this id");
-//            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "there is no document with this id");
-//        }
-//
-//        Document document = docRepository.findById(documentId).get();
-//        String content = document.getContent();
-//
-//        if (!docContentByDocId.containsKey(documentId)) {
-//            docContentByDocId.put(documentId, content);
-//        }
-//
-//        logger.info("the content of the document is " + content);
-//        return content;
-//
-//
-//    }
-//
-//    /**
-//     * @param map documents id by content hashMap.
-//     */
-//    public void saveChangesToDB(Map<Long, String> map) {
-//        logger.info("start saveChangesToDB function");
-//        for (Map.Entry<Long, String> entry : map.entrySet()) {
-//            saveOneDocContentToDB(entry.getKey(), entry.getValue());
-//        }
-//    }
+
 
 //    public boolean changeUserRollInDoc(Long docId, Long ownerId, String changeToEmail, UserRole userRole) {
 //        logger.info("start changeUserRollInDoc function");
@@ -173,24 +194,6 @@ public class DocService {
 //        }
 //        System.out.println(viewingUser.get(docId));
 //        return viewingUser.get(docId);
-//
-//    }
-
-
-//    /**
-//     * @param docId           document id
-//     * @param documentContent document new content
-//     */
-//    public void saveOneDocContentToDB(Long docId, String documentContent) {
-//        logger.info("start saveOneDocContentToDB function");
-//        boolean isDocument = docRepository.findById(docId).isPresent();
-//        if (!isDocument) {
-//            logger.error("there is no document with this id");
-//            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "there is no document with this id");
-//        }
-//        Document doc = docRepository.findById(docId).get();
-//        doc.setContent(documentContent);
-//        docRepository.save(doc);
 //
 //    }
 
