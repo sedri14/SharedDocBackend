@@ -50,6 +50,10 @@ public class Document extends INode {
         return new Document(nameWithExtension, INodeType.FILE, LocalDate.now(),null, parent, owner, LocalDate.now(), content);
     }
 
+    public static Document createNewEmptyDocument (String name, INode parent, User owner) {
+        return new Document(name, INodeType.FILE, LocalDate.now(), null, parent, owner, LocalDate.now(), "");
+    }
+
     public User getOwner() {
         return owner;
     }

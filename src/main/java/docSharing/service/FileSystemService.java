@@ -67,8 +67,7 @@ public class FileSystemService {
             case DIR:
                 newInode = new INode(addInode.name, INodeType.DIR, LocalDate.now(), null, parentInode);
                 break;
-            case FILE:
-                newInode = new Document(addInode.name, INodeType.FILE, LocalDate.now(), null, parentInode, owner, LocalDate.now(), "");
+            case FILE: newInode = Document.createNewEmptyDocument(addInode.name, parentInode, owner);
                 break;
             default:
                 throw new IllegalArgumentException("Illegal Inode type");
