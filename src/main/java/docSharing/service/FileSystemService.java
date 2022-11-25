@@ -52,10 +52,6 @@ public class FileSystemService {
      * @return added inode
      */
     public INode addInode(AddINodeDTO addInode) {
-
-        //validation
-        //check target is type dir.
-
         if (inodeNameExistsInDir(addInode.parentId, addInode.type, addInode.name)) {
             throw new RuntimeException(String.format("Can not add %s, Name %s already exists in this directory.",
                     addInode.type == INodeType.DIR ? "directory" : "file", addInode.name));
@@ -91,9 +87,17 @@ public class FileSystemService {
     public INode move(Long inodeId, Long targetInodeId) {
         INode inodeToMove = fsRepository.getReferenceById(inodeId);
         INode targetINode = fsRepository.getReferenceById(targetInodeId);
+
         if (inodeToMove == null || targetINode == null) {
             throw new RuntimeException("Inode not found");
         }
+
+        INodeType sourceType = inodeToMove.getType();
+        if (inodeNameExistsInDir(targetInodeId, sourceType, inodeToMove.getName())) {
+            throw new RuntimeException(String.format("Can not move %s. the name \"%s\" already exists in target directory.",
+                    sourceType == INodeType.DIR ? "directory" : "file", inodeToMove.getName()));
+        }
+
         inodeToMove.setParent(targetINode);
 
         return fsRepository.save(inodeToMove);
@@ -136,6 +140,11 @@ public class FileSystemService {
      */
     public INode renameInode(Long id, String name) {
         INode inode = fsRepository.findById(id).get();
+        Long parentId = inode.getParent().getId();
+
+        if (fileNameExistsInDir(parentId,name)) {
+            throw new RuntimeException(String.format("File name %s already exist in this directory", name));
+        }
         inode.setName(name);
 
         return fsRepository.save(inode);
@@ -196,7 +205,7 @@ public class FileSystemService {
      * @return true or false
      */
 
-    private boolean inodeNameExistsInDir(Long parentId, INodeType type, String name) {
+    public boolean inodeNameExistsInDir(Long parentId, INodeType type, String name) {
         boolean isNameExists;
         switch (type) {
             case DIR:

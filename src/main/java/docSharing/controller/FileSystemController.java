@@ -2,6 +2,7 @@ package docSharing.controller;
 
 import docSharing.DTO.*;
 import docSharing.entities.INode;
+import docSharing.entities.INodeType;
 import docSharing.service.AuthService;
 import docSharing.service.FileSystemService;
 import org.apache.commons.io.FilenameUtils;
@@ -30,10 +31,11 @@ public class FileSystemController {
 
     /**
      * Adds an inode
+     *
      * @param addINodeDTO - contains: userId - id of owner user
-     *                                parentId - id of parent inode
-     *                                name - inode name
-     *                                type - type of inode (DIR/FILE)
+     *                    parentId - id of parent inode
+     *                    name - inode name
+     *                    type - type of inode (DIR/FILE)
      * @param token
      * @return a new inode
      */
@@ -46,20 +48,21 @@ public class FileSystemController {
 
     /**
      * Renames an inode
+     *
      * @param renameINodeDTO contains: id - inode id
-     *                                 name - inode name
+     *                       name - inode name
      * @param token
      * @return renamed inode
      */
     @RequestMapping(value = "/rename", method = RequestMethod.PATCH)
     public ResponseEntity<INode> rename(@RequestBody RenameINodeDTO renameINodeDTO, @RequestHeader String token) {
-        //validations
 
         return ResponseEntity.ok(fsService.renameInode(renameINodeDTO.id, renameINodeDTO.name));
     }
 
     /**
      * Returns all inodes that are direct descendants of an inode
+     *
      * @param inodeDTO contains: id - inode id
      * @param token
      * @return a list of inodes
@@ -72,8 +75,9 @@ public class FileSystemController {
 
     /**
      * Moves an inode to another inode of type DIR
+     *
      * @param moveINodeDTO contains: sourceId - id of an inode that is going to be moved
-     *                               targetId - id of an inode that is the new parent
+     *                     targetId - id of an inode that is the new parent
      * @param token
      * @return inode with a new parent
      */
@@ -99,6 +103,7 @@ public class FileSystemController {
 
     /**
      * Deletes an inode and all of its descendants
+     *
      * @param inodeDTO contains: id - inode id
      * @param token
      * @return list of inodes deleted
@@ -119,10 +124,9 @@ public class FileSystemController {
 //    }
 
     /**
-     *
      * @param fileWithData contains: parentInodeId - id of parent node
-     *                               userId - id of owner user
-     *                               file
+     *                     userId - id of owner user
+     *                     file
      * @param token
      * @return a new document identical to the uploaded file
      */
