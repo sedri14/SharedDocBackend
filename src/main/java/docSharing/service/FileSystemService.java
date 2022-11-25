@@ -29,6 +29,7 @@ public class FileSystemService {
 
     /**
      * Returns all direct children of an inode
+     *
      * @param id the parent inode id
      * @return A List of children inodes
      */
@@ -65,9 +66,10 @@ public class FileSystemService {
         INode newInode;
         switch (addInode.type) {
             case DIR:
-                newInode = new INode(addInode.name, INodeType.DIR, LocalDate.now(), null, parentInode);
+                newInode = INode.createNewDirectory(addInode.name, parentInode);
                 break;
-            case FILE: newInode = Document.createNewEmptyDocument(addInode.name, parentInode, owner);
+            case FILE:
+                newInode = Document.createNewEmptyDocument(addInode.name, parentInode, owner);
                 break;
             default:
                 throw new IllegalArgumentException("Illegal Inode type");
@@ -79,7 +81,8 @@ public class FileSystemService {
 
     /**
      * Sets inode with targetInodeId to be the parent of inode with inodeId.
-     * @param inodeId - id of the inode to move
+     *
+     * @param inodeId       - id of the inode to move
      * @param targetInodeId - id of the new parent inode
      * @return the moved inode
      */
@@ -104,6 +107,7 @@ public class FileSystemService {
 
     /**
      * Checks if an inode is of type DIR
+     *
      * @param inode
      * @return true of false
      */
@@ -114,6 +118,7 @@ public class FileSystemService {
 
     /**
      * Checks if an inode is of type DIR
+     *
      * @param inodeId - id of an inode
      * @return true of false
      */
@@ -124,6 +129,7 @@ public class FileSystemService {
 
     /**
      * Removes an inode and all its descendants
+     *
      * @param id - inode id
      * @return list of inodes removed
      */
@@ -133,7 +139,8 @@ public class FileSystemService {
 
     /**
      * Sets a new name to an inode
-     * @param id - inode id
+     *
+     * @param id   - inode id
      * @param name - new name
      * @return the renamed inode
      */
@@ -141,7 +148,7 @@ public class FileSystemService {
         INode inode = fsRepository.findById(id).get();
         Long parentId = inode.getParent().getId();
 
-        if (fileNameExistsInDir(parentId,name)) {
+        if (fileNameExistsInDir(parentId, name)) {
             throw new RuntimeException(String.format("File name %s already exist in this directory", name));
         }
         inode.setName(name);
@@ -151,6 +158,7 @@ public class FileSystemService {
 
     /**
      * Checks if there is an inode with inodeId in DB
+     *
      * @param inodeId
      * @return true or false
      */
@@ -160,6 +168,7 @@ public class FileSystemService {
 
     /**
      * Checks if an inode with sourceId is a descendant of inode with targetId
+     *
      * @param sourceId - inode id
      * @param targetId - inode id
      * @return true or false
@@ -172,11 +181,12 @@ public class FileSystemService {
     }
 
     /**
-     *Creates a new inode of type FILE (document)
+     * Creates a new inode of type FILE (document)
+     *
      * @param nameWithExtension - file name
-     * @param content - content of the file
-     * @param parentId - parent node id under which the created document will be assigned
-     * @param userId - id of the owner user
+     * @param content           - content of the file
+     * @param parentId          - parent node id under which the created document will be assigned
+     * @param userId            - id of the owner user
      * @return a new Document inode created from the uploaded .txt file
      */
     public Document uploadFile(String nameWithExtension, String content, Long parentId, Long userId) {
@@ -198,9 +208,10 @@ public class FileSystemService {
 
     /**
      * Checks if there already is an inode of same type (DIR/FILE) with the same name in a specific directory.
+     *
      * @param parentId - the id of the directory
-     * @param type - type of inode
-     * @param name - inode name
+     * @param type     - type of inode
+     * @param name     - inode name
      * @return true or false
      */
 
@@ -222,7 +233,8 @@ public class FileSystemService {
 
 
     /**
-     *Checks if a file name already exists in a specific directory.
+     * Checks if a file name already exists in a specific directory.
+     *
      * @param parentId id of directory
      * @param fileName name of file
      * @return true or false
@@ -235,9 +247,10 @@ public class FileSystemService {
     }
 
     /**
-     *Checks if a directory name already exists in a specific directory.
+     * Checks if a directory name already exists in a specific directory.
+     *
      * @param parentId id of directory
-     * @param dirName name of directory
+     * @param dirName  name of directory
      * @return true or false
      */
     private boolean dirNameExistsInDir(Long parentId, String dirName) {

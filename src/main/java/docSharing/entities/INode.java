@@ -43,6 +43,10 @@ public class INode implements Serializable {
         this.parent = parent;
     }
 
+    public static INode createNewDirectory(String name, INode parent) {
+        return new INode(name, INodeType.DIR, LocalDate.now(), null, parent);
+    }
+
     public Long getId() {
         return id;
     }
