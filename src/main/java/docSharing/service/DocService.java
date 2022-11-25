@@ -2,6 +2,8 @@ package docSharing.service;
 
 import docSharing.DTO.ReturnDocumentMessage;
 import docSharing.entities.Document;
+import docSharing.entities.Permission;
+import docSharing.entities.User;
 import docSharing.entities.UserRole;
 import docSharing.repository.DocRepository;
 import docSharing.test.ManipulatedText;
@@ -25,6 +27,8 @@ public class DocService {
     private AuthService authService;
     @Autowired
     private PermissionService permissionService;
+    @Autowired
+    UserService userService;
 
     static Map<Long, String> docContentByDocId = new HashMap<>();
     static Map<Long, List<String>> viewingUser = new HashMap<>();
@@ -196,5 +200,31 @@ public class DocService {
 //        return true;
 //    }
 
+
+
+    public Permission setPermission(Long userId, Long docId, UserRole userRole) {
+        User user = userService.getById(userId);
+        Document doc = docRepository.findById(docId).get();
+
+        Permission p = null;
+        switch (userRole) {
+            case EDITOR: p = Permission.newEditorPermission(user, doc);
+                break;
+            case VIEWER: p =Permission.newViewerPermission(user, doc);
+                break;
+            default: throw new RuntimeException("Role not supported.");
+        }
+        permissionService.setPermission(p);
+
+        return p;
+
+    }
+
+    public Permission getPermission(Long userId, Long docId) {
+        User user = userService.getById(userId);
+        Document doc = docRepository.findById(docId).get();
+
+        return permissionService.getPermission(user, doc);
+    }
 
 }

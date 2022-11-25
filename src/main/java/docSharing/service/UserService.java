@@ -75,13 +75,14 @@ public class UserService {
     }
 
     public User getById(Long id) {
-        User user = null;
-        try {
-            user = userRepository.getReferenceById(id);
-        } catch (EntityNotFoundException e) {
+
+        boolean isPresent = userRepository.findById(id).isPresent();
+
+        if (!isPresent) {
             throw new IllegalArgumentException("User not found");
         }
-        return user;
+
+        return userRepository.findById(id).get();
     }
 
     public Optional<User> updateEnabled(Long id, Boolean enabled) {

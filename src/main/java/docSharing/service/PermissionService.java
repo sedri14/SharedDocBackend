@@ -19,9 +19,17 @@ public class PermissionService {
     public PermissionService() {
     }
 
+    public Permission setPermission(Permission p) {
+        return permissionRepository.save(p);
+    }
+
+    public Permission getPermission(User user, Document doc) {
+        return permissionRepository.findByUserAndDocument(user, doc);
+    }
+
     public boolean isEditor(Long docId, Long userId) {
 //        UserRole userRole = permissionRepository.findByDocIdAndUserId(docId, userId);
-
+//
 //        Permission permission = permissionRepository.findPermissionByDocIdAndUserId(docId, userId);
 //        permissionRepository.findBydoc_id(docId);
 //        System.out.println(permission);
@@ -44,9 +52,12 @@ public class PermissionService {
     public boolean checkIfOwner(Long ownerId) {
         return true;
     }
-    public boolean addPermission(Document doc , User user){
+
+    public boolean addPermission(Document doc, User user) {
         return false;
     }
 
 
 }
+
+

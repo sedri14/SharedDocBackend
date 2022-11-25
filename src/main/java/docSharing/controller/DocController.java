@@ -1,6 +1,8 @@
 package docSharing.controller;
 
+import docSharing.DTO.PermissionDTO;
 import docSharing.DTO.ReturnDocumentMessage;
+import docSharing.entities.Permission;
 import docSharing.service.DocService;
 import docSharing.test.ChnageRole;
 import docSharing.test.OnlineUser;
@@ -61,6 +63,17 @@ public class DocController {
         return docService.addUserToViewingUsers(docId, user.getUserName());
     }
 
+    @RequestMapping(value = "setPerm", method = RequestMethod.POST)
+    public ResponseEntity<Permission> setPermission (@RequestBody PermissionDTO permission) {
+        logger.info("start setPermission function");
+        return ResponseEntity.ok(docService.setPermission(permission.userId, permission.docId, permission.userRole));
+    }
+
+    @RequestMapping(value = "getPerm", method = RequestMethod.POST)
+    public ResponseEntity<Permission> getPermission (@RequestBody PermissionDTO permission) {
+
+        return ResponseEntity.ok(docService.getPermission(permission.userId, permission.docId));
+    }
 
 //    @RequestMapping(value = "/changeUserRoll/{docId}")
 //    public ResponseEntity<Boolean> changeUserRollInDoc(@PathVariable Long docId, @RequestBody ChnageRole changeRole) {
