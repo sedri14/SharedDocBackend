@@ -28,39 +28,42 @@ public class DocController {
 
     private static final Logger logger = LogManager.getLogger(DocController.class.getName());
 
-    @MessageMapping("/join")
-    @SendTo("/topic/usersJoin")
-    public List<String> sendNewUserJoinMessage(OnlineUser user) {
-        logger.info("start sendNewUserJoinMessage function");
-        Long docId = 6L;
-        //add userName to the document list viewing users.
-        return docService.addUserToViewingUsers(docId, user.getUserName());
-    }
+    /**
+     * @param docId           document id
+     * @param manipulatedText the change in the text
+     * @return the changes to all subscribed users
+     */
+    @MessageMapping("/update/{docId}")
+    @SendTo("/topic/updates/{docId}")
+    public ReturnDocumentMessage sendUpdatedText(@DestinationVariable Long docId, ManipulatedText manipulatedText) {
 
-    //@MessageMapping("/update/{docId}")
-//@SendTo("/topic/updates/{docId}") @DestinationVariable Long docId
-    @MessageMapping("/update")
-    @SendTo("/topic/updates")
-    public ReturnDocumentMessage sendUpdatedText(ManipulatedText text) {
         logger.info("start sendUpdatedText function");
-        Long docId = 6L;
-        System.out.println(docId);
-        return docService.sendUpdatedText(docId, text);
+        return docService.sendUpdatedText(docId, manipulatedText);
     }
 
 
-    @RequestMapping(value = "{docId}", method = RequestMethod.GET)
-    public ResponseEntity<String> getDocument(@PathVariable Long docId) {
-        logger.info("start getDocument function");
-        return ResponseEntity.status(HttpStatus.OK).body(docService.getDocument(docId));
-    }
+//    @MessageMapping("/join")
+//    @SendTo("/topic/usersJoin")
+//    public List<String> sendNewUserJoinMessage(OnlineUser user) {
+//        logger.info("start sendNewUserJoinMessage function");
+//        Long docId = 6L;
+//        //add userName to the document list viewing users.
+//        return docService.addUserToViewingUsers(docId, user.getUserName());
+//    }
 
-    @RequestMapping(value = "/changeUserRoll/{docId}")
-    public ResponseEntity<Boolean> changeUserRollInDoc(@PathVariable Long docId, @RequestBody ChnageRole changeRole) {
-        logger.info("start changeUserRollInDoc function");
-        return ResponseEntity.status(HttpStatus.OK).body(docService.changeUserRollInDoc(docId, changeRole.ownerId, changeRole.email, changeRole.userRole));
 
-    }
+//    @RequestMapping(value = "/{docId}", method = RequestMethod.GET)
+//    public ResponseEntity<String> getDocument(@PathVariable Long docId) {
+//        logger.info("start getDocument function");
+//        return ResponseEntity.status(HttpStatus.OK).body(docService.getDocument(docId));
+//    }
+
+//    @RequestMapping(value = "/changeUserRoll/{docId}")
+//    public ResponseEntity<Boolean> changeUserRollInDoc(@PathVariable Long docId, @RequestBody ChnageRole changeRole) {
+//        logger.info("start changeUserRollInDoc function");
+//        return ResponseEntity.status(HttpStatus.OK).body(docService.changeUserRollInDoc(docId, changeRole.ownerId, changeRole.email, changeRole.userRole));
+
+//}
 
 
 //    @RequestMapping(value = "/savecontent/{docId}", method = RequestMethod.POST)
