@@ -28,6 +28,15 @@ public class FileSystemController {
     @Autowired
     private AuthService authService;
 
+    /**
+     * Adds an inode
+     * @param addINodeDTO - contains: userId - id of owner user
+     *                                parentId - id of parent inode
+     *                                name - inode name
+     *                                type - type of inode (DIR/FILE)
+     * @param token
+     * @return a new inode
+     */
     @RequestMapping(value = "/add", method = RequestMethod.POST)
     public ResponseEntity<INode> addInode(@RequestBody AddINodeDTO addINodeDTO, @RequestHeader String token) {
 
@@ -35,6 +44,13 @@ public class FileSystemController {
         return ResponseEntity.ok(fsService.addInode(addINodeDTO));
     }
 
+    /**
+     * Renames an inode
+     * @param renameINodeDTO contains: id - inode id
+     *                                 name - inode name
+     * @param token
+     * @return renamed inode
+     */
     @RequestMapping(value = "/rename", method = RequestMethod.PATCH)
     public ResponseEntity<INode> rename(@RequestBody RenameINodeDTO renameINodeDTO, @RequestHeader String token) {
         //validations
@@ -42,19 +58,27 @@ public class FileSystemController {
         return ResponseEntity.ok(fsService.renameInode(renameINodeDTO.id, renameINodeDTO.name));
     }
 
+    /**
+     * Returns all inodes that are direct descendants of an inode
+     * @param inodeDTO contains: id - inode id
+     * @param token
+     * @return a list of inodes
+     */
     @RequestMapping(value = "/level", method = RequestMethod.POST)
     public ResponseEntity<List<INode>> getChildren(@RequestBody INodeDTO inodeDTO, @RequestHeader("token") String token) {
-        //validate parameters (legal id)
-
-        //validate token (dirNavigate.token)
 
         return ResponseEntity.ok(fsService.getInodesInLevel(inodeDTO.id));
     }
 
+    /**
+     * Moves an inode to another inode of type DIR
+     * @param moveINodeDTO contains: sourceId - id of an inode that is going to be moved
+     *                               targetId - id of an inode that is the new parent
+     * @param token
+     * @return inode with a new parent
+     */
     @RequestMapping(value = "/move", method = RequestMethod.POST)
     public ResponseEntity<INode> move(@RequestBody MoveINodeDTO moveINodeDTO, @RequestHeader("token") String token) {
-        //validate: check target folder is not child of source folder.
-        //validate token (token)
         Long sourceId = moveINodeDTO.sourceId;
         Long targetId = moveINodeDTO.targetId;
 
@@ -73,6 +97,12 @@ public class FileSystemController {
         return ResponseEntity.ok(fsService.move(sourceId, targetId));
     }
 
+    /**
+     * Deletes an inode and all of its descendants
+     * @param inodeDTO contains: id - inode id
+     * @param token
+     * @return list of inodes deleted
+     */
     @RequestMapping(value = "/delete", method = RequestMethod.DELETE)
     public ResponseEntity<List<INode>> delete(@RequestBody INodeDTO inodeDTO, @RequestHeader("token") String token) {
         //validate parameters: inodeId exists, validate user is owner
@@ -88,6 +118,14 @@ public class FileSystemController {
 //        return ResponseEntity.ok(all);
 //    }
 
+    /**
+     *
+     * @param fileWithData contains: parentInodeId - id of parent node
+     *                               userId - id of owner user
+     *                               file
+     * @param token
+     * @return a new document identical to the uploaded file
+     */
     @RequestMapping(value = "/uploadFile", method = RequestMethod.POST)
     public ResponseEntity<INode> uploadFile(@ModelAttribute FileWithData fileWithData, @RequestHeader("token") String token) {
 
