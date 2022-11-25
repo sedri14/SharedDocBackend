@@ -53,14 +53,13 @@ public class DocController {
     }
 
 
-//    @MessageMapping("/join")
-//    @SendTo("/topic/usersJoin")
-//    public List<String> sendNewUserJoinMessage(OnlineUser user) {
-//        logger.info("start sendNewUserJoinMessage function");
-//        Long docId = 6L;
-//        //add userName to the document list viewing users.
-//        return docService.addUserToViewingUsers(docId, user.getUserName());
-//    }
+    @MessageMapping("/join/{docId}")
+    @SendTo("/topic/usersJoin/{docId}")
+    public List<String> sendNewUserJoinMessage(@DestinationVariable Long docId, OnlineUser user) {
+        logger.info("start sendNewUserJoinMessage function");
+
+        return docService.addUserToViewingUsers(docId, user.getUserName());
+    }
 
 
 //    @RequestMapping(value = "/changeUserRoll/{docId}")

@@ -168,7 +168,20 @@ public class DocService {
 
 
     }
-//
+
+    public List<String> addUserToViewingUsers(Long docId, String userName) {
+        logger.info("start addUser To ViewingUsers function");
+        if (viewingUser.containsKey(docId)) {
+            viewingUser.get(docId).add(userName);
+        } else {
+            List<String> list = new ArrayList<>();
+            list.add(userName);
+            viewingUser.put(docId, list);
+        }
+        logger.info("all viewing users are");
+        return viewingUser.get(docId);
+
+    }
 
 
 //    public boolean changeUserRollInDoc(Long docId, Long ownerId, String changeToEmail, UserRole userRole) {
@@ -181,20 +194,6 @@ public class DocService {
 //        }
 //        permissionService.changeUserRollInDoc(docId, 0L, userRole);
 //        return true;
-//    }
-
-//    public List<String> addUserToViewingUsers(Long docId, String userName) {
-//        logger.info("start addUser To ViewingUsers function");
-//        if (viewingUser.containsKey(docId)) {
-//            viewingUser.get(docId).add(userName);
-//        } else {
-//            List<String> list = new ArrayList<>();
-//            list.add(userName);
-//            viewingUser.put(docId, list);
-//        }
-//        System.out.println(viewingUser.get(docId));
-//        return viewingUser.get(docId);
-//
 //    }
 
 
