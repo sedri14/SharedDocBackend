@@ -7,94 +7,98 @@ import docSharing.repository.DocRepository;
 import docSharing.test.ManipulatedText;
 import docSharing.test.OnlineUser;
 import docSharing.test.UpdateType;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
+import javax.print.Doc;
 import java.util.*;
 
 @Service
 public class DocService {
-    //we need a table of user permissions for the documents contains
-    /*
-     * DocumentId
-     * UserId
-     * access permission
-     * */
-
-    /*we need another table for document permission
-     * DocumentId
-     * Visibility permission "public, private"
-     * ownerId
-     * */
     @Autowired
     private DocRepository docRepository;
+    @Autowired
+    private AuthService authService;
+    @Autowired
+    private PermissionService permissionService;
 
-    //init document content hashMap()
-    //init document viewing user hashMap().
     static Map<Long, String> docContentByDocId = new HashMap<>();
     static Map<Long, List<String>> viewingUser = new HashMap<>();
-
-//    private TimerTask updateAllActiveDocsToDB() {
-//    System.out.println("iam here");
-////        for (Map.Entry<Long, String> document : docContentByDocId.entrySet()) {
-////            Long key = document.getKey();
-////            String content = document.getValue();
-////            saveContentToDB(key, content);
-////        }
-//        return null;
-//    }
-
+    private static final Logger logger = LogManager.getLogger(DocService.class.getName());
 
     public DocService() {
+        logger.info("init Doc Service instance");
         docContentByDocId.put(6L, "");
-//        Timer timer = new Timer();
-//        timer.schedule(updateAllActiveDocsToDB(), 0, 5000);
+    }
+
+    /**
+     * @param documentId doument id
+     * @return the document content from the repository
+     */
+    public String getDocument(Long documentId) {
+        logger.info("start of getDocument function");
+        boolean isDocument = docRepository.findById(documentId).isPresent();
+
+        if (!isDocument) {
+            logger.error("there is no document with this id");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "there is no document with this id");
+        }
+
+        Document document = docRepository.findById(documentId).get();
+        String content = document.getContent();
+
+        if (!docContentByDocId.containsKey(documentId)) {
+            docContentByDocId.put(documentId, content);
+        }
+
+        logger.info("the content of the document is " + content);
+        return content;
+
 
     }
 
-    //buffer.
-    public static boolean checkIfUserHasAccesToDoc(int DocumentId, int UserId) {
-        //search the document from the repo
-        //check if the file is public // if yes-> return the true // else No -> check if the user can access it if yes return true. else return false.
+    /**
+     * @param map documents id by content hashMap.
+     */
+    public void saveChangesToDB(Map<Long, String> map) {
+        logger.info("start saveChangesToDB function");
+        for (Map.Entry<Long, String> entry : map.entrySet()) {
+            saveOneDocContentToDB(entry.getKey(), entry.getValue());
+        }
+    }
+
+    public boolean changeUserRollInDoc(Long docId, Long ownerId, String changeToEmail, UserRole userRole) {
+        logger.info("start changeUserRollInDoc function");
+        //TODO: i want these functions
+//        authService.checkIfUser(changeToEmail);
+//        authService.idOfUserByEmail(changeToEmail);
+        if (!permissionService.checkIfOwner(ownerId)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "you are not the owner");
+        }
+        permissionService.changeUserRollInDoc(docId, 0L, userRole);
         return true;
     }
 
-    public static Document getDocument(int DocumentId, int UserId) {
-        //search the document from the repo
-        //return the document, add it to the document content if not exists there.
-        return null;
-    }
-
-    public static boolean insertChangesToDoc() {
-        return true;
-    }
-
-    public static List<String> getViewingUsers() {
-        //return viewingUser list
-        return null;
-    }
-
-    public static void insertViewingUser(String userName) {
-        //insert to the viewingUsers list.
-    }
-
-    public static void changeUserRollInDoc(String ownerUser, String user, UserRole userRole) {
-
-        //check if user is the owner of the document
-        // update permission table for the user
-
-        //refresh the page->
+    public List<String> addUserToViewingUsers(Long docId, String userName) {
+        logger.info("start addUser To ViewingUsers function");
+        if (viewingUser.containsKey(docId)) {
+            viewingUser.get(docId).add(userName);
+        } else {
+            List<String> list = new ArrayList<>();
+            list.add(userName);
+            viewingUser.put(docId, list);
+        }
+        System.out.println(viewingUser.get(docId));
+        return viewingUser.get(docId);
 
     }
 
-    public static List<Integer> getEditingUsersId(int DocumentId) {
-        //go over permission table and group document id, select readWrite permission -> return userIds.
-
-        return null;
-    }
-
-
-    public static ReturnDocumentMessage sendUpdatedText(Long docId, ManipulatedText text) {
+    public ReturnDocumentMessage sendUpdatedText(Long docId, ManipulatedText text) {
+        logger.info("start sendUpdatedText function");
         System.out.println("the client sent" + text);
         if (text.getType() == UpdateType.APPEND) {
             addTextToDoc(docId, text);
@@ -109,45 +113,36 @@ public class DocService {
 
     }
 
-
-//    public static ReturnDocumentMessage sendUpdatedText(Long docId, ManipulatedText text) {
-//        System.out.println(text);
-//
-//        if (text.getType() == UpdateType.APPEND) { //DONE
-//            addTextToDoc(docId, text);
-//        } else if (text.getType() == UpdateType.APPEND_RANGE) { //Not Working
-//            addRangeTextToDoc(docId, text);
-//        } else if (text.getType() == UpdateType.DELETE) { //DONE
-//            if (docContentByDocId.get(docId).length() == 0) {
-//                return new ReturnDocumentMessage(text.getUser(), "");
-//            }
-//            deleteTextFromDoc(docId, text);
-//        } else if (text.getType() == UpdateType.DELETE_RANGE) {//DONE
-//            if (docContentByDocId.get(docId).length() == 0) {
-//                return new ReturnDocumentMessage(text.getUser(), "");
-//            }
-//            deleteRangeTextFromDoc(docId, text);
-//        }
-//        System.out.println(docContentByDocId.get(docId));
-//
-//        return new ReturnDocumentMessage(text.getUser(), docContentByDocId.get(docId));
-//    }
-
+    /**
+     * @param docId
+     * @param text
+     */
     private static void addTextToDoc(Long docId, ManipulatedText text) {
+        logger.info("start addTextToDoc function");
         String docText = docContentByDocId.get(docId);
         String updatedDocText = docText.substring(0, text.getStartPosition()) + text.getContent() + docText.substring(text.getStartPosition());
         docContentByDocId.put(docId, updatedDocText);
 
     }
 
+    /**
+     * @param docId
+     * @param text
+     */
     private static void deleteTextFromDoc(Long docId, ManipulatedText text) {
+        logger.info("start deleteTextFromDoc");
         String docText = docContentByDocId.get(docId);
         String updatedDocText = docText.substring(0, text.getStartPosition()) + docText.substring(text.getStartPosition() + 1);
         System.out.println(updatedDocText);
         docContentByDocId.put(docId, updatedDocText);
     }
 
+    /**
+     * @param docId
+     * @param text
+     */
     private static void addRangeTextToDoc(Long docId, ManipulatedText text) {
+        logger.info("start addRangeTextToDoc");
         String docText = docContentByDocId.get(docId);
         String updatedDocText = docText.substring(0, text.getStartPosition() + 1) + text.getContent() + docText.substring(text.getEndPosition() + 1);
 
@@ -156,36 +151,35 @@ public class DocService {
         docContentByDocId.put(docId, updatedDocText);
     }
 
+    /**
+     * @param docId document id
+     * @param text  the chagne
+     */
     private static void deleteRangeTextFromDoc(Long docId, ManipulatedText text) {
+        logger.info("start deleteRangeTextFromDoc function");
         String docText = docContentByDocId.get(docId);
         String updatedDocText = docText.substring(0, text.getStartPosition() + 1) + docText.substring(text.getEndPosition() + 1);
-
         System.out.println(updatedDocText);
 
         docContentByDocId.put(docId, updatedDocText);
     }
 
-    public void saveContentToDB(Long docId, String documentContent) {
+    /**
+     * @param docId           document id
+     * @param documentContent document new content
+     */
+    public void saveOneDocContentToDB(Long docId, String documentContent) {
+        logger.info("start saveOneDocContentToDB function");
+        boolean isDocument = docRepository.findById(docId).isPresent();
+        if (!isDocument) {
+            logger.error("there is no document with this id");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "there is no document with this id");
+        }
         Document doc = docRepository.findById(docId).get();
         doc.setContent(documentContent);
         docRepository.save(doc);
-    }
-
-    private static void updateDocContentByDocId(Long docId, String documentContent) {
-        docContentByDocId.put(docId, documentContent);
-    }
-
-    public static List<String> addUserToviewingUsers(Long docId, String userName) {
-
-        if (viewingUser.containsKey(docId)) {
-            viewingUser.get(docId).add(userName);
-        } else {
-            List<String> list = new ArrayList<>();
-            list.add(userName);
-            viewingUser.put(docId, list);
-        }
-        System.out.println(viewingUser.get(docId));
-        return viewingUser.get(docId);
 
     }
+
+
 }
