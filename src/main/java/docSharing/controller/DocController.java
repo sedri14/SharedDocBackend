@@ -19,9 +19,10 @@ import org.springframework.web.bind.annotation.*;
 import javax.print.Doc;
 import java.util.List;
 
-@RestController
+
 //@Controller
 @RequestMapping("/doc")
+@RestController
 public class DocController {
     @Autowired
     DocService docService;
