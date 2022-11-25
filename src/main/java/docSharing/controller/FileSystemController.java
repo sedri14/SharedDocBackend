@@ -81,15 +81,15 @@ public class FileSystemController {
         return ResponseEntity.ok(fsService.removeById(inodeDTO.id));
     }
 
-    @RequestMapping(value = "/all", method = RequestMethod.GET)
-    public ResponseEntity<List<INode>> findAll() {
-        List<INode> all = fsService.findAll();
-        System.out.println(all); //this is ok
-        return ResponseEntity.ok(all);
-    }
+//    @RequestMapping(value = "/all", method = RequestMethod.GET)
+//    public ResponseEntity<List<INode>> findAll() {
+//        List<INode> all = fsService.findAll();
+//        System.out.println(all); //this is ok
+//        return ResponseEntity.ok(all);
+//    }
 
     @RequestMapping(value = "/uploadFile", method = RequestMethod.POST)
-    public ResponseEntity<INode> uploadFile(@ModelAttribute FileWithData fileWithData, ModelMap modelMap, @RequestHeader("token") String token) {
+    public ResponseEntity<INode> uploadFile(@ModelAttribute FileWithData fileWithData, @RequestHeader("token") String token) {
 
         Long parentId = fileWithData.getParentInodeId();
         Long userId = fileWithData.getUserId();
