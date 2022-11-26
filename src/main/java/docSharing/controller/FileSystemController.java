@@ -2,21 +2,17 @@ package docSharing.controller;
 
 import docSharing.DTO.*;
 import docSharing.entities.INode;
-import docSharing.entities.INodeType;
 import docSharing.service.AuthService;
 import docSharing.service.FileSystemService;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import upload.FileWithData;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @CrossOrigin
@@ -25,9 +21,6 @@ public class FileSystemController {
 
     @Autowired
     private FileSystemService fsService;
-
-    @Autowired
-    private AuthService authService;
 
     /**
      * Adds an inode
@@ -40,9 +33,10 @@ public class FileSystemController {
      * @return a new inode
      */
     @RequestMapping(value = "/add", method = RequestMethod.POST)
-    public ResponseEntity<INode> addInode(@RequestBody AddINodeDTO addINodeDTO, @RequestHeader String token) {
-
-
+    public ResponseEntity<INode> addInode(@RequestBody AddINodeDTO addINodeDTO) {
+        if (addINodeDTO == null) {
+            throw new IllegalArgumentException("Request unavailable");
+        }
         return ResponseEntity.ok(fsService.addInode(addINodeDTO));
     }
 
@@ -55,7 +49,10 @@ public class FileSystemController {
      * @return renamed inode
      */
     @RequestMapping(value = "/rename", method = RequestMethod.PATCH)
-    public ResponseEntity<INode> rename(@RequestBody RenameINodeDTO renameINodeDTO, @RequestHeader String token) {
+    public ResponseEntity<INode> rename(@RequestBody RenameINodeDTO renameINodeDTO) {
+        if (renameINodeDTO == null || renameINodeDTO.name == null || renameINodeDTO.id == null) {
+            throw new IllegalArgumentException("Request unavailable");
+        }
 
         return ResponseEntity.ok(fsService.renameInode(renameINodeDTO.id, renameINodeDTO.name));
     }
@@ -68,7 +65,10 @@ public class FileSystemController {
      * @return a list of inodes
      */
     @RequestMapping(value = "/level", method = RequestMethod.POST)
-    public ResponseEntity<List<INode>> getChildren(@RequestBody INodeDTO inodeDTO, @RequestHeader("token") String token) {
+    public ResponseEntity<List<INode>> getChildren(@RequestBody INodeDTO inodeDTO) {
+        if (inodeDTO == null || inodeDTO.id == null) {
+            throw new IllegalArgumentException("Request unavailable");
+        }
 
         return ResponseEntity.ok(fsService.getInodesInLevel(inodeDTO.id));
     }
@@ -82,7 +82,12 @@ public class FileSystemController {
      * @return inode with a new parent
      */
     @RequestMapping(value = "/move", method = RequestMethod.POST)
-    public ResponseEntity<INode> move(@RequestBody MoveINodeDTO moveINodeDTO, @RequestHeader("token") String token) {
+    public ResponseEntity<INode> move(@RequestBody MoveINodeDTO moveINodeDTO) {
+
+        if (moveINodeDTO == null || moveINodeDTO.sourceId == null || moveINodeDTO.targetId == null) {
+            throw new IllegalArgumentException("Request unavailable");
+        }
+
         Long sourceId = moveINodeDTO.sourceId;
         Long targetId = moveINodeDTO.targetId;
 
@@ -109,9 +114,10 @@ public class FileSystemController {
      * @return list of inodes deleted
      */
     @RequestMapping(value = "/delete", method = RequestMethod.DELETE)
-    public ResponseEntity<List<INode>> delete(@RequestBody INodeDTO inodeDTO, @RequestHeader("token") String token) {
-        //validate parameters: inodeId exists, validate user is owner
-        //validate token (token)
+    public ResponseEntity<List<INode>> delete(@RequestBody INodeDTO inodeDTO) {
+        if (inodeDTO == null || inodeDTO.id == null) {
+            throw new IllegalArgumentException("Request unavailable");
+        }
 
         return ResponseEntity.ok(fsService.removeById(inodeDTO.id));
     }
@@ -131,11 +137,14 @@ public class FileSystemController {
      * @return a new document identical to the uploaded file
      */
     @RequestMapping(value = "/uploadFile", method = RequestMethod.POST)
-    public ResponseEntity<INode> uploadFile(@ModelAttribute FileWithData fileWithData, @RequestHeader("token") String token) {
+    public ResponseEntity<INode> uploadFile(@ModelAttribute FileWithData fileWithData) {
+        if (fileWithData == null || fileWithData.parentInodeId == null || fileWithData.userId == null || fileWithData.file == null) {
+            throw new IllegalArgumentException("Request unavailable");
+        }
 
-        Long parentId = fileWithData.getParentInodeId();
-        Long userId = fileWithData.getUserId();
-        MultipartFile file = fileWithData.getFile();
+        Long parentId = fileWithData.parentInodeId;
+        Long userId = fileWithData.userId;
+        MultipartFile file = fileWithData.file;
 
         String fileExtension = FilenameUtils.getExtension(file.getOriginalFilename());
         if (!fileExtension.equals("txt")) {
