@@ -29,7 +29,6 @@ public class FileSystemController {
      *                    parentId - id of parent inode
      *                    name - inode name
      *                    type - type of inode (DIR/FILE)
-     * @param token
      * @return a new inode
      */
     @RequestMapping(value = "/add", method = RequestMethod.POST)
@@ -45,7 +44,6 @@ public class FileSystemController {
      *
      * @param renameINodeDTO contains: id - inode id
      *                       name - inode name
-     * @param token
      * @return renamed inode
      */
     @RequestMapping(value = "/rename", method = RequestMethod.PATCH)
@@ -61,7 +59,6 @@ public class FileSystemController {
      * Returns all inodes that are direct descendants of an inode
      *
      * @param inodeDTO contains: id - inode id
-     * @param token
      * @return a list of inodes
      */
     @RequestMapping(value = "/level", method = RequestMethod.POST)
@@ -78,7 +75,6 @@ public class FileSystemController {
      *
      * @param moveINodeDTO contains: sourceId - id of an inode that is going to be moved
      *                     targetId - id of an inode that is the new parent
-     * @param token
      * @return inode with a new parent
      */
     @RequestMapping(value = "/move", method = RequestMethod.POST)
@@ -88,29 +84,13 @@ public class FileSystemController {
             throw new IllegalArgumentException("Request unavailable");
         }
 
-        Long sourceId = moveINodeDTO.sourceId;
-        Long targetId = moveINodeDTO.targetId;
-
-        if (!fsService.isExist(sourceId) || !fsService.isExist(targetId)) {
-            //can't find files to move.
-        }
-
-        if (!fsService.isDir(targetId)) {
-            //destination to move must be a directory.
-        }
-
-        if (!fsService.isHierarchicallyLegalMove(sourceId, targetId)) {
-            //can't move an ancestor directory to one of its descendants
-        }
-
-        return ResponseEntity.ok(fsService.move(sourceId, targetId));
+        return ResponseEntity.ok(fsService.move(moveINodeDTO.sourceId, moveINodeDTO.targetId));
     }
 
     /**
      * Deletes an inode and all of its descendants
      *
      * @param inodeDTO contains: id - inode id
-     * @param token
      * @return list of inodes deleted
      */
     @RequestMapping(value = "/delete", method = RequestMethod.DELETE)
@@ -122,18 +102,10 @@ public class FileSystemController {
         return ResponseEntity.ok(fsService.removeById(inodeDTO.id));
     }
 
-//    @RequestMapping(value = "/all", method = RequestMethod.GET)
-//    public ResponseEntity<List<INode>> findAll() {
-//        List<INode> all = fsService.findAll();
-//        System.out.println(all); //this is ok
-//        return ResponseEntity.ok(all);
-//    }
-
     /**
      * @param fileWithData contains: parentInodeId - id of parent node
      *                     userId - id of owner user
      *                     file
-     * @param token
      * @return a new document identical to the uploaded file
      */
     @RequestMapping(value = "/uploadFile", method = RequestMethod.POST)
@@ -148,14 +120,14 @@ public class FileSystemController {
 
         String fileExtension = FilenameUtils.getExtension(file.getOriginalFilename());
         if (!fileExtension.equals("txt")) {
-            return ResponseEntity.badRequest().build(); //file type is not supported.
+            throw new IllegalArgumentException("File type is not supported");
         }
 
         String content = null;
         try {
             content = new String(file.getBytes());
         } catch (IOException e) {
-            return ResponseEntity.badRequest().build(); //can not parse file content.
+            throw new IllegalArgumentException("Can not parse file content");
         }
 
         return ResponseEntity.ok(fsService.uploadFile(FilenameUtils.removeExtension(file.getOriginalFilename()), content, parentId, userId));

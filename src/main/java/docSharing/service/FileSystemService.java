@@ -82,24 +82,31 @@ public class FileSystemService {
     /**
      * Sets inode with targetInodeId to be the parent of inode with inodeId.
      *
-     * @param inodeId       - id of the inode to move
-     * @param targetInodeId - id of the new parent inode
+     * @param sourceId       - id of the inode to move
+     * @param targetId - id of the new parent inode
      * @return the moved inode
      */
-    public INode move(Long inodeId, Long targetInodeId) {
-        INode inodeToMove = fsRepository.getReferenceById(inodeId);
-        INode targetINode = fsRepository.getReferenceById(targetInodeId);
+    public INode move(Long sourceId, Long targetId) {
+        if (!isDir(targetId)) {
+            throw new IllegalArgumentException("Destination of move must be a directory");
+        }
+
+        if (!isHierarchicallyLegalMove(sourceId, targetId)) {
+            throw new RuntimeException("Can't move an ancestor directory to one of its descendants");
+        }
+
+        INode inodeToMove = fsRepository.getReferenceById(sourceId);
+        INode targetINode = fsRepository.getReferenceById(targetId);
 
         if (inodeToMove == null || targetINode == null) {
             throw new RuntimeException("Inode not found");
         }
 
         INodeType sourceType = inodeToMove.getType();
-        if (inodeNameExistsInDir(targetInodeId, sourceType, inodeToMove.getName())) {
+        if (inodeNameExistsInDir(targetId, sourceType, inodeToMove.getName())) {
             throw new RuntimeException(String.format("Can not move %s. the name \"%s\" already exists in target directory.",
                     sourceType == INodeType.DIR ? "directory" : "file", inodeToMove.getName()));
         }
-
         inodeToMove.setParent(targetINode);
 
         return fsRepository.save(inodeToMove);
