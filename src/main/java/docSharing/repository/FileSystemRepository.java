@@ -1,24 +1,24 @@
 package docSharing.repository;
 
-import docSharing.DTO.AddINodeDTO;
 import docSharing.entities.INode;
+import docSharing.entities.INodeType;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
+import javax.transaction.Transactional;
 import java.util.List;
+import java.util.Set;
 
+@Repository
 public interface FileSystemRepository extends JpaRepository<INode, Long> {
 
+   List<INode> findByParentId(Long parentId);
 
-    @Query(nativeQuery = true,
-            value = "select *, 0 AS clazz_ " +
-                    "from fs_inodes " +
-                    "where parent_id =:parentId")
-    List<INode> retrieveInodesInLevel(@Param("parentId") Long parentId);
+    @Transactional
+    List<INode> removeById(Long id);
+
+    Set<INode> findByParentIdAndTypeEquals(Long parentId, INodeType type);
 
 
-//    @Query(nativeQuery = true,
-//            value = "select * from fs_inodes")
-//    List<INode> retrieveInodesInLevel();
 }
+
