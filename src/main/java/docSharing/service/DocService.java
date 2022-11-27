@@ -201,18 +201,20 @@ public class DocService {
 //    }
 
 
-
     public Permission setPermission(Long userId, Long docId, UserRole userRole) {
         User user = userService.getById(userId);
         Document doc = docRepository.findById(docId).get();
 
         Permission p = null;
         switch (userRole) {
-            case EDITOR: p = Permission.newEditorPermission(user, doc);
+            case EDITOR:
+                p = Permission.newEditorPermission(user, doc);
                 break;
-            case VIEWER: p =Permission.newViewerPermission(user, doc);
+            case VIEWER:
+                p = Permission.newViewerPermission(user, doc);
                 break;
-            default: throw new RuntimeException("Role not supported.");
+            default:
+                throw new RuntimeException("Role not supported.");
         }
         permissionService.setPermission(p);
 
@@ -225,6 +227,18 @@ public class DocService {
         Document doc = docRepository.findById(docId).get();
 
         return permissionService.getPermission(user, doc);
+    }
+
+    public Long getOwner(Long docId) {
+
+        boolean isDocument = docRepository.findById(docId).isPresent();
+        if (!isDocument) {
+            logger.error("there is no document with this id");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "there is no document with this id");
+        }
+        Document doc = docRepository.findById(docId).get();
+        return doc.getOwner().getId();
+
     }
 
 }
