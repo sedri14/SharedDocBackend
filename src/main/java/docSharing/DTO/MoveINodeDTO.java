@@ -2,7 +2,8 @@ package docSharing.DTO;
 
 public class MoveINodeDTO {
 
-    public Long inodeId;
-    public Long targetInodeId;
+    public Long userId;
+    public Long sourceId;
+    public Long targetId;
 
 }
