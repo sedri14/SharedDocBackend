@@ -8,24 +8,18 @@ import docSharing.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.context.request.WebRequest;
 
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @CrossOrigin
 @RequestMapping("/user")
 public class UserController {
-
     @Autowired
     private UserService userService;
-
     @Autowired
     private AuthService authService;
 
@@ -52,16 +46,7 @@ public class UserController {
     }
 
 
-//    @RequestMapping(value = "/email", method = RequestMethod.PATCH)
-//    public ResponseEntity<User> updateUserEmail(@RequestBody UserDTO user, @RequestHeader String token)  {
-//        if (!Validation.isValidEmail(user.getEmail())) {return ResponseEntity.badRequest().build();}
-//        try {
-//            validateToken(user.getEmail(), token);
-//        } catch (IOException e) {
-//            ResponseEntity.badRequest(); //TODO: check how to wrap it with responser entity with user
-//        }
-//        return ResponseEntity.status(HttpStatus.OK).body(userService.updateUserEmail(user.id, user.getEmail()));
-//    }
+
 
 
     @RequestMapping(value = "/password", method = RequestMethod.PATCH)
@@ -75,11 +60,11 @@ public class UserController {
 
 
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<Void> deleteUser(@RequestParam String email, @RequestHeader String token) throws IOException {
-        validateToken(email, token);
-        userService.deleteUser(email);
+    public ResponseEntity<String> deleteUser(@RequestBody UserDTO user, @PathVariable String id, @RequestHeader String token) throws IOException {
+        validateToken(user.getEmail(), token);
+        userService.deleteUser(user.getEmail());
 
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.status(HttpStatus.OK).body("User deleted");
     }
 
 

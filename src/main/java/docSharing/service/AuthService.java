@@ -1,8 +1,9 @@
 package docSharing.service;
 
+import EmailActivation.OnRegistrationCompleteEvent;
 import com.google.gson.Gson;
+import docSharing.LoginResponse;
 import docSharing.UserDTO.UserDTO;
-import docSharing.emailActivation.OnRegistrationCompleteEvent;
 import docSharing.entities.User;
 
 import docSharing.entities.VerificationToken;
@@ -12,6 +13,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -33,6 +35,9 @@ public class AuthService {
     @Autowired
     ApplicationEventPublisher eventPublisher;
 
+//    @Autowired
+//    RegistrationListener listener;
+
     private static final Logger logger = LogManager.getLogger(AuthService.class.getName());
 
     private static final int SCHEDULE = 1000 * 60 * 60;
@@ -49,11 +54,15 @@ public class AuthService {
 
     public AuthService() {}
 
+    // if (userRepository.findByEmail(user.getEmail()) ==null)
     public User createUser(UserDTO user) throws SQLDataException {
         logger.info("in createUser");
-       if (userRepository.findByEmail(user.getEmail())== null)
-           return userRepository.save(createUserFactory(user.getName(), user.getEmail(), user.getPassword()));
-       else throw new SQLDataException(String.format("Email %s exists in users table", user.getEmail()));
+        if (!isExistingEmail(user.getEmail()))
+        {
+            System.out.println("Service- save user into DB");
+             return userRepository.save(createUserFactory(user.getName(), user.getEmail(), user.getPassword()));
+}      else  throw new SQLDataException(String.format("Email %s exists in users table", user.getEmail()));
+
     }
 
 
@@ -70,17 +79,22 @@ public class AuthService {
     }
 
 
-    public Optional<String> login(UserDTO user) {
+    public LoginResponse login(UserDTO user) {
         logger.info("in login");
-        User userByEmail = userRepository.findByEmail(user.getEmail());
-        if (userByEmail == null) {return Optional.empty();}
 
-        if (userByEmail.getPassword().equals(user.getPassword())) {
-            Optional<String> token = Optional.of(generateToken()) ;
-            mapUserTokens.put(userByEmail, token.get());
-            return token;
+        User userByEmail = userRepository.findByEmail(user.getEmail());
+        if (userByEmail == null) //User doesn't exist
+            return LoginResponse.createLoginResponse(null,true, LoginResponse.loginEnum.EMAIL_NOT_EXIST);
+        if (!isEnabledUser(user))
+            return LoginResponse.createLoginResponse(null,true, LoginResponse.loginEnum.CONFIRM_EMAIL);
+        if (!userByEmail.getPassword().equals(user.getPassword()))  //User exist check password
+            return LoginResponse.createLoginResponse(null,true, LoginResponse.loginEnum.INVALID_PASSWORD);
+        else
+        {
+            String token = generateToken();
+            mapUserTokens.put(userByEmail, token);
+            return LoginResponse.createLoginResponse(token,false, LoginResponse.loginEnum.CORRECT );
         }
-        return Optional.empty();
     }
 
     public boolean isEnabledUser(UserDTO user) {
@@ -161,8 +175,6 @@ public class AuthService {
     public void saveRegisteredUser(User user) {
         userRepository.save(user);
     }
-
-
 
 
 
