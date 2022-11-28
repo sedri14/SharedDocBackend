@@ -29,6 +29,7 @@ import java.util.Optional;
 @CrossOrigin
 @RequestMapping("/auth")
 public class AuthController {
+    //we should make 2 tests for each function
     @Autowired
     private AuthService authService;
 
@@ -40,6 +41,16 @@ public class AuthController {
 
     public AuthController() {}
 
+    //make these error check in other utils class.
+
+    //here we should check if the user is null
+    //check if the user.get.getEmail is null
+    //check if user.getemail() is null
+    //check if change user.getEmail() to-> user.getName()
+    //same for password
+    //put a log in the exception
+    //what is HttpServletRequest?
+    //
     @RequestMapping(value = "register", method = RequestMethod.POST)
     public ResponseEntity<String> createUser(@RequestBody UserDTO user, HttpServletRequest request) {
         if (!Validation.isValidEmail(user.getEmail()) || user.getEmail()==null) {
@@ -65,14 +76,19 @@ public class AuthController {
         }
     }
 
+    //here we should convert the RequestParams to -> request body
+    //here we should check if the user is null and if newEmail is null
+
     @RequestMapping(value = "token", method = RequestMethod.PATCH)
     public ResponseEntity<String> updateTokenEmailKey (@RequestBody UserDTO user, @RequestParam String newEmail)
     {
         return ResponseEntity.status(HttpStatus.OK).body(gson.toJson(authService.updateTokenEmailKey(user ,newEmail)));
     }
 
+    //check validation in a good way
+    //add logger
 
-    @RequestMapping(value = "login", method = RequestMethod.POST)//
+    @RequestMapping(value = "login", method = RequestMethod.POST)
     public ResponseEntity<String> logIn(@RequestBody UserDTO user) {
 
        logger.info("in login");
@@ -91,9 +107,13 @@ public class AuthController {
         if (!token.isPresent()){
             return ResponseEntity.badRequest().body("Wrong email or password..");
         }
-
+    //here you should return a token and not the new login.
         return ResponseEntity.status(HttpStatus.OK).body(gson.toJson(authService.login(user)));
     }
+
+    //make the validation in an util class.
+    // check if token is null
+    //add logger
 
     @GetMapping("/registrationConfirm")
     public String confirmRegistration(WebRequest request, @RequestParam("token") String token) {
@@ -106,7 +126,9 @@ public class AuthController {
         }
 
         User user = verificationToken.getUser();
+        //why you didn't do auto wire?
         Calendar cal = Calendar.getInstance();
+        //make this if prettier.
         if ((verificationToken.getExpiryDate().getTime() - cal.getTime().getTime()) <= 0) {
             return "redirect:/badUser.html?lang=" + locale.getLanguage();
         }

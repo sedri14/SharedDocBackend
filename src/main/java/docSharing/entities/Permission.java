@@ -18,9 +18,11 @@ public class Permission {
     @JoinColumn(name = "doc_id")
     private Document document;
 
+    @Enumerated(EnumType.STRING)
     private UserRole userRole;
 
-    Permission(){
+
+    Permission() {
 
     }
 
@@ -60,11 +62,35 @@ public class Permission {
         return user;
     }
 
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public void setDocument(Document document) {
+        this.document = document;
+    }
+
     public Document getDocument() {
         return document;
     }
 
     public UserRole getUserRole() {
         return userRole;
+    }
+
+    public void setUserRole(UserRole userRole) {
+        this.userRole = userRole;
+    }
+
+    public static Permission newEditorPermission(User user, Document doc) {
+        return new Permission(user, doc, UserRole.EDITOR);
+    }
+
+    public static Permission newViewerPermission(User user, Document doc) {
+        return new Permission(user, doc, UserRole.VIEWER);
     }
 }
