@@ -64,7 +64,9 @@ public class DocService {
                 break;
         }
         ReturnDocumentMessage returnDocumentMessage = new ReturnDocumentMessage(manipulatedText.getUser(), docContentByDocId.get(docId), manipulatedText.getStartPosition(), manipulatedText.getEndPosition(), manipulatedText.getType());
+//        logService.addToLog(docId, manipulatedText);
         logger.info("all subscribed users gets" + returnDocumentMessage);
+
         return returnDocumentMessage;
 
     }
@@ -76,6 +78,8 @@ public class DocService {
     private static void addTextToDoc(Long docId, ManipulatedText text) {
         logger.info("start addTextToDoc function");
         String docText = docContentByDocId.get(docId);
+        logger.info("doc id is" + docId);
+        logger.info("ManipulatedText " + text);
         String updatedDocText = docText.substring(0, text.getStartPosition()) + text.getContent() + docText.substring(text.getStartPosition());
         docContentByDocId.put(docId, updatedDocText);
 
@@ -151,7 +155,7 @@ public class DocService {
      * @param documentId doument id
      * @return the document content from the repository
      */
-    public String getDocument(Long documentId) {
+    public Document getDocument(Long documentId) {
         logger.info("start of getDocument function");
         boolean isDocument = docRepository.findById(documentId).isPresent();
 
@@ -166,9 +170,10 @@ public class DocService {
         if (!docContentByDocId.containsKey(documentId)) {
             docContentByDocId.put(documentId, content);
         }
+        logger.info("the content in the hashmap is" + docContentByDocId.get(documentId));
 
         logger.info("the content of the document is " + content);
-        return content;
+        return document;
 
 
     }
@@ -202,23 +207,24 @@ public class DocService {
 
 
     public Permission setPermission(Long userId, Long docId, UserRole userRole) {
-        User user = userService.getById(userId);
-        Document doc = docRepository.findById(docId).get();
-
-        Permission p = null;
-        switch (userRole) {
-            case EDITOR:
-                p = Permission.newEditorPermission(user, doc);
-                break;
-            case VIEWER:
-                p = Permission.newViewerPermission(user, doc);
-                break;
-            default:
-                throw new RuntimeException("Role not supported.");
-        }
-        permissionService.setPermission(p);
-
-        return p;
+//        User user = userService.getById(userId);
+//        Document doc = docRepository.findById(docId).get();
+//
+//        Permission p = null;
+//        switch (userRole) {
+//            case EDITOR:
+//                p = Permission.newEditorPermission(user, doc);
+//                break;
+//            case VIEWER:
+//                p = Permission.newViewerPermission(user, doc);
+//                break;
+//            default:
+//                throw new RuntimeException("Role not supported.");
+//        }
+//        permissionService.setPermission(p);
+//
+//        return p;
+        return null;
 
     }
 
