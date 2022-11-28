@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import javax.persistence.*;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -17,7 +18,7 @@ public class Document extends INode {
     private User owner;
 
     @Column(name = "last_edited")
-    private LocalDate lastEdited;
+    private LocalDateTime lastEdited;
     @Lob
     @Column(name = "content")
     private String content;
@@ -39,7 +40,7 @@ public class Document extends INode {
         super();
     }
 
-    public Document(String name, INodeType type, LocalDate creationDate, Set<INode> children, INode parent, User owner, LocalDate lastEdited, String content) {
+    public Document(String name, INodeType type, LocalDateTime creationDate, Set<INode> children, INode parent, User owner, LocalDateTime lastEdited, String content) {
         super(name, type, creationDate, children, parent);
         this.owner = owner;
         this.lastEdited = lastEdited;
@@ -47,18 +48,18 @@ public class Document extends INode {
     }
 
     public static Document createNewImportedDocument (String nameWithExtension, String content, INode parent, User owner) {
-        return new Document(nameWithExtension, INodeType.FILE, LocalDate.now(),null, parent, owner, LocalDate.now(), content);
+        return new Document(nameWithExtension, INodeType.FILE, LocalDateTime.now(),null, parent, owner, LocalDateTime.now(), content);
     }
 
     public static Document createNewEmptyDocument (String name, INode parent, User owner) {
-        return new Document(name, INodeType.FILE, LocalDate.now(), null, parent, owner, LocalDate.now(), "");
+        return new Document(name, INodeType.FILE, LocalDateTime.now(), null, parent, owner, LocalDateTime.now(), "");
     }
 
     public User getOwner() {
         return owner;
     }
 
-    public LocalDate getLastEdited() {
+    public LocalDateTime getLastEdited() {
         return lastEdited;
     }
 
