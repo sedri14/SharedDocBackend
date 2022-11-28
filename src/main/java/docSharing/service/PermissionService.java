@@ -14,8 +14,8 @@ public class PermissionService {
     @Autowired
     PermissionRepository permissionRepository;
 
-    @Autowired
-    DocService docService;
+//    @Autowired
+//    DocService docService;
 
     public PermissionService() {
     }
@@ -34,7 +34,8 @@ public class PermissionService {
     }
 
     public boolean isOwner(Long docId, Long ownerId) {
-        return docService.getOwner(docId).equals(ownerId);
+        //return docService.getOwner(docId).equals(ownerId);
+        return true;
     }
 
     public void setPermission(Permission p) {
