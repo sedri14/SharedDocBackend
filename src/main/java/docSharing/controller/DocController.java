@@ -2,6 +2,7 @@ package docSharing.controller;
 
 import docSharing.DTO.PermissionDTO;
 import docSharing.DTO.ReturnDocumentMessage;
+import docSharing.entities.Document;
 import docSharing.entities.Permission;
 import docSharing.service.DocService;
 import docSharing.test.ChnageRole;
@@ -24,6 +25,7 @@ import java.util.List;
 
 //@Controller
 @RequestMapping("/doc")
+@CrossOrigin
 @RestController
 public class DocController {
     @Autowired
@@ -49,7 +51,7 @@ public class DocController {
      * @return the content of the document
      */
     @RequestMapping(value = "/{docId}", method = RequestMethod.GET)
-    public ResponseEntity<String> getDocument(@PathVariable Long docId) {
+    public ResponseEntity<Document> getDocument(@PathVariable Long docId) {
         logger.info("start getDocument function");
         return ResponseEntity.status(HttpStatus.OK).body(docService.getDocument(docId));
     }

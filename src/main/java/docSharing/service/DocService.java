@@ -18,6 +18,9 @@ import org.springframework.web.server.ResponseStatusException;
 
 import javax.print.Doc;
 import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class DocService {
@@ -37,6 +40,15 @@ public class DocService {
     public DocService() {
         logger.info("init Doc Service instance");
         logger.info("get the document from the DB");
+
+        Runnable saveContentToDBRunnable = new Runnable() {
+            public void run() {
+                saveAllChangesToDB(docContentByDocId);
+            }
+        };
+
+        ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+        executor.scheduleAtFixedRate(saveContentToDBRunnable, 0, 3, TimeUnit.SECONDS);
 
     }
 
