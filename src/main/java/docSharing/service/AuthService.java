@@ -2,6 +2,7 @@ package docSharing.service;
 
 import com.google.gson.Gson;
 import docSharing.UserDTO.UserDTO;
+//import docSharing.emailActivation.OnRegistrationCompleteEvent;
 import docSharing.emailActivation.OnRegistrationCompleteEvent;
 import docSharing.entities.User;
 

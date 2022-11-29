@@ -91,7 +91,7 @@ public class UserController {
         return ResponseEntity.noContent().build();
     }
 
-
+    @DeleteMapping("/delete/{id}")
     @RequestMapping(value = "/all", method = RequestMethod.GET)
     public ResponseEntity<List<User>> all(){
     //userservice.fidall could return null
