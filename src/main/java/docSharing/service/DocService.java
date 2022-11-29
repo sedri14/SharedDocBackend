@@ -30,6 +30,9 @@ public class DocService {
     @Autowired
     UserService userService;
 
+    @Autowired
+    LogService logService;
+
     static Map<Long, String> docContentByDocId = new HashMap<>();
     static Map<Long, List<String>> viewingUser = new HashMap<>();
     private static final Logger logger = LogManager.getLogger(DocService.class.getName());
@@ -73,7 +76,7 @@ public class DocService {
                 break;
         }
         ReturnDocumentMessage returnDocumentMessage = new ReturnDocumentMessage(manipulatedText.getUser(), docContentByDocId.get(docId), manipulatedText.getStartPosition(), manipulatedText.getEndPosition(), manipulatedText.getType());
-//        logService.addToLog(docId, manipulatedText);
+        logService.addToLog(docId, manipulatedText);
         logger.info("all subscribed users gets" + returnDocumentMessage);
 
         return returnDocumentMessage;
@@ -102,6 +105,10 @@ public class DocService {
         logger.info("start deleteTextFromDoc");
         String docText = docContentByDocId.get(docId);
         String updatedDocText = docText.substring(0, text.getStartPosition()) + docText.substring(text.getStartPosition() + 1);
+        //get the deleted char from the content and set it instead of null//
+        String deletedChar = docText.substring(text.getStartPosition(), text.getStartPosition() + 1);
+        logger.info("i deleted " + deletedChar);
+        text.setContent(deletedChar);
         docContentByDocId.put(docId, updatedDocText);
     }
 
@@ -126,7 +133,9 @@ public class DocService {
         logger.info("start deleteRangeTextFromDoc function");
         String docText = docContentByDocId.get(docId);
         String updatedDocText = docText.substring(0, text.getStartPosition() + 1) + docText.substring(text.getEndPosition() + 1);
-
+        String deletedChars = docText.substring(text.getStartPosition() + 1, text.getEndPosition() + 1);
+        logger.info("i deleted " + deletedChars);
+        text.setContent(deletedChars);
 
         docContentByDocId.put(docId, updatedDocText);
     }
@@ -146,7 +155,7 @@ public class DocService {
      * @param docId           document id
      * @param documentContent document new content
      */
-    public void saveOneDocContentToDB(Long docId, String documentContent) {
+    private void saveOneDocContentToDB(Long docId, String documentContent) {
         logger.info("start saveOneDocContentToDB function");
         boolean isDocument = docRepository.findById(docId).isPresent();
         if (!isDocument) {
