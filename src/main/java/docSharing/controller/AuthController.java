@@ -1,8 +1,9 @@
 package docSharing.controller;
 
 import com.google.gson.Gson;
-import docSharing.Utils.Validation;
+import docSharing.LoginResponse;
 import docSharing.UserDTO.UserDTO;
+import docSharing.Utils.Validation;
 import docSharing.entities.User;
 import docSharing.entities.VerificationToken;
 import docSharing.repository.UserRepository;
@@ -14,7 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.WebRequest;
 
@@ -35,6 +35,8 @@ public class AuthController {
 
     @Autowired
     private UserService userService;
+
+    private UserRepository userRepository;
     private static final Gson gson = new Gson();
 
     private static Logger logger = LogManager.getLogger(AuthController.class.getName());
@@ -59,11 +61,11 @@ public class AuthController {
         }
         if (!Validation.isValidName(user.getName()) || user.getEmail()==null) {
             logger.error("In AuthenticationController.register: invalid name - int Level:200");
-            return ResponseEntity.badRequest().body("Invalid name address!");
+            return ResponseEntity.badRequest().body("Invalid name!");
         }
         if (!Validation.isValidPassword(user.getPassword())|| user.getPassword()==null) {
             logger.error("In AuthenticationController.register: invalid password - int Level:200");
-            return ResponseEntity.badRequest().body("Invalid password address!");
+            return ResponseEntity.badRequest().body("Invalid password!");
         }
 
         try {
@@ -85,30 +87,17 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.OK).body(gson.toJson(authService.updateTokenEmailKey(user ,newEmail)));
     }
 
-    //check validation in a good way
-    //add logger
 
     @RequestMapping(value = "login", method = RequestMethod.POST)
-    public ResponseEntity<String> logIn(@RequestBody UserDTO user) {
+    public ResponseEntity<String> login(@RequestBody UserDTO user) {
 
        logger.info("in login");
 
-        if (!Validation.isValidEmail(user.getEmail())|| user.getEmail()==null) { //TODO: edit validation funcitons
-            return ResponseEntity.badRequest().body("Inalid email..");
-        }
-        if (!Validation.isValidPassword(user.getEmail())|| user.getPassword()==null) { //TODO: edit validation funcitons
-            return ResponseEntity.badRequest().body("Inalid password..");
-        }
+        LoginResponse loginResponse= authService.login(user);
+       if (loginResponse.isError() || loginResponse.getToken()== null)
+           return ResponseEntity.badRequest().body(loginResponse.getMsg().toString());
+       else return ResponseEntity.status(HttpStatus.OK).body(loginResponse.getToken());
 
-        if (!authService.isEnabledUser(user))
-            return ResponseEntity.badRequest().body("You need to confirm your email..");
-
-        Optional<String> token =authService.login(user);
-        if (!token.isPresent()){
-            return ResponseEntity.badRequest().body("Wrong email or password..");
-        }
-    //here you should return a token and not the new login.
-        return ResponseEntity.status(HttpStatus.OK).body(gson.toJson(authService.login(user)));
     }
 
     //make the validation in an util class.
