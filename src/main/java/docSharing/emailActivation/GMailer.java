@@ -1,4 +1,4 @@
-package EmailActivation;
+package docSharing.emailActivation;
 
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp;
@@ -12,7 +12,6 @@ import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.gmail.Gmail;
-import com.google.api.services.gmail.GmailScopes;
 import com.google.api.services.gmail.model.Message;
 import org.apache.commons.codec.binary.Base64;
 
@@ -50,7 +49,7 @@ public class GMailer {
                 ("/client_secret_89807580359-6t815ru72tfu3rrasrah72p8so26fmfa.apps.googleusercontent.com.json")));
 
         GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(
-                httpTransport, jsonFactory, clientSecrets, Set.of(GmailScopes.GMAIL_SEND))
+                httpTransport, jsonFactory, clientSecrets, Set.of(GMAIL_SEND))
                 .setDataStoreFactory(new FileDataStoreFactory(Paths.get("tokens").toFile()))
                 .setAccessType("offline")
                 .build();
@@ -64,7 +63,7 @@ public class GMailer {
         Session session = Session.getDefaultInstance(props, null);
         MimeMessage email = new MimeMessage(session);
         email.setFrom(new InternetAddress(TEST_EMAIL));
-        email.addRecipient(MimeMessage.RecipientType.TO, new InternetAddress(emailAddress));
+        email.addRecipient(TO, new InternetAddress(emailAddress));
         email.setSubject(subject);
         email.setText(message);
 
