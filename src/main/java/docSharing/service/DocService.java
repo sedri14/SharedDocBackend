@@ -7,8 +7,6 @@ import docSharing.entities.User;
 import docSharing.entities.UserRole;
 import docSharing.repository.DocRepository;
 import docSharing.test.ManipulatedText;
-import docSharing.test.OnlineUser;
-import docSharing.test.UpdateType;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +14,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import javax.print.Doc;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -205,39 +202,47 @@ public class DocService {
     }
 
 
-//    public boolean changeUserRollInDoc(Long docId, Long ownerId, String changeToEmail, UserRole userRole) {
-//        logger.info("start changeUserRollInDoc function");
-//        //TODO: i want these functions
-////        authService.checkIfUser(changeToEmail);
-////        authService.idOfUserByEmail(changeToEmail);
-//        if (!permissionService.checkIfOwner(ownerId)) {
-//            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "you are not the owner");
-//        }
-//        permissionService.changeUserRollInDoc(docId, 0L, userRole);
-//        return true;
-//    }
+    public boolean editRole(Long docId, Long ownerId, String changeToEmail, UserRole userRole, boolean isDelete) {
+        logger.info("start editRole function");
+        if (getOwner(docId) != ownerId) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "you are not the owner");
+        }
+
+        Document doc = docRepository.findById(docId).get();
+        User user = userService.findByEmail(changeToEmail);
+
+        if (isDelete && permissionService.isExist(doc, user)) {
+            permissionService.delete(doc, user);
+        } else {
+            if (permissionService.isExist(doc, user)) {
+                permissionService.updatePermission(doc, user, userRole);
+            } else {
+                permissionService.addPermission(doc, user, userRole);
+            }
+        }
+
+        return true;
+    }
 
 
     public Permission setPermission(Long userId, Long docId, UserRole userRole) {
-//        User user = userService.getById(userId);
-//        Document doc = docRepository.findById(docId).get();
-//
-//        Permission p = null;
-//        switch (userRole) {
-//            case EDITOR:
-//                p = Permission.newEditorPermission(user, doc);
-//                break;
-//            case VIEWER:
-//                p = Permission.newViewerPermission(user, doc);
-//                break;
-//            default:
-//                throw new RuntimeException("Role not supported.");
-//        }
-//        permissionService.setPermission(p);
-//
-//        return p;
-        return null;
+        User user = userService.getById(userId);
+        Document doc = docRepository.findById(docId).get();
 
+        Permission p = null;
+        switch (userRole) {
+            case EDITOR:
+                p = Permission.newEditorPermission(user, doc);
+                break;
+            case VIEWER:
+                p = Permission.newViewerPermission(user, doc);
+                break;
+            default:
+                throw new RuntimeException("Role not supported.");
+        }
+        permissionService.setPermission(p);
+
+        return p;
     }
 
     public Permission getPermission(Long userId, Long docId) {

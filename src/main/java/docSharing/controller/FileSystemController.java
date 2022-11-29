@@ -36,6 +36,7 @@ public class FileSystemController {
         if (addINodeDTO == null) {
             throw new IllegalArgumentException("Request unavailable");
         }
+
         return ResponseEntity.ok(fsService.addInode(addINodeDTO));
     }
 

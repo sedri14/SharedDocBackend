@@ -16,4 +16,6 @@ import java.util.List;
 public interface PermissionRepository extends JpaRepository<Permission, Long> {
     public Permission findByUserAndDocument(User user, Document doc);
 
+    public boolean existsByUserAndDocument(User user, Document doc);
+
 }
