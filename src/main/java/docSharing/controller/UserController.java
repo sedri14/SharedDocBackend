@@ -8,18 +8,24 @@ import docSharing.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.request.WebRequest;
 
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @CrossOrigin
 @RequestMapping("/user")
 public class UserController {
+
     @Autowired
     private UserService userService;
+
     @Autowired
     private AuthService authService;
 
@@ -51,7 +57,16 @@ public class UserController {
     }
 
 
-
+//    @RequestMapping(value = "/email", method = RequestMethod.PATCH)
+//    public ResponseEntity<User> updateUserEmail(@RequestBody UserDTO user, @RequestHeader String token)  {
+//        if (!Validation.isValidEmail(user.getEmail())) {return ResponseEntity.badRequest().build();}
+//        try {
+//            validateToken(user.getEmail(), token);
+//        } catch (IOException e) {
+//            ResponseEntity.badRequest(); //TODO: check how to wrap it with responser entity with user
+//        }
+//        return ResponseEntity.status(HttpStatus.OK).body(userService.updateUserEmail(user.id, user.getEmail()));
+//    }
 
     //chante to requestBody ->
     //change the response to string.
@@ -64,13 +79,16 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).body(userService.updateUserPassword(user.getEmail(), password));
     }
 
+//don't throw an exception here.
+    //this should reutrn a string entity.
+    //PathVariables use id
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<Void> deleteUser(@RequestParam String email, @RequestHeader String token) throws IOException {
+        validateToken(email, token);
+        //delete user should return something.
+        userService.deleteUser(email);
 
-    public ResponseEntity<String> deleteUser(@RequestBody UserDTO user, @PathVariable String id, @RequestHeader String token) throws IOException {
-        validateToken(user.getEmail(), token);
-        userService.deleteUser(user.getEmail());
-
-
-        return ResponseEntity.status(HttpStatus.OK).body("User deleted");
+        return ResponseEntity.noContent().build();
     }
 
 
