@@ -81,12 +81,13 @@ public class LogService {
     }
 
     private static void makeCorrectionToAppending(Long docId, ManipulatedText manipulatedText) {
-        for (Map.Entry<Long, PrepareDocumentLog> entry : userLogByDocIdMap.entrySet()) {
-            PrepareDocumentLog value = entry.getValue();
 
-            for (int i = value.getIndex().indexOf(manipulatedText.getStartPosition()) + 1; i < value.getIndex().size(); i++) {
-                value.getIndex().set(i, value.getIndex().get(i) + 1);
+        PrepareDocumentLog docLog = userLogByDocIdMap.get(docId);
+        for (int i = manipulatedText.getStartPosition() + 1; i < docLog.getIndex().size(); i++) {
+            if (docLog.getIndex().get(i) >= manipulatedText.getStartPosition()) {
+                docLog.getIndex().set(i, docLog.getIndex().get(i) + 1);
             }
+
         }
         logger.info("after correction");
         logger.info(userLogByDocIdMap.get(docId));
@@ -137,7 +138,7 @@ public class LogService {
 
 
     private static void deleteRangeContentToLog(Long docId, ManipulatedText manipulatedText) {
-        for (int i =0; i <  manipulatedText.getContent().length() ; i++) {
+        for (int i = 0; i < manipulatedText.getContent().length(); i++) {
             deleteContentToLog(docId, new ManipulatedText(
                     manipulatedText.getUser()
                     , UpdateType.DELETE
