@@ -1,18 +1,17 @@
 package docSharing.controller;
 
 import com.google.gson.Gson;
-import docSharing.LoginResponse;
 import docSharing.UserDTO.UserDTO;
 import docSharing.Utils.Validation;
 import docSharing.entities.User;
 import docSharing.entities.VerificationToken;
 import docSharing.repository.UserRepository;
+import docSharing.response.Response;
 import docSharing.service.AuthService;
 import docSharing.service.UserService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,7 +21,6 @@ import javax.servlet.http.HttpServletRequest;
 import java.sql.SQLDataException;
 import java.util.Calendar;
 import java.util.Locale;
-import java.util.Optional;
 
 
 @RestController
@@ -40,48 +38,64 @@ public class AuthController {
 
     private static Logger logger = LogManager.getLogger(AuthController.class.getName());
 
-    public AuthController() {}
+    public AuthController() {
+    }
 
     @RequestMapping(value = "register", method = RequestMethod.POST)
     public ResponseEntity<String> createUser(@RequestBody UserDTO user, HttpServletRequest request) {
-        if (!Validation.isValidEmail(user.getEmail()) || user.getEmail()==null) {
+        if (!Validation.isValidEmail(user.getEmail()) || user.getEmail() == null) {
             logger.error("In AuthenticationController.register: invalid email - int Level:200");
-            return ResponseEntity.badRequest().body("Invalid email address!");
+            return ResponseEntity.badRequest().body(Response.failure("Invalid email address!").getMessage());
+
         }
-        if (!Validation.isValidName(user.getName()) || user.getEmail()==null) {
+        if (!Validation.isValidName(user.getName()) || user.getEmail() == null) {
             logger.error("In AuthenticationController.register: invalid name - int Level:200");
-            return ResponseEntity.badRequest().body("Invalid name!");
+            return ResponseEntity.badRequest().body(Response.failure("Invalid name!").getMessage());
+
         }
-        if (!Validation.isValidPassword(user.getPassword())|| user.getPassword()==null) {
+        if (!Validation.isValidPassword(user.getPassword()) || user.getPassword() == null) {
             logger.error("In AuthenticationController.register: invalid password - int Level:200");
-            return ResponseEntity.badRequest().body("Invalid password!");
+            return ResponseEntity.badRequest().body(Response.failure("Invalid password!").getMessage());
         }
 
         try {
-            User createdUser =authService.createUser(user);
-            String appUrl = request.getContextPath();
-            authService.publishRegistrationEvent(createdUser, request.getLocale(), appUrl);
-            return ResponseEntity.status(HttpStatus.OK).body(gson.toJson(createdUser));
-        } catch (SQLDataException e) {
-            return ResponseEntity.badRequest().body("Email already exist");
+            Response<UserDTO> registerUser = authService.createUser(user);
+            UserDTO createdUser = registerUser.getData();
+            if (createdUser != null) {
+                //String appUrl = request.getContextPath();
+//                authService.publishRegistrationEvent(createdUser, request.getLocale(), appUrl);
+//                System.out.println("inside AuthController");
+                return ResponseEntity.status(HttpStatus.OK).body(gson.toJson(createdUser));
+            }
+            else
+                return ResponseEntity.badRequest().body(Response.failure("Email already exist").getMessage());
+
+        } catch (
+                SQLDataException e) {
+            return ResponseEntity.badRequest().body(Response.failure("Email already exist").getMessage());
         }
+
     }
 
     @RequestMapping(value = "token", method = RequestMethod.PATCH)
-    public ResponseEntity<String> updateTokenEmailKey (@RequestBody UserDTO user, @RequestParam String newEmail)
-    {
-        return ResponseEntity.status(HttpStatus.OK).body(gson.toJson(authService.updateTokenEmailKey(user ,newEmail)));
+    public ResponseEntity<String> updateTokenEmailKey(@RequestBody UserDTO user, @RequestParam String newEmail) {
+        return ResponseEntity.status(HttpStatus.OK).body(gson.toJson(authService.updateTokenEmailKey(user, newEmail)));
     }
 
     @RequestMapping(value = "login", method = RequestMethod.POST)//
     public ResponseEntity<String> login(@RequestBody UserDTO user) {
 
-       logger.info("in login");
+        logger.info("in login");
+        System.out.println("in login");
 
-        LoginResponse loginResponse= authService.login(user);
-       if (loginResponse.isError() || loginResponse.getToken()== null)
-           return ResponseEntity.badRequest().body(loginResponse.getMsg().toString());
-       else return ResponseEntity.status(HttpStatus.OK).body(loginResponse.getToken());
+        Response<String> loginResponse = authService.login(user);
+        if (!loginResponse.isSuccess() || loginResponse.getData() == null)
+            return ResponseEntity.badRequest().body(loginResponse.getMessage());
+        else {
+            System.out.println("Token:  ");
+            return ResponseEntity.status(HttpStatus.OK).body(loginResponse.getData());
+
+        }
     }
 
     @GetMapping("/registrationConfirm")
@@ -104,11 +118,6 @@ public class AuthController {
         authService.deleteVerificationToken(token);
         return "redirect:/login.html?lang=" + request.getLocale().getLanguage();
     }
-
-
-
-
-
 
 
 }
