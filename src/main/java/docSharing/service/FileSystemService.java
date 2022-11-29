@@ -75,7 +75,11 @@ public class FileSystemService {
                 throw new IllegalArgumentException("Illegal Inode type");
         }
 
-        return fsRepository.save(newInode);
+        INode savedInode = fsRepository.save(newInode);
+        Long docId = savedInode.getId();
+        docService.setPermission(addInode.userId, docId, UserRole.EDITOR);
+
+        return savedInode;
     }
 
 
