@@ -67,7 +67,6 @@ public class LogService {
                 if (i == 0) {
                     rightPlace = 0;
                 } else {
-//                    rightPlace = i - 1;
                     rightPlace = i;
                 }
                 break;
@@ -83,7 +82,16 @@ public class LogService {
     private static void makeCorrectionToAppending(Long docId, ManipulatedText manipulatedText) {
 
         PrepareDocumentLog docLog = userLogByDocIdMap.get(docId);
-        for (int i = manipulatedText.getStartPosition() + 1; i < docLog.getIndex().size(); i++) {
+        int rightIndex = 0;
+        for (int j = 0; j < docLog.getIndex().size(); j++) {
+            if (docLog.getIndex().get(j) >= manipulatedText.getStartPosition()) {
+                rightIndex = j;
+                break;
+            }
+
+        }
+        logger.info("the right place to start is" + rightIndex);
+        for (int i = rightIndex + 1; i < docLog.getIndex().size(); i++) {
             if (docLog.getIndex().get(i) >= manipulatedText.getStartPosition()) {
                 docLog.getIndex().set(i, docLog.getIndex().get(i) + 1);
             }
@@ -109,7 +117,7 @@ public class LogService {
         logger.info("====================================");
         logger.info("Deleted one char");
         logger.info(userLogByDocIdMap.get(docId));
-        makeCorrectionToDelete(docId, manipulatedText);
+//        makeCorrectionToDelete(docId, manipulatedText);
         logger.info("correction is done");
         logger.info("====================================");
 
@@ -125,6 +133,28 @@ public class LogService {
     }
 
     private static void makeCorrectionToDelete(Long docId, ManipulatedText manipulatedText) {
+        PrepareDocumentLog docLog = userLogByDocIdMap.get(docId);
+        int rightIndex = 0;
+        for (int j = 0; j < docLog.getIndex().size(); j++) {
+            if (docLog.getIndex().get(j) >= manipulatedText.getStartPosition()) {
+                rightIndex = j;
+                break;
+            }
+
+        }
+        logger.info("the right place to start is" + rightIndex);
+//        docLog.getIndex().remove(rightIndex);
+//        docLog.getUserId().remove(rightIndex);
+//        docLog.getAction().remove(rightIndex);
+//        docLog.getContent().remove(rightIndex);
+        for (int i = rightIndex + 1 ; i < docLog.getIndex().size(); i++) {
+            if (docLog.getIndex().get(i) > manipulatedText.getStartPosition()) {
+                docLog.getIndex().set(i, docLog.getIndex().get(i) - 1);
+            }
+
+        }
+
+
         for (Map.Entry<Long, PrepareDocumentLog> entry : userLogByDocIdMap.entrySet()) {
             PrepareDocumentLog value = entry.getValue();
 
