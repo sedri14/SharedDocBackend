@@ -210,6 +210,18 @@ public class DocService {
 
     }
 
+    public List<String> removeUserFromViewingUsers(Long docId, String userName) {
+        logger.info("start removeUserFromViewingUsers function");
+        if (viewingUser.containsKey(docId)) {
+            System.out.println(userName);
+            viewingUser.get(docId).remove(userName);
+
+        }
+        logger.info("all viewing users are");
+        return viewingUser.get(docId);
+
+    }
+
 
     public boolean editRole(Long docId, Long ownerId, String changeToEmail, UserRole userRole, boolean isDelete) {
         logger.info("start editRole function");

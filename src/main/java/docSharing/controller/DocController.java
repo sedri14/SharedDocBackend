@@ -63,14 +63,23 @@ public class DocController {
         return docService.addUserToViewingUsers(docId, user.getUserName());
     }
 
+    @MessageMapping("/userDisconnect/{docId}")
+    @SendTo("/topic/userDisconnect/{docId}")
+    public List<String> removeUserFromViewingUsers(@DestinationVariable Long docId, OnlineUser user) {
+
+        logger.info("start sendNewUserJoinMessage function");
+        return docService.removeUserFromViewingUsers(docId, user.getUserName());
+
+    }
+
     @RequestMapping(value = "setPerm", method = RequestMethod.POST)
-    public ResponseEntity<Permission> setPermission (@RequestBody PermissionDTO permission) {
+    public ResponseEntity<Permission> setPermission(@RequestBody PermissionDTO permission) {
         logger.info("start setPermission function");
         return ResponseEntity.ok(docService.setPermission(permission.userId, permission.docId, permission.userRole));
     }
 
     @RequestMapping(value = "getPerm", method = RequestMethod.POST)
-    public ResponseEntity<Permission> getPermission (@RequestBody PermissionDTO permission) {
+    public ResponseEntity<Permission> getPermission(@RequestBody PermissionDTO permission) {
 
         return ResponseEntity.ok(docService.getPermission(permission.userId, permission.docId));
     }
@@ -80,7 +89,7 @@ public class DocController {
         logger.info("start changeUserRollInDoc function");
         return ResponseEntity.status(HttpStatus.OK).body(docService.editRole(docId, changeRole.ownerId, changeRole.email, changeRole.userRole, changeRole.isDelete));
 
-}
+    }
 
 
 //    @RequestMapping(value = "/savecontent/{docId}", method = RequestMethod.POST)
