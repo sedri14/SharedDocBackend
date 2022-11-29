@@ -4,8 +4,32 @@ import org.springframework.web.multipart.MultipartFile;
 
 public class FileWithData {
 
-    public Long parentInodeId;
+    private Long parentInodeId;
 
-    public Long userId;
-    public MultipartFile file;
+    private Long userId;
+    private MultipartFile file;
+
+    public Long getParentInodeId() {
+        return parentInodeId;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public MultipartFile getFile() {
+        return file;
+    }
+
+    public void setParentInodeId(Long parentInodeId) {
+        this.parentInodeId = parentInodeId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
+
+    public void setFile(MultipartFile file) {
+        this.file = file;
+    }
 }

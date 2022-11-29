@@ -48,7 +48,7 @@ public class DocController {
 
     /**
      * @param docId document id
-     * @return the content of the document
+     * @return document
      */
     @RequestMapping(value = "/{docId}", method = RequestMethod.GET)
     public ResponseEntity<Document> getDocument(@PathVariable Long docId) {

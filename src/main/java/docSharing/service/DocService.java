@@ -149,7 +149,7 @@ public class DocService {
      * @param docId           document id
      * @param documentContent document new content
      */
-    private void saveOneDocContentToDB(Long docId, String documentContent) {
+    public void saveOneDocContentToDB(Long docId, String documentContent) {
         logger.info("start saveOneDocContentToDB function");
         boolean isDocument = docRepository.findById(docId).isPresent();
         if (!isDocument) {
