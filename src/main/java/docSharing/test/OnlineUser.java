@@ -13,4 +13,11 @@ public class OnlineUser {
     public String getUserName() {
         return userName;
     }
+
+    @Override
+    public String toString() {
+        return "OnlineUser{" +
+                "userName='" + userName + '\'' +
+                '}';
+    }
 }

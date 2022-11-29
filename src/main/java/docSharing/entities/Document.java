@@ -18,8 +18,7 @@ public class Document extends INode {
 
     @Column(name = "last_edited")
     private LocalDate lastEdited;
-
-    //TODO: check how to save a very long string.
+    @Lob
     @Column(name = "content")
     private String content;
 
@@ -47,6 +46,14 @@ public class Document extends INode {
         this.content = content;
     }
 
+    public static Document createNewImportedDocument (String nameWithExtension, String content, INode parent, User owner) {
+        return new Document(nameWithExtension, INodeType.FILE, LocalDate.now(),null, parent, owner, LocalDate.now(), content);
+    }
+
+    public static Document createNewEmptyDocument (String name, INode parent, User owner) {
+        return new Document(name, INodeType.FILE, LocalDate.now(), null, parent, owner, LocalDate.now(), "");
+    }
+
     public User getOwner() {
         return owner;
     }
@@ -57,5 +64,9 @@ public class Document extends INode {
 
     public String getContent() {
         return content;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
     }
 }

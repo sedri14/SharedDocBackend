@@ -2,111 +2,261 @@ package docSharing.service;
 
 import docSharing.DTO.ReturnDocumentMessage;
 import docSharing.entities.Document;
+import docSharing.entities.Permission;
+import docSharing.entities.User;
 import docSharing.entities.UserRole;
+import docSharing.repository.DocRepository;
 import docSharing.test.ManipulatedText;
+import docSharing.test.OnlineUser;
 import docSharing.test.UpdateType;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import javax.print.Doc;
+import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class DocService {
-    //we need a table of user permissions for the documents contains
-    /*
-     * DocumentId
-     * UserId
-     * access permission
-     * */
+    @Autowired
+    private DocRepository docRepository;
+    @Autowired
+    private AuthService authService;
+    @Autowired
+    private PermissionService permissionService;
+    @Autowired
+    UserService userService;
 
-    /*we need another table for document permission
-    * DocumentId
-    * Visibility permission "public, private"
-    * ownerId
-    * */
+    static Map<Long, String> docContentByDocId = new HashMap<>();
+    static Map<Long, List<String>> viewingUser = new HashMap<>();
+    private static final Logger logger = LogManager.getLogger(DocService.class.getName());
 
-    public static String res = "";
-    //init document content hashMap()
-    //init document viewing user hashMap().
-    static Map<Integer, String> documentContent = new HashMap<>();
-    static Map<Integer, List<String>> viewingUser = new HashMap<>();
+    public DocService() {
+        logger.info("init Doc Service instance");
+        logger.info("get the document from the DB");
 
-    //buffer.
-    public static boolean checkIfUserHasAccesToDoc(int DocumentId, int UserId) {
-        //search the document from the repo
-        //check if the file is public // if yes-> return the true // else No -> check if the user can access it if yes return true. else return false.
-        return true;
-    }
-
-    public static Document getDocument(int DocumentId, int UserId) {
-        //search the document from the repo
-        //return the document, add it to the document content if not exists there.
-        return null;
-    }
-
-    public static boolean insertChangesToDoc() {
-        return true;
-    }
-
-    public static List<String> getViewingUsers() {
-        //return viewingUser list
-        return null;
-    }
-
-    public static void insertViewingUser(String userName) {
-        //insert to the viewingUsers list.
-    }
-
-    public static void changeUserRollInDoc( String ownerUser, String user, UserRole userRole) {
-
-        //check if user is the owner of the document
-        // update permission table for the user
-
-        //refresh the page->
-
-    }
-
-    public static List<Integer> getEditingUsersId(int DocumentId) {
-        //go over permission table and group document id, select readWrite permission -> return userIds.
-
-        return null;
-    }
-
-
-    public static ReturnDocumentMessage sendUpdatedText(ManipulatedText text) {
-        System.out.println(text);
-        if (text.getType() == UpdateType.APPEND) { //DONE
-            res = addTextToDoc(text);
-        } else if (text.getType() == UpdateType.APPEND_RANGE) { //Not Working
-            res = addRangeTextToDoc(text);
-        } else if (text.getType() == UpdateType.DELETE) { //DONE
-            if (res.length() == 0) {
-                return new ReturnDocumentMessage(text.getUser(), "");
+        Runnable saveContentToDBRunnable = new Runnable() {
+            public void run() {
+                saveAllChangesToDB(docContentByDocId);
             }
-            res = deleteTextFromDoc(text);
-        } else if (text.getType() == UpdateType.DELETE_RANGE) {//DONE
-            res = deleteRangeTextFromDoc(text);
+        };
 
+        ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+        executor.scheduleAtFixedRate(saveContentToDBRunnable, 0, 3, TimeUnit.SECONDS);
+
+    }
+
+
+    /**
+     * @param docId           document id
+     * @param manipulatedText the updated text
+     * @return updated document
+     */
+    public ReturnDocumentMessage sendUpdatedText(Long docId, ManipulatedText manipulatedText) {
+        logger.info("start sendUpdatedText function");
+        logger.info("the client sent" + manipulatedText);
+        switch (manipulatedText.getType()) {
+            case APPEND:
+                addTextToDoc(docId, manipulatedText);
+                break;
+            case DELETE:
+                deleteTextFromDoc(docId, manipulatedText);
+                break;
+            case DELETE_RANGE:
+                deleteRangeTextFromDoc(docId, manipulatedText);
+                break;
+            case APPEND_RANGE:
+                addRangeTextToDoc(docId, manipulatedText);
+                break;
         }
-        System.out.println(res);
-        return new ReturnDocumentMessage(text.getUser(), res);
+        ReturnDocumentMessage returnDocumentMessage = new ReturnDocumentMessage(manipulatedText.getUser(), docContentByDocId.get(docId), manipulatedText.getStartPosition(), manipulatedText.getEndPosition(), manipulatedText.getType());
+//        logService.addToLog(docId, manipulatedText);
+        logger.info("all subscribed users gets" + returnDocumentMessage);
+
+        return returnDocumentMessage;
+
     }
 
-    private static String addTextToDoc(ManipulatedText text) {
-        return res.substring(0, text.getStartPosition()) + text.getContent() + res.substring(text.getStartPosition());
+    /**
+     * @param docId
+     * @param text
+     */
+    private static void addTextToDoc(Long docId, ManipulatedText text) {
+        logger.info("start addTextToDoc function");
+        String docText = docContentByDocId.get(docId);
+        logger.info("doc id is" + docId);
+        logger.info("ManipulatedText " + text);
+        String updatedDocText = docText.substring(0, text.getStartPosition()) + text.getContent() + docText.substring(text.getStartPosition());
+        docContentByDocId.put(docId, updatedDocText);
+
     }
 
-    private static String deleteTextFromDoc(ManipulatedText text) {
-        return res.substring(0, text.getStartPosition()) + res.substring(text.getStartPosition() + 1);
+    /**
+     * @param docId
+     * @param text
+     */
+    private static void deleteTextFromDoc(Long docId, ManipulatedText text) {
+        logger.info("start deleteTextFromDoc");
+        String docText = docContentByDocId.get(docId);
+        String updatedDocText = docText.substring(0, text.getStartPosition()) + docText.substring(text.getStartPosition() + 1);
+        docContentByDocId.put(docId, updatedDocText);
     }
 
-    private static String addRangeTextToDoc(ManipulatedText text) {
-        return "";
+    /**
+     * @param docId
+     * @param text
+     */
+    private static void addRangeTextToDoc(Long docId, ManipulatedText text) {
+        logger.info("start addRangeTextToDoc");
+        String docText = docContentByDocId.get(docId);
+        String updatedDocText = docText.substring(0, text.getStartPosition() + 1) + text.getContent() + docText.substring(text.getEndPosition() + 1);
+
+
+        docContentByDocId.put(docId, updatedDocText);
     }
 
-    private static String deleteRangeTextFromDoc(ManipulatedText text) {
-        return res.substring(0, text.getStartPosition() + 1) + res.substring(text.getEndPosition() + 1);
+    /**
+     * @param docId document id
+     * @param text  the chagne
+     */
+    private static void deleteRangeTextFromDoc(Long docId, ManipulatedText text) {
+        logger.info("start deleteRangeTextFromDoc function");
+        String docText = docContentByDocId.get(docId);
+        String updatedDocText = docText.substring(0, text.getStartPosition() + 1) + docText.substring(text.getEndPosition() + 1);
+
+
+        docContentByDocId.put(docId, updatedDocText);
+    }
+
+
+    /**
+     * @param map documents id by content hashMap.
+     */
+    public void saveAllChangesToDB(Map<Long, String> map) {
+        logger.info("start saveChangesToDB function");
+        for (Map.Entry<Long, String> entry : map.entrySet()) {
+            saveOneDocContentToDB(entry.getKey(), entry.getValue());
+        }
+    }
+
+    /**
+     * @param docId           document id
+     * @param documentContent document new content
+     */
+    private void saveOneDocContentToDB(Long docId, String documentContent) {
+        logger.info("start saveOneDocContentToDB function");
+        boolean isDocument = docRepository.findById(docId).isPresent();
+        if (!isDocument) {
+            logger.error("there is no document with this id");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "there is no document with this id");
+        }
+        Document doc = docRepository.findById(docId).get();
+        doc.setContent(documentContent);
+        docRepository.save(doc);
+        logger.info("document is saved");
+
+    }
+
+    /**
+     * @param documentId doument id
+     * @return the document content from the repository
+     */
+    public Document getDocument(Long documentId) {
+        logger.info("start of getDocument function");
+        boolean isDocument = docRepository.findById(documentId).isPresent();
+
+        if (!isDocument) {
+            logger.error("there is no document with this id");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "there is no document with this id");
+        }
+
+        Document document = docRepository.findById(documentId).get();
+        String content = document.getContent();
+
+        if (!docContentByDocId.containsKey(documentId)) {
+            docContentByDocId.put(documentId, content);
+        }
+        logger.info("the content in the hashmap is" + docContentByDocId.get(documentId));
+
+        logger.info("the content of the document is " + content);
+        return document;
+
+
+    }
+
+    public List<String> addUserToViewingUsers(Long docId, String userName) {
+        logger.info("start addUser To ViewingUsers function");
+        if (viewingUser.containsKey(docId)) {
+            viewingUser.get(docId).add(userName);
+        } else {
+            List<String> list = new ArrayList<>();
+            list.add(userName);
+            viewingUser.put(docId, list);
+        }
+        logger.info("all viewing users are");
+        return viewingUser.get(docId);
+
+    }
+
+
+//    public boolean changeUserRollInDoc(Long docId, Long ownerId, String changeToEmail, UserRole userRole) {
+//        logger.info("start changeUserRollInDoc function");
+//        //TODO: i want these functions
+////        authService.checkIfUser(changeToEmail);
+////        authService.idOfUserByEmail(changeToEmail);
+//        if (!permissionService.checkIfOwner(ownerId)) {
+//            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "you are not the owner");
+//        }
+//        permissionService.changeUserRollInDoc(docId, 0L, userRole);
+//        return true;
+//    }
+
+
+    public Permission setPermission(Long userId, Long docId, UserRole userRole) {
+//        User user = userService.getById(userId);
+//        Document doc = docRepository.findById(docId).get();
+//
+//        Permission p = null;
+//        switch (userRole) {
+//            case EDITOR:
+//                p = Permission.newEditorPermission(user, doc);
+//                break;
+//            case VIEWER:
+//                p = Permission.newViewerPermission(user, doc);
+//                break;
+//            default:
+//                throw new RuntimeException("Role not supported.");
+//        }
+//        permissionService.setPermission(p);
+//
+//        return p;
+        return null;
+
+    }
+
+    public Permission getPermission(Long userId, Long docId) {
+        User user = userService.getById(userId);
+        Document doc = docRepository.findById(docId).get();
+
+        return permissionService.getPermission(user, doc);
+    }
+
+    public Long getOwner(Long docId) {
+
+        boolean isDocument = docRepository.findById(docId).isPresent();
+        if (!isDocument) {
+            logger.error("there is no document with this id");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "there is no document with this id");
+        }
+        Document doc = docRepository.findById(docId).get();
+        return doc.getOwner().getId();
+
     }
 
 }

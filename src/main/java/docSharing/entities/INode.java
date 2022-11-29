@@ -24,10 +24,10 @@ public class INode implements Serializable {
     @Column(name = "creation_date")
     protected LocalDate creationDate;
     @JsonIgnore
-    @OneToMany(mappedBy = "parent")
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "parent" , cascade = CascadeType.REMOVE)
     protected Set<INode> children;
     @JsonIgnore
-    @ManyToOne
+    @ManyToOne (fetch = FetchType.EAGER)
     @JoinColumn(name = "parent_id", referencedColumnName = "id")
     protected INode parent;
 
@@ -41,6 +41,10 @@ public class INode implements Serializable {
         this.creationDate = creationDate;
         this.children = children;
         this.parent = parent;
+    }
+
+    public static INode createNewDirectory(String name, INode parent) {
+        return new INode(name, INodeType.DIR, LocalDate.now(), null, parent);
     }
 
     public Long getId() {
