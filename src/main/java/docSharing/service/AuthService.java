@@ -25,7 +25,7 @@ import static docSharing.entities.User.createUserFactory;
 
 @Service
 public class AuthService {
-
+    //why her hash map of user? and not id.
     static Map<User,String> mapUserTokens = new HashMap<>();
     @Autowired
     private UserRepository userRepository;
@@ -47,6 +47,8 @@ public class AuthService {
         this.tokenRepository = tokenRepository;
     }
 
+    //why?? we have auto wire!!
+    //i think we should delete it
     public AuthService(UserRepository userRepository, TokenRepository tokenRepository) {
         this.userRepository = userRepository;
         this.tokenRepository = tokenRepository;
@@ -57,21 +59,23 @@ public class AuthService {
     // if (userRepository.findByEmail(user.getEmail()) ==null)
     public User createUser(UserDTO user) throws SQLDataException {
         logger.info("in createUser");
+
         if (!isExistingEmail(user.getEmail()))
         {
             System.out.println("Service- save user into DB");
              return userRepository.save(createUserFactory(user.getName(), user.getEmail(), user.getPassword()));
 }      else  throw new SQLDataException(String.format("Email %s exists in users table", user.getEmail()));
 
-    }
 
-
+    //you don't user this function?
+    //if you use it a lot, just use this function.
     private boolean isExistingEmail (String email)
     {
         User user = userRepository.findByEmail(email);
         return (user!=null)?true:false;
     }
 
+    //this could be private
     public String generateToken()
     {
         UUID uuid = UUID.randomUUID();
@@ -121,7 +125,8 @@ public class AuthService {
         mapUserTokens.remove(user.getEmail());
         return user;
     }
-
+    //do you want this function?
+    //
     private boolean isValidCredentials(String email, String password) {
         User user = userRepository.findByEmail(email);
 
@@ -131,7 +136,7 @@ public class AuthService {
 
         return false;
     }
-
+    //
     public User getUser(String verificationToken) {
         User user = tokenRepository.findByToken(verificationToken).getUser();
         return user;

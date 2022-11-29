@@ -2,3 +2,4 @@
 target/
 .DS_Store
 src/main/resources/application.properties
+/src/main/resources/client_secret_89807580359-6t815ru72tfu3rrasrah72p8so26fmfa.apps.googleusercontent.com.json.txt
