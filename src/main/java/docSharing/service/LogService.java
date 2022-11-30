@@ -1,22 +1,46 @@
 package docSharing.service;
 
+import docSharing.entities.Document;
+import docSharing.entities.Log;
+import docSharing.entities.User;
+import docSharing.repository.LogRepository;
 import docSharing.test.ManipulatedText;
 import docSharing.test.PrepareDocumentLog;
 import docSharing.test.UpdateType;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class LogService {
+    @Autowired
+    UserService userService;
+    @Autowired
+    LogRepository logRepository;
     private static final Logger logger = LogManager.getLogger(LogService.class.getName());
     static Map<Long, PrepareDocumentLog> userLogByDocIdMap = new HashMap<>();
 
+    public LogService() {
+        Runnable saveContentToDBRunnable = new Runnable() {
+            public void run() {
+//                saveLogToDB("khader", 2L, 4L);
+
+            }
+        };
+
+        ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+        executor.scheduleAtFixedRate(saveContentToDBRunnable, 0, 5, TimeUnit.SECONDS);
+    }
 
     public void addToLog(Long docId, ManipulatedText manipulatedText) {
         if (!userLogByDocIdMap.containsKey(docId)) {
@@ -147,7 +171,7 @@ public class LogService {
 //        docLog.getUserId().remove(rightIndex);
 //        docLog.getAction().remove(rightIndex);
 //        docLog.getContent().remove(rightIndex);
-        for (int i = rightIndex + 1 ; i < docLog.getIndex().size(); i++) {
+        for (int i = rightIndex + 1; i < docLog.getIndex().size(); i++) {
             if (docLog.getIndex().get(i) > manipulatedText.getStartPosition()) {
                 docLog.getIndex().set(i, docLog.getIndex().get(i) - 1);
             }
@@ -220,4 +244,50 @@ public class LogService {
 //    }
 
     }
+
+    private void saveAllLogsToDB() {
+
+
+        for (Map.Entry<Long, PrepareDocumentLog> docLog : userLogByDocIdMap.entrySet()) {
+
+            String tempContent = docLog.getValue().getContent().get(0);
+            int tempIndex = docLog.getValue().getIndex().get(0);
+            Long tempUser = docLog.getValue().getUserId().get(0);
+
+            for (int i = 1; i < docLog.getValue().getIndex().size() - 1; i++) {
+
+                if (
+                        tempIndex + 1 == docLog.getValue().getIndex().get(i)
+                                && tempUser == docLog.getValue().getUserId().get(i)
+                ) {
+                    tempContent += docLog.getValue().getContent().get(i);
+                    tempIndex = docLog.getValue().getIndex().get(i);
+                    tempUser = docLog.getValue().getUserId().get(i);
+                } else {
+//                    Log log = new Log();
+//                    saveOneLogToDB(tempContent, tempUser, docLog.getKey());
+                    tempContent = "";
+                    tempIndex = docLog.getValue().getIndex().get(i);
+                    tempUser = docLog.getValue().getUserId().get(i);
+                }
+            }
+            userLogByDocIdMap.clear();
+        }
+    }
+
+    private void saveOneLogToDB(String logContent, User user, Document doc) {
+        Log log = new Log(user, doc, logContent, LocalDateTime.now());
+        logRepository.save(log);
+    }
+
+//    private void saveLog(PrepareDocumentLog allLog) {
+//        String content = "";
+//
+//        for (int i = 0; i < allLog.getContent().size(); i++) {
+////            if (allLog.getIndex().get(i) + allLog.getIndex().get() )
+//
+//        }
+//
+//
+//    }
 }
