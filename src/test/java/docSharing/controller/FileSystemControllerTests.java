@@ -2,24 +2,17 @@ package docSharing.controller;
 
 import docSharing.DTO.AddINodeDTO;
 import docSharing.DTO.INodeDTO;
-import docSharing.UserDTO.UserDTO;
 import docSharing.entities.INode;
 import docSharing.entities.INodeType;
 import docSharing.repository.DocRepository;
 import docSharing.repository.FileSystemRepository;
 import docSharing.repository.LogRepository;
 import docSharing.repository.PermissionRepository;
-import docSharing.response.IdTokenPair;
-import docSharing.response.Response;
-import docSharing.service.PermissionService;
-import org.checkerframework.checker.units.qual.A;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.ResponseEntity;
-import upload.FileWithData;
 
 import java.util.ArrayList;
 import java.util.List;
