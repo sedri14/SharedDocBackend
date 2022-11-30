@@ -55,11 +55,8 @@ public class AuthController {
             return ResponseEntity.badRequest().body(Response.failure("Invalid name!").getMessage());
 
 
-            return ResponseEntity.badRequest().body("Invalid name address!");
-
         }
 
-        }
 
         try {
             Response<UserDTO> registerUser = authService.createUser(user);
@@ -69,8 +66,7 @@ public class AuthController {
 //                authService.publishRegistrationEvent(createdUser, request.getLocale(), appUrl);
 //                System.out.println("inside AuthController");
                 return ResponseEntity.status(HttpStatus.OK).body(gson.toJson(createdUser));
-            }
-            else
+            } else
                 return ResponseEntity.badRequest().body(Response.failure("Email already exist").getMessage());
 
         } catch (
@@ -84,7 +80,6 @@ public class AuthController {
     public ResponseEntity<String> updateTokenEmailKey(@RequestBody UserDTO user, @RequestParam String newEmail) {
         return ResponseEntity.status(HttpStatus.OK).body(gson.toJson(authService.updateTokenEmailKey(user, newEmail)));
     }
-
 
 
     @RequestMapping(value = "login", method = RequestMethod.POST)
