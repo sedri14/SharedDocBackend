@@ -8,6 +8,8 @@ import docSharing.repository.PermissionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 public class PermissionService {
 
@@ -21,16 +23,16 @@ public class PermissionService {
     }
 
 
-    public Permission getPermission(User user, Document doc) {
+    public Optional<Permission> getPermission(User user, Document doc) {
         return permissionRepository.findByUserAndDocument(user, doc);
     }
 
     public boolean isEditor(User user, Document doc) {
-        return getPermission(user, doc).getUserRole() == UserRole.EDITOR;
+        return getPermission(user, doc).get().getUserRole() == UserRole.EDITOR;
     }
 
     public boolean isJustViewer(User user, Document doc) {
-        return getPermission(user, doc).getUserRole() == UserRole.VIEWER;
+        return getPermission(user, doc).get().getUserRole() == UserRole.VIEWER;
     }
 
     public void setPermission(Permission p) {
@@ -38,7 +40,7 @@ public class PermissionService {
     }
 
     public void updatePermission(Document doc, User user, UserRole userRole) {
-        Permission permission = permissionRepository.findByUserAndDocument(user, doc);
+        Permission permission = permissionRepository.findByUserAndDocument(user, doc).get();
         permission.setUserRole(userRole);
         permissionRepository.save(permission);
     }
@@ -50,7 +52,7 @@ public class PermissionService {
     }
 
     public boolean delete(Document doc, User user) {
-        Permission p = permissionRepository.findByUserAndDocument(user, doc);
+        Permission p = permissionRepository.findByUserAndDocument(user, doc).get();
         permissionRepository.delete(p);
         return true;
     }
