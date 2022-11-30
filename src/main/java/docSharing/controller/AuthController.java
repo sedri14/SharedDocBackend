@@ -6,6 +6,8 @@ import docSharing.Utils.Validation;
 import docSharing.entities.User;
 import docSharing.entities.VerificationToken;
 import docSharing.repository.UserRepository;
+import docSharing.response.LoginObject;
+import docSharing.response.RegisterObject;
 import docSharing.response.Response;
 import docSharing.service.AuthService;
 import docSharing.service.UserService;
@@ -42,10 +44,11 @@ public class AuthController {
     }
 
     /**
+     * discription
      *
      * @param user
      * @param request
-     * @return String- failure message in case
+     * @return
      */
     @RequestMapping(value = "register", method = RequestMethod.POST)
     public ResponseEntity<String> createUser(@RequestBody UserDTO user, HttpServletRequest request) {
@@ -65,15 +68,14 @@ public class AuthController {
         }
 
         try {
-            Response<UserDTO> registerUser = authService.createUser(user);
-            UserDTO createdUser = registerUser.getData();
+            RegisterObject registerUser = authService.createUser(user);
+            UserDTO createdUser = registerUser.getUser();
             if (createdUser != null) {
                 //String appUrl = request.getContextPath();
 //                authService.publishRegistrationEvent(createdUser, request.getLocale(), appUrl);
 //                System.out.println("inside AuthController");
                 return ResponseEntity.status(HttpStatus.OK).body(gson.toJson(createdUser));
-            }
-            else
+            } else
                 return ResponseEntity.badRequest().body(Response.failure("Email already exist").getMessage());
 
         } catch (
@@ -88,39 +90,23 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.OK).body(gson.toJson(authService.updateTokenEmailKey(user, newEmail)));
     }
 
-//    @RequestMapping(value = "login", method = RequestMethod.POST)//
-//    public ResponseEntity<String> login(@RequestBody UserDTO user) {
-//
-//        logger.info("in login");
-//        System.out.println("in login");
-//
-//        Response<String> loginResponse = authService.login(user);
-//        if (!loginResponse.isSuccess() || loginResponse.getData() == null)
-//            return ResponseEntity.badRequest().body(loginResponse.getMessage());
-//        else {
-//            System.out.println("Token:  ");
-//            return ResponseEntity.status(HttpStatus.OK).body(loginResponse.getData());
-//
-//        }
-//    }
 
     @RequestMapping(value = "login", method = RequestMethod.POST)//
-    public <T> ResponseEntity<Response<T>> login(@RequestBody UserDTO user) {
+    public ResponseEntity<Response<LoginObject>> login(@RequestBody UserDTO user) {
 
         logger.info("in login");
         System.out.println("in login");
 
-        Response<T> loginResponse = authService.login(user);
-        if (!loginResponse.isSuccess() || loginResponse.getData() == null)
-            return ResponseEntity.badRequest().body(loginResponse);
+        LoginObject loginObject = authService.login(user);
+
+        if (loginObject.getMsg() != null) //error happened
+            return ResponseEntity.badRequest().body(Response.failure(loginObject.getMsg()));
         else {
             System.out.println("Token:  ");
-            return ResponseEntity.status(HttpStatus.OK).body(loginResponse);
+            return ResponseEntity.status(HttpStatus.OK).body(Response.success(loginObject));
 
         }
     }
-
-
 
 
     @GetMapping("/registrationConfirm")

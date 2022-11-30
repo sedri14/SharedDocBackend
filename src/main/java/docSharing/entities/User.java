@@ -4,10 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import docSharing.UserDTO.UserDTO;
 
 import javax.persistence.*;
-//import java.nio.file.Path;
 import java.io.Serializable;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -45,7 +43,7 @@ public class User implements Serializable {
         this.name = name;
         this.email = email;
         this.password = password;
-        this.enabled = false;
+        this.enabled = true;  //TOdo: after activation change it to false
     }
 
     public static User createUserFactory(String name, String email, String password) {
