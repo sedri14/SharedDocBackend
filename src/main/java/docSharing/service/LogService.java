@@ -33,8 +33,8 @@ public class LogService {
     public LogService() {
         Runnable saveContentToDBRunnable = new Runnable() {
             public void run() {
-//                saveLogToDB("khader", 2L, 4L);
-
+                saveAllLogsToDB();
+                logger.info("the log is saved");
             }
         };
 
@@ -253,41 +253,34 @@ public class LogService {
             String tempContent = docLog.getValue().getContent().get(0);
             int tempIndex = docLog.getValue().getIndex().get(0);
             Long tempUser = docLog.getValue().getUserId().get(0);
+            String action = docLog.getValue().getAction().get(0);
+
 
             for (int i = 1; i < docLog.getValue().getIndex().size() - 1; i++) {
 
-                if (
-                        tempIndex + 1 == docLog.getValue().getIndex().get(i)
-                                && tempUser == docLog.getValue().getUserId().get(i)
+                if (tempIndex + 1 == docLog.getValue().getIndex().get(i)
+                        && tempUser == docLog.getValue().getUserId().get(i)
+                        && action == docLog.getValue().getAction().get(i)
                 ) {
                     tempContent += docLog.getValue().getContent().get(i);
                     tempIndex = docLog.getValue().getIndex().get(i);
                     tempUser = docLog.getValue().getUserId().get(i);
+                    action = docLog.getValue().getAction().get(i);
                 } else {
-//                    Log log = new Log();
-//                    saveOneLogToDB(tempContent, tempUser, docLog.getKey());
+                    saveOneLogToDB(tempContent, tempUser, docLog.getKey());
                     tempContent = "";
                     tempIndex = docLog.getValue().getIndex().get(i);
                     tempUser = docLog.getValue().getUserId().get(i);
+                    action = docLog.getValue().getAction().get(i);
                 }
             }
             userLogByDocIdMap.clear();
         }
     }
 
-    private void saveOneLogToDB(String logContent, User user, Document doc) {
-        Log log = new Log(user, doc, logContent, LocalDateTime.now());
+    public void saveOneLogToDB(String logContent, Long userId, Long docId) {
+        Log log = new Log(userId, docId, logContent, LocalDateTime.now());
+        logger.info("the log object is " + log);
         logRepository.save(log);
     }
-
-//    private void saveLog(PrepareDocumentLog allLog) {
-//        String content = "";
-//
-//        for (int i = 0; i < allLog.getContent().size(); i++) {
-////            if (allLog.getIndex().get(i) + allLog.getIndex().get() )
-//
-//        }
-//
-//
-//    }
 }

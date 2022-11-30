@@ -76,8 +76,11 @@ public class FileSystemService {
         }
 
         INode savedInode = fsRepository.save(newInode);
-        Long docId = savedInode.getId();
-        docService.setPermission(addInode.userId, docId, UserRole.EDITOR);
+        if (addInode.type == INodeType.FILE) {
+            Long docId = savedInode.getId();
+            docService.setPermission(addInode.userId, docId, UserRole.EDITOR);
+        }
+
 
         return savedInode;
     }
@@ -86,7 +89,7 @@ public class FileSystemService {
     /**
      * Sets inode with targetInodeId to be the parent of inode with inodeId.
      *
-     * @param sourceId       - id of the inode to move
+     * @param sourceId - id of the inode to move
      * @param targetId - id of the new parent inode
      * @return the moved inode
      */

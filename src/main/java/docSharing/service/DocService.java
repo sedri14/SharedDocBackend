@@ -59,6 +59,9 @@ public class DocService {
      * @return updated document
      */
     public ReturnDocumentMessage sendUpdatedText(Long docId, ManipulatedText manipulatedText) {
+        if (manipulatedText == null) {
+            throw new IllegalArgumentException("the parameter is null");
+        }
         logger.info("start sendUpdatedText function");
         logger.info("the client sent" + manipulatedText);
         switch (manipulatedText.getType()) {
@@ -283,6 +286,16 @@ public class DocService {
         Document doc = docRepository.findById(docId).get();
         return doc.getOwner().getId();
 
+    }
+
+    public Document findDocumentById(Long docId) {
+        return docRepository.findById(docId).get();
+
+
+    }
+
+    public List<String> getCurrentViewingUserList(Long docId) {
+        return viewingUser.get(docId);
     }
 
 }

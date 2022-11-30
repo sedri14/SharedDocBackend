@@ -1,6 +1,8 @@
 package docSharing.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.ibm.icu.util.LocaleData;
+import jakarta.validation.constraints.NotNull;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -13,13 +15,25 @@ public class Log {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = User.class)
     @JoinColumn(name = "user_id")
+    @NotNull(message = "User not set")
+    @JsonIgnore
     private User user;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+
+    @Column(name = "user_id", insertable = false, updatable = false)
+    private Long userId;
+
+
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = Document.class)
     @JoinColumn(name = "doc_id")
+    @NotNull(message = "Document not set")
+    @JsonIgnore
     private Document document;
+
+    @Column(name = "doc_id", insertable = false, updatable = false)
+    private Long docId;
 
     @Column(name = "logContent")
     private String logContent;
@@ -31,10 +45,11 @@ public class Log {
     public Log() {
 
     }
-    public Log( User user, Document document, String logContent, LocalDateTime localDateTime) {
 
-        this.user = user;
-        this.document = document;
+    public Log(Long userId, Long docId, String logContent, LocalDateTime localDateTime) {
+
+        this.userId = userId;
+        this.docId = docId;
         this.logContent = logContent;
         this.localDateTime = localDateTime;
     }
@@ -79,7 +94,16 @@ public class Log {
         return localDateTime;
     }
 
-
+    @Override
+    public String toString() {
+        return "Log{" +
+                "id=" + id +
+                ", userId=" + userId +
+                ", docId=" + docId +
+                ", logContent='" + logContent + '\'' +
+                ", localDateTime=" + localDateTime +
+                '}';
+    }
 }
 
 

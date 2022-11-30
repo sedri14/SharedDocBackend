@@ -9,6 +9,15 @@ public class FileWithData {
     private Long userId;
     private MultipartFile file;
 
+    public FileWithData() {
+    }
+
+    public FileWithData(Long parentInodeId, Long userId, MultipartFile file) {
+        this.parentInodeId = parentInodeId;
+        this.userId = userId;
+        this.file = file;
+    }
+
     public Long getParentInodeId() {
         return parentInodeId;
     }

@@ -6,6 +6,10 @@ public class OnlineUser {
     public OnlineUser() {
     }
 
+    public OnlineUser(String userName) {
+        this.userName = userName;
+    }
+
     public void setUserName(String userName) {
         this.userName = userName;
     }
