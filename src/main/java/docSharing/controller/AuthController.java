@@ -7,6 +7,7 @@ import docSharing.entities.User;
 import docSharing.entities.VerificationToken;
 import docSharing.repository.UserRepository;
 import docSharing.response.LoginObject;
+import docSharing.response.RegisterObject;
 import docSharing.response.Response;
 import docSharing.service.AuthService;
 import docSharing.service.UserService;
@@ -44,6 +45,7 @@ public class AuthController {
 
     /**
      * discription
+     *
      * @param user
      * @param request
      * @return
@@ -66,15 +68,14 @@ public class AuthController {
         }
 
         try {
-            Response<UserDTO> registerUser = authService.createUser(user);
-            UserDTO createdUser = registerUser.getData();
+            RegisterObject registerUser = authService.createUser(user);
+            UserDTO createdUser = registerUser.getUser();
             if (createdUser != null) {
                 //String appUrl = request.getContextPath();
 //                authService.publishRegistrationEvent(createdUser, request.getLocale(), appUrl);
 //                System.out.println("inside AuthController");
                 return ResponseEntity.status(HttpStatus.OK).body(gson.toJson(createdUser));
-            }
-            else
+            } else
                 return ResponseEntity.badRequest().body(Response.failure("Email already exist").getMessage());
 
         } catch (
@@ -90,11 +91,6 @@ public class AuthController {
     }
 
 
-//    String msg= loginObject.getMsg();
-//            switch (msg) {
-//        case:
-//    }
-
     @RequestMapping(value = "login", method = RequestMethod.POST)//
     public ResponseEntity<Response<LoginObject>> login(@RequestBody UserDTO user) {
 
@@ -103,7 +99,7 @@ public class AuthController {
 
         LoginObject loginObject = authService.login(user);
 
-        if (loginObject.getMsg()!=null) //error happened
+        if (loginObject.getMsg() != null) //error happened
             return ResponseEntity.badRequest().body(Response.failure(loginObject.getMsg()));
         else {
             System.out.println("Token:  ");
@@ -111,8 +107,6 @@ public class AuthController {
 
         }
     }
-
-
 
 
     @GetMapping("/registrationConfirm")
