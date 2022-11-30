@@ -5,6 +5,8 @@ import docSharing.entities.INode;
 import docSharing.service.AuthService;
 import docSharing.service.FileSystemService;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,6 +24,8 @@ public class FileSystemController {
     @Autowired
     private FileSystemService fsService;
 
+    private static Logger logger = LogManager.getLogger(FileSystemController.class.getName());
+
     /**
      * Adds an inode
      *
@@ -33,9 +37,13 @@ public class FileSystemController {
      */
     @RequestMapping(value = "/add", method = RequestMethod.POST)
     public ResponseEntity<INode> addInode(@RequestBody AddINodeDTO addINodeDTO) {
-        if (addINodeDTO == null) {
+        logger.info("start addInode function");
+        logger.debug("addInode function parameters: userId:%d, name:%s, type:%s, parentId:%d", addINodeDTO.userId, addINodeDTO.name, addINodeDTO.type, addINodeDTO.parentId);
+        if (addINodeDTO == null || addINodeDTO.name == null || addINodeDTO.type == null || addINodeDTO.parentId == null || addINodeDTO.userId == null) {
+            logger.error("parameters missing");
             throw new IllegalArgumentException("Request unavailable");
         }
+        logger.info("In addInode adding %s", addINodeDTO.type);
 
         return ResponseEntity.ok(fsService.addInode(addINodeDTO));
     }
@@ -49,7 +57,10 @@ public class FileSystemController {
      */
     @RequestMapping(value = "/rename", method = RequestMethod.PATCH)
     public ResponseEntity<INode> rename(@RequestBody RenameINodeDTO renameINodeDTO) {
+        logger.info("start rename function");
+        logger.debug("rename function parameters: name:%s, id:%d", renameINodeDTO.name, renameINodeDTO.id);
         if (renameINodeDTO == null || renameINodeDTO.name == null || renameINodeDTO.id == null) {
+            logger.error("parameters missing");
             throw new IllegalArgumentException("Request unavailable");
         }
 
@@ -64,7 +75,10 @@ public class FileSystemController {
      */
     @RequestMapping(value = "/level", method = RequestMethod.POST)
     public ResponseEntity<List<INode>> getChildren(@RequestBody INodeDTO inodeDTO) {
+        logger.info("start getChildren function");
+        logger.debug("getChildren function parameters: id:%d", inodeDTO.id);
         if (inodeDTO == null || inodeDTO.id == null) {
+            logger.error("parameters missing");
             throw new IllegalArgumentException("Request unavailable");
         }
 
@@ -80,8 +94,10 @@ public class FileSystemController {
      */
     @RequestMapping(value = "/move", method = RequestMethod.POST)
     public ResponseEntity<INode> move(@RequestBody MoveINodeDTO moveINodeDTO) {
-
+        logger.info("start move function");
+        logger.debug("move function parameters: userId:%d, sourceId:%d, targetId:%d", moveINodeDTO.userId, moveINodeDTO.sourceId, moveINodeDTO.targetId);
         if (moveINodeDTO == null || moveINodeDTO.sourceId == null || moveINodeDTO.targetId == null) {
+            logger.error("parameters missing");
             throw new IllegalArgumentException("Request unavailable");
         }
 
@@ -96,7 +112,10 @@ public class FileSystemController {
      */
     @RequestMapping(value = "/delete", method = RequestMethod.DELETE)
     public ResponseEntity<List<INode>> delete(@RequestBody INodeDTO inodeDTO) {
+        logger.info("start delete function");
+        logger.debug("delete function parameters: id:%d", inodeDTO.id);
         if (inodeDTO == null || inodeDTO.id == null) {
+            logger.error("parameters missing");
             throw new IllegalArgumentException("Request unavailable");
         }
 
@@ -111,8 +130,11 @@ public class FileSystemController {
      */
     @RequestMapping(value = "/uploadFile", method = RequestMethod.POST)
     public ResponseEntity<INode> uploadFile(@ModelAttribute FileWithData fileWithData) {
+        logger.info("start uploadFile function");
+        logger.debug("uploadFile function parameters: userId:%d, parentId:%d, filename:%s", fileWithData.getUserId(), fileWithData.getParentInodeId(), fileWithData.getFile().getOriginalFilename());
         System.out.println(fileWithData);
         if (fileWithData == null || fileWithData.getParentInodeId() == null || fileWithData.getUserId() == null || fileWithData.getFile() == null) {
+            logger.error("parameters missing");
             throw new IllegalArgumentException("Request unavailable");
         }
 
@@ -122,6 +144,7 @@ public class FileSystemController {
 
         String fileExtension = FilenameUtils.getExtension(file.getOriginalFilename());
         if (!fileExtension.equals("txt")) {
+            logger.error("file type is not supported");
             throw new IllegalArgumentException("File type is not supported");
         }
 
@@ -129,6 +152,7 @@ public class FileSystemController {
         try {
             content = new String(file.getBytes());
         } catch (IOException e) {
+            logger.error("Can not parse file content: %s", file.getOriginalFilename());
             throw new IllegalArgumentException("Can not parse file content");
         }
 
