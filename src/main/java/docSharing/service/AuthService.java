@@ -5,10 +5,10 @@ import docSharing.UserDTO.UserDTO;
 //import docSharing.emailActivation.OnRegistrationCompleteEvent;
 import docSharing.emailActivation.OnRegistrationCompleteEvent;
 import docSharing.entities.User;
-
 import docSharing.entities.VerificationToken;
 import docSharing.repository.TokenRepository;
 import docSharing.repository.UserRepository;
+import docSharing.response.Response;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,11 +24,10 @@ import static docSharing.entities.User.createUserFactory;
 
 @Service
 public class AuthService {
-    //why her hash map of user? and not id.
+
     static Map<User,String> mapUserTokens = new HashMap<>();
     @Autowired
     private UserRepository userRepository;
-
     @Autowired
     private TokenRepository tokenRepository;
     @Autowired
@@ -39,12 +38,11 @@ public class AuthService {
     private static final int SCHEDULE = 1000 * 60 * 60;
 
     private static final Gson gson = new Gson();
+
     public AuthService(TokenRepository tokenRepository) {
         this.tokenRepository = tokenRepository;
     }
 
-    //why?? we have auto wire!!
-    //i think we should delete it
     public AuthService(UserRepository userRepository, TokenRepository tokenRepository) {
         this.userRepository = userRepository;
         this.tokenRepository = tokenRepository;
@@ -52,25 +50,29 @@ public class AuthService {
 
     public AuthService() {}
 
-    public User createUser(UserDTO user) throws SQLDataException {
+
+
+    public Response<UserDTO> createUser(UserDTO user) throws SQLDataException {
         logger.info("in createUser");
-        //make the if in variable user and then check it
-        //make the if and the else in a curler brasses
-       if (userRepository.findByEmail(user.getEmail())== null)
-           //make create user factory in a variable
-           return userRepository.save(createUserFactory(user.getName(), user.getEmail(), user.getPassword()));
-       else throw new SQLDataException(String.format("Email %s exists in users table", user.getEmail()));
+        if (!isExistingEmail(user.getEmail()))
+        {
+            userRepository.save(createUserFactory(user));
+            return Response.success(user);
+        }
+        else
+            return Response.failure(String.format("Email %s exists in users table", user.getEmail()));
+
     }
 
-    //you don't user this function?
-    //if you use it a lot, just use this function.
+
+
+
     private boolean isExistingEmail (String email)
     {
         User user = userRepository.findByEmail(email);
         return (user!=null)?true:false;
     }
 
-    //this could be private
     public String generateToken()
     {
         UUID uuid = UUID.randomUUID();
@@ -78,15 +80,22 @@ public class AuthService {
     }
 
 
-    public Optional<String> login(UserDTO user) {
+    public Response<String> login(UserDTO user) {
+
         logger.info("in login");
         User userByEmail = userRepository.findByEmail(user.getEmail());
-        if (userByEmail == null) {return Optional.empty();}
+        if (userByEmail == null) //User doesn't exist
+            return Response.failure(String.valueOf(LoginResponse.loginEnum.EMAIL_NOT_EXIST));
+        if (!isEnabledUser(user))
+            return Response.failure(String.valueOf(LoginResponse.loginEnum.CONFIRM_EMAIL));
+        if (!userByEmail.getPassword().equals(user.getPassword()))  //User exist check password
+            return Response.failure(String.valueOf(LoginResponse.loginEnum.INVALID_PASSWORD));
+        else
+        {
+            String token = generateToken();
+            mapUserTokens.put(userByEmail, token);
+            return Response.success(token);
 
-        if (userByEmail.getPassword().equals(user.getPassword())) {
-            Optional<String> token = Optional.of(generateToken()) ;
-            mapUserTokens.put(userByEmail, token.get());
-            return token;
         }
         return Optional.empty();
     }
@@ -115,8 +124,7 @@ public class AuthService {
         mapUserTokens.remove(user.getEmail());
         return user;
     }
-    //do you want this function?
-    //
+
     private boolean isValidCredentials(String email, String password) {
         User user = userRepository.findByEmail(email);
 
@@ -126,7 +134,7 @@ public class AuthService {
 
         return false;
     }
-    //
+
     public User getUser(String verificationToken) {
         User user = tokenRepository.findByToken(verificationToken).getUser();
         return user;
@@ -140,6 +148,7 @@ public class AuthService {
 
     public void publishRegistrationEvent(User createdUser, Locale locale, String appUrl  ) {
         eventPublisher.publishEvent(new OnRegistrationCompleteEvent(createdUser, locale, appUrl));
+        System.out.println("inside publishRegistrationEvent");
     }
 
     public void deleteVerificationToken(String token) {
