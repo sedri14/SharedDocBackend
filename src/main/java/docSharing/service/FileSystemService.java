@@ -2,10 +2,7 @@ package docSharing.service;
 
 import com.mysql.cj.jdbc.exceptions.OperationNotSupportedException;
 import docSharing.DTO.AddINodeDTO;
-import docSharing.entities.Document;
-import docSharing.entities.INode;
-import docSharing.entities.INodeType;
-import docSharing.entities.User;
+import docSharing.entities.*;
 import docSharing.repository.FileSystemRepository;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +23,9 @@ public class FileSystemService {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private DocService docService;
 
     /**
      * Returns all direct children of an inode
@@ -75,7 +75,11 @@ public class FileSystemService {
                 throw new IllegalArgumentException("Illegal Inode type");
         }
 
-        return fsRepository.save(newInode);
+        INode savedInode = fsRepository.save(newInode);
+        Long docId = savedInode.getId();
+        docService.setPermission(addInode.userId, docId, UserRole.EDITOR);
+
+        return savedInode;
     }
 
 
@@ -208,7 +212,8 @@ public class FileSystemService {
 
         User owner = userService.getById(userId);
         Document newDoc = Document.createNewImportedDocument(nameWithExtension, content, parent, owner);
-        fsRepository.save(newDoc);
+        Document savedDoc = fsRepository.save(newDoc);
+        docService.setPermission(userId, savedDoc.getId(), UserRole.EDITOR);
 
         return newDoc;
     }

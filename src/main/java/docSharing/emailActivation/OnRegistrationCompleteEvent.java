@@ -1,4 +1,4 @@
-package EmailActivation;
+package docSharing.emailActivation;
 
 
 import docSharing.entities.User;

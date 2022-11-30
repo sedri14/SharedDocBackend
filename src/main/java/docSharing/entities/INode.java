@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Set;
 
 @Entity
@@ -22,7 +23,7 @@ public class INode implements Serializable {
     @Enumerated(EnumType.STRING)
     protected INodeType type;
     @Column(name = "creation_date")
-    protected LocalDate creationDate;
+    protected LocalDateTime creationDate;
     @JsonIgnore
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "parent" , cascade = CascadeType.REMOVE)
     protected Set<INode> children;
@@ -35,7 +36,7 @@ public class INode implements Serializable {
 
     }
 
-    public INode(String name, INodeType type, LocalDate creationDate, Set<INode> children, INode parent) {
+    public INode(String name, INodeType type, LocalDateTime creationDate, Set<INode> children, INode parent) {
         this.name = name;
         this.type = type;
         this.creationDate = creationDate;
@@ -44,7 +45,7 @@ public class INode implements Serializable {
     }
 
     public static INode createNewDirectory(String name, INode parent) {
-        return new INode(name, INodeType.DIR, LocalDate.now(), null, parent);
+        return new INode(name, INodeType.DIR, LocalDateTime.now(), null, parent);
     }
 
     public Long getId() {
@@ -59,7 +60,7 @@ public class INode implements Serializable {
         return type;
     }
 
-    public LocalDate getCreationDate() {
+    public LocalDateTime getCreationDate() {
         return creationDate;
     }
 

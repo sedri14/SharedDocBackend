@@ -6,6 +6,10 @@ public class ChnageRole {
     public Long ownerId;
     public String email;
     public UserRole userRole;
+    public boolean isDelete;
+
+    public ChnageRole() {
+    }
 
     public ChnageRole(Long ownerId, String email, UserRole userRole) {
         this.ownerId = ownerId;

@@ -9,6 +9,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @SpringBootApplication
 public class SpringApp {
@@ -21,7 +22,7 @@ public class SpringApp {
         return args -> {
             //TODO: make it better
             if (!fsRepository.existsById(1L)) {
-                fsRepository.save(new INode("root", INodeType.DIR, LocalDate.now(), null, null));
+                fsRepository.save(new INode("root", INodeType.DIR, LocalDateTime.now(), null, null));
             }
         };
     }

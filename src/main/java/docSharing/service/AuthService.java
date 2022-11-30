@@ -1,9 +1,9 @@
 package docSharing.service;
 
-import EmailActivation.OnRegistrationCompleteEvent;
 import com.google.gson.Gson;
-import docSharing.LoginResponse;
 import docSharing.UserDTO.UserDTO;
+//import docSharing.emailActivation.OnRegistrationCompleteEvent;
+import docSharing.emailActivation.OnRegistrationCompleteEvent;
 import docSharing.entities.User;
 import docSharing.entities.VerificationToken;
 import docSharing.repository.TokenRepository;
@@ -51,6 +51,7 @@ public class AuthService {
     public AuthService() {}
 
 
+
     public Response<UserDTO> createUser(UserDTO user) throws SQLDataException {
         logger.info("in createUser");
         if (!isExistingEmail(user.getEmail()))
@@ -62,6 +63,7 @@ public class AuthService {
             return Response.failure(String.format("Email %s exists in users table", user.getEmail()));
 
     }
+
 
 
 
@@ -79,8 +81,8 @@ public class AuthService {
 
 
     public Response<String> login(UserDTO user) {
-        logger.info("in login");
 
+        logger.info("in login");
         User userByEmail = userRepository.findByEmail(user.getEmail());
         if (userByEmail == null) //User doesn't exist
             return Response.failure(String.valueOf(LoginResponse.loginEnum.EMAIL_NOT_EXIST));
@@ -93,7 +95,9 @@ public class AuthService {
             String token = generateToken();
             mapUserTokens.put(userByEmail, token);
             return Response.success(token);
+
         }
+        return Optional.empty();
     }
 
     public boolean isEnabledUser(UserDTO user) {
@@ -175,6 +179,8 @@ public class AuthService {
     public void saveRegisteredUser(User user) {
         userRepository.save(user);
     }
+
+
 
 
 

@@ -36,6 +36,7 @@ public class FileSystemController {
         if (addINodeDTO == null) {
             throw new IllegalArgumentException("Request unavailable");
         }
+
         return ResponseEntity.ok(fsService.addInode(addINodeDTO));
     }
 
@@ -110,13 +111,14 @@ public class FileSystemController {
      */
     @RequestMapping(value = "/uploadFile", method = RequestMethod.POST)
     public ResponseEntity<INode> uploadFile(@ModelAttribute FileWithData fileWithData) {
-        if (fileWithData == null || fileWithData.parentInodeId == null || fileWithData.userId == null || fileWithData.file == null) {
+        System.out.println(fileWithData);
+        if (fileWithData == null || fileWithData.getParentInodeId() == null || fileWithData.getUserId() == null || fileWithData.getFile() == null) {
             throw new IllegalArgumentException("Request unavailable");
         }
 
-        Long parentId = fileWithData.parentInodeId;
-        Long userId = fileWithData.userId;
-        MultipartFile file = fileWithData.file;
+        Long parentId = fileWithData.getParentInodeId();
+        Long userId = fileWithData.getUserId();
+        MultipartFile file = fileWithData.getFile();
 
         String fileExtension = FilenameUtils.getExtension(file.getOriginalFilename());
         if (!fileExtension.equals("txt")) {

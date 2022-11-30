@@ -16,10 +16,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-import javax.print.Doc;
 import java.util.List;
 
 
@@ -48,7 +46,7 @@ public class DocController {
 
     /**
      * @param docId document id
-     * @return the content of the document
+     * @return document
      */
     @RequestMapping(value = "/{docId}", method = RequestMethod.GET)
     public ResponseEntity<Document> getDocument(@PathVariable Long docId) {
@@ -77,12 +75,12 @@ public class DocController {
         return ResponseEntity.ok(docService.getPermission(permission.userId, permission.docId));
     }
 
-//    @RequestMapping(value = "/changeUserRoll/{docId}")
-//    public ResponseEntity<Boolean> changeUserRollInDoc(@PathVariable Long docId, @RequestBody ChnageRole changeRole) {
-//        logger.info("start changeUserRollInDoc function");
-//        return ResponseEntity.status(HttpStatus.OK).body(docService.changeUserRollInDoc(docId, changeRole.ownerId, changeRole.email, changeRole.userRole));
+    @RequestMapping(value = "changeUserRoll/{docId}")
+    public ResponseEntity<Boolean> changeUserRollInDoc(@PathVariable Long docId, @RequestBody ChnageRole changeRole) {
+        logger.info("start changeUserRollInDoc function");
+        return ResponseEntity.status(HttpStatus.OK).body(docService.editRole(docId, changeRole.ownerId, changeRole.email, changeRole.userRole, changeRole.isDelete));
 
-//}
+}
 
 
 //    @RequestMapping(value = "/savecontent/{docId}", method = RequestMethod.POST)

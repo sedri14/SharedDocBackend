@@ -1,8 +1,10 @@
 package docSharing.controller;
 
 import com.google.gson.Gson;
-import docSharing.UserDTO.UserDTO;
+
+
 import docSharing.Utils.Validation;
+import docSharing.UserDTO.UserDTO;
 import docSharing.entities.User;
 import docSharing.entities.VerificationToken;
 import docSharing.repository.UserRepository;
@@ -14,6 +16,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.WebRequest;
 
@@ -32,8 +35,6 @@ public class AuthController {
 
     @Autowired
     private UserService userService;
-
-    private UserRepository userRepository;
     private static final Gson gson = new Gson();
 
     private static Logger logger = LogManager.getLogger(AuthController.class.getName());
@@ -50,12 +51,14 @@ public class AuthController {
         }
         if (!Validation.isValidName(user.getName()) || user.getEmail() == null) {
             logger.error("In AuthenticationController.register: invalid name - int Level:200");
+
             return ResponseEntity.badRequest().body(Response.failure("Invalid name!").getMessage());
 
+
+            return ResponseEntity.badRequest().body("Invalid name address!");
+
         }
-        if (!Validation.isValidPassword(user.getPassword()) || user.getPassword() == null) {
-            logger.error("In AuthenticationController.register: invalid password - int Level:200");
-            return ResponseEntity.badRequest().body(Response.failure("Invalid password!").getMessage());
+
         }
 
         try {
@@ -82,11 +85,15 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.OK).body(gson.toJson(authService.updateTokenEmailKey(user, newEmail)));
     }
 
-    @RequestMapping(value = "login", method = RequestMethod.POST)//
-    public ResponseEntity<String> login(@RequestBody UserDTO user) {
+
+
+    @RequestMapping(value = "login", method = RequestMethod.POST)
+    public ResponseEntity<String> logIn(@RequestBody UserDTO user) {
+
 
         logger.info("in login");
         System.out.println("in login");
+
 
         Response<String> loginResponse = authService.login(user);
         if (!loginResponse.isSuccess() || loginResponse.getData() == null)
@@ -96,6 +103,7 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.OK).body(loginResponse.getData());
 
         }
+
     }
 
     @GetMapping("/registrationConfirm")
