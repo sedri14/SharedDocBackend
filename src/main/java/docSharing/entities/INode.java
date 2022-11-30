@@ -7,6 +7,7 @@ import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Objects;
 import java.util.Set;
 
 @Entity
@@ -82,5 +83,18 @@ public class INode implements Serializable {
 
     public void setParent(INode parent) {
         this.parent = parent;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        INode iNode = (INode) o;
+        return Objects.equals(id, iNode.id) && Objects.equals(name, iNode.name) && type == iNode.type && Objects.equals(children, iNode.children) && Objects.equals(parent, iNode.parent);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, name, type, children, parent);
     }
 }

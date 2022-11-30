@@ -63,14 +63,18 @@ public class DocController {
     @SendTo("/topic/usersJoin/{docId}")
     public List<String> sendNewUserJoinMessage(@DestinationVariable Long docId, OnlineUser user) {
         logger.info("start sendNewUserJoinMessage function");
-
+        if (user == null) {
+            throw new IllegalArgumentException("there is no user provided");
+        }
         return docService.addUserToViewingUsers(docId, user.getUserName());
     }
 
     @MessageMapping("/userDisconnect/{docId}")
     @SendTo("/topic/userDisconnect/{docId}")
     public List<String> removeUserFromViewingUsers(@DestinationVariable Long docId, OnlineUser user) {
-
+        if (user == null) {
+            throw new IllegalArgumentException("there is no user provided");
+        }
         logger.info("start sendNewUserJoinMessage function");
         return docService.removeUserFromViewingUsers(docId, user.getUserName());
 
