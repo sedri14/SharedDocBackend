@@ -76,11 +76,11 @@ public class DocController {
 
     }
 
-    @RequestMapping(value = "setPerm", method = RequestMethod.POST)
-    public ResponseEntity<Permission> setPermission(@RequestBody PermissionDTO permission) {
-        logger.info("start setPermission function");
-        return ResponseEntity.ok(docService.setPermission(permission.userId, permission.docId, permission.userRole));
-    }
+//    @RequestMapping(value = "setPerm", method = RequestMethod.POST)
+//    public ResponseEntity<Permission> setPermission(@RequestBody PermissionDTO permission) {
+//        logger.info("start setPermission function");
+//        return ResponseEntity.ok(docService.setPermission(permission.userId, permission.docId, permission.userRole));
+//    }
 
     @RequestMapping(value = "getPerm", method = RequestMethod.POST)
     public ResponseEntity<Response<PermissionResponse>> getPermission(@RequestBody PermissionDTO permission) {
