@@ -105,12 +105,12 @@ public class AuthController {
 //    }
 
     @RequestMapping(value = "login", method = RequestMethod.POST)//
-    public ResponseEntity<Response<String>> login(@RequestBody UserDTO user) {
+    public <T> ResponseEntity<Response<T>> login(@RequestBody UserDTO user) {
 
         logger.info("in login");
         System.out.println("in login");
 
-        Response<String> loginResponse = authService.login(user);
+        Response<T> loginResponse = authService.login(user);
         if (!loginResponse.isSuccess() || loginResponse.getData() == null)
             return ResponseEntity.badRequest().body(loginResponse);
         else {

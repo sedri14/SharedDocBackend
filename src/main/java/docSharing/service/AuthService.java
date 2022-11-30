@@ -9,6 +9,7 @@ import docSharing.entities.User;
 import docSharing.entities.VerificationToken;
 import docSharing.repository.TokenRepository;
 import docSharing.repository.UserRepository;
+import docSharing.response.IdTokenPair;
 import docSharing.response.LoginEnum;
 import docSharing.response.Response;
 import org.apache.logging.log4j.LogManager;
@@ -23,6 +24,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static docSharing.entities.User.createUserFactory;
+import static docSharing.response.IdTokenPair.createIdTokenPair;
 
 @Service
 public class AuthService {
@@ -80,7 +82,7 @@ public class AuthService {
     }
 
 
-    public Response<String> login(UserDTO user) {
+    public <T> Response<T> login(UserDTO user) {
         logger.info("in login");
 
         User userByEmail = userRepository.findByEmail(user.getEmail());
@@ -94,7 +96,8 @@ public class AuthService {
         {
             String token = generateToken();
             mapUserTokens.put(userByEmail, token);
-            return Response.success(token);
+            IdTokenPair idTokenPair= createIdTokenPair (userByEmail.getId(),token);
+            return (Response<T>) Response.success(idTokenPair);
         }
     }
 
