@@ -1,13 +1,15 @@
 package docSharing.service;
 
+//import EmailActivation.OnRegistrationCompleteEvent;
 import com.google.gson.Gson;
+
 import docSharing.UserDTO.UserDTO;
-//import docSharing.emailActivation.OnRegistrationCompleteEvent;
 import docSharing.emailActivation.OnRegistrationCompleteEvent;
 import docSharing.entities.User;
 import docSharing.entities.VerificationToken;
 import docSharing.repository.TokenRepository;
 import docSharing.repository.UserRepository;
+import docSharing.response.LoginEnum;
 import docSharing.response.Response;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -51,7 +53,6 @@ public class AuthService {
     public AuthService() {}
 
 
-
     public Response<UserDTO> createUser(UserDTO user) throws SQLDataException {
         logger.info("in createUser");
         if (!isExistingEmail(user.getEmail()))
@@ -63,7 +64,6 @@ public class AuthService {
             return Response.failure(String.format("Email %s exists in users table", user.getEmail()));
 
     }
-
 
 
 
@@ -81,23 +81,21 @@ public class AuthService {
 
 
     public Response<String> login(UserDTO user) {
-
         logger.info("in login");
+
         User userByEmail = userRepository.findByEmail(user.getEmail());
         if (userByEmail == null) //User doesn't exist
-            return Response.failure(String.valueOf(LoginResponse.loginEnum.EMAIL_NOT_EXIST));
+            return Response.failure(String.valueOf(LoginEnum.EMAIL_NOT_EXIST));
         if (!isEnabledUser(user))
-            return Response.failure(String.valueOf(LoginResponse.loginEnum.CONFIRM_EMAIL));
+            return Response.failure(String.valueOf(LoginEnum.CONFIRM_EMAIL));
         if (!userByEmail.getPassword().equals(user.getPassword()))  //User exist check password
-            return Response.failure(String.valueOf(LoginResponse.loginEnum.INVALID_PASSWORD));
+            return Response.failure(String.valueOf(LoginEnum.INVALID_PASSWORD));
         else
         {
             String token = generateToken();
             mapUserTokens.put(userByEmail, token);
             return Response.success(token);
-
         }
-        return Optional.empty();
     }
 
     public boolean isEnabledUser(UserDTO user) {
@@ -179,8 +177,6 @@ public class AuthService {
     public void saveRegisteredUser(User user) {
         userRepository.save(user);
     }
-
-
 
 
 

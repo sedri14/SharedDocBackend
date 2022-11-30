@@ -34,6 +34,9 @@ public class User implements Serializable {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private Set<Permission> permissions = new HashSet<>(); //docs I have permission (viewer/editor).
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private Set<Log> log = new HashSet<>();
+
     User() {
 
     }
@@ -42,15 +45,14 @@ public class User implements Serializable {
         this.name = name;
         this.email = email;
         this.password = password;
-        this.enabled=false;
+        this.enabled = false;
     }
 
-    public static User createUserFactory(String name, String email, String password)
-    {
-        return new User(name,email,password);
+    public static User createUserFactory(String name, String email, String password) {
+        return new User(name, email, password);
     }
-    public static User createUserFactory(UserDTO other)
-    {
+
+    public static User createUserFactory(UserDTO other) {
         return new User(other.getName(), other.getEmail(), other.getPassword());
     }
 
@@ -91,15 +93,20 @@ public class User implements Serializable {
         return myDocs;
     }
 
-    public boolean isEnabled() {return enabled;}
+    public boolean isEnabled() {
+        return enabled;
+    }
 
-    public void setEnabled(boolean enabled) {this.enabled = enabled;}
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
 
     //    public void setMyDocs(List<Path> myDocs) {
 //        this.myDocs = myDocs;
 //    }
 
 
+    //change the hashcode and the equal to newer one.
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -129,7 +136,9 @@ public class User implements Serializable {
     }
 
     @Override
-    public String toString() {return "User: id=" + id + ", name='" + name + ", email='" + email + ", password='" + password; }
+    public String toString() {
+        return "User: id=" + id + ", name='" + name + ", email='" + email + ", password='" + password;
+    }
 
     public Set<Document> getMyDocs() {
         return myDocs;
