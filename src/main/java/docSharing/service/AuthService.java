@@ -1,17 +1,17 @@
 package docSharing.service;
 
 //import EmailActivation.OnRegistrationCompleteEvent;
-import com.google.gson.Gson;
 
+import com.google.gson.Gson;
 import docSharing.UserDTO.UserDTO;
 import docSharing.emailActivation.OnRegistrationCompleteEvent;
 import docSharing.entities.User;
 import docSharing.entities.VerificationToken;
 import docSharing.repository.TokenRepository;
 import docSharing.repository.UserRepository;
-import docSharing.response.IdTokenPair;
 import docSharing.response.LoginEnum;
-import docSharing.response.Response;
+import docSharing.response.LoginObject;
+import docSharing.response.RegisterObject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +24,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static docSharing.entities.User.createUserFactory;
-import static docSharing.response.IdTokenPair.createIdTokenPair;
+import static docSharing.response.LoginObject.createLoginObject;
+import static docSharing.response.RegisterObject.createRegisterObject;
 
 @Service
 public class AuthService {
@@ -55,16 +56,15 @@ public class AuthService {
     public AuthService() {}
 
 
-    public Response<UserDTO> createUser(UserDTO user) throws SQLDataException {
+    public RegisterObject createUser(UserDTO user) throws SQLDataException {
         logger.info("in createUser");
         if (!isExistingEmail(user.getEmail()))
         {
             userRepository.save(createUserFactory(user));
-            return Response.success(user);
+            return createRegisterObject(user,null);
         }
         else
-            return Response.failure(String.format("Email %s exists in users table", user.getEmail()));
-
+            return createRegisterObject(null,"Email is already exist");
     }
 
 
@@ -82,22 +82,22 @@ public class AuthService {
     }
 
 
-    public <T> Response<T> login(UserDTO user) {
+    public LoginObject login(UserDTO user) {
         logger.info("in login");
 
         User userByEmail = userRepository.findByEmail(user.getEmail());
         if (userByEmail == null) //User doesn't exist
-            return Response.failure(String.valueOf(LoginEnum.EMAIL_NOT_EXIST));
+            return createLoginObject(userByEmail.getId(),null, String.valueOf(LoginEnum.EMAIL_NOT_EXIST));
         if (!isEnabledUser(user))
-            return Response.failure(String.valueOf(LoginEnum.CONFIRM_EMAIL));
+            return createLoginObject(userByEmail.getId(),null, String.valueOf(LoginEnum.CONFIRM_EMAIL));
         if (!userByEmail.getPassword().equals(user.getPassword()))  //User exist check password
-            return Response.failure(String.valueOf(LoginEnum.INVALID_PASSWORD));
+            return createLoginObject(userByEmail.getId(),null, String.valueOf(LoginEnum.INVALID_PASSWORD));
         else
         {
             String token = generateToken();
             mapUserTokens.put(userByEmail, token);
-            IdTokenPair idTokenPair= createIdTokenPair (userByEmail.getId(),token);
-            return (Response<T>) Response.success(idTokenPair);
+            LoginObject loginObject=createLoginObject(userByEmail.getId(),token,null);
+            return  loginObject;
         }
     }
 
