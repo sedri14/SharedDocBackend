@@ -4,6 +4,9 @@ import docSharing.DTO.PermissionDTO;
 import docSharing.DTO.ReturnDocumentMessage;
 import docSharing.entities.Document;
 import docSharing.entities.Permission;
+import docSharing.entities.UserRole;
+import docSharing.response.PermissionResponse;
+import docSharing.response.Response;
 import docSharing.service.DocService;
 import docSharing.test.ChnageRole;
 import docSharing.test.OnlineUser;
@@ -19,6 +22,7 @@ import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 
 //@Controller
@@ -72,19 +76,33 @@ public class DocController {
 
     }
 
-    @RequestMapping(value = "setPerm", method = RequestMethod.POST)
-    public ResponseEntity<Permission> setPermission(@RequestBody PermissionDTO permission) {
-        logger.info("start setPermission function");
-        return ResponseEntity.ok(docService.setPermission(permission.userId, permission.docId, permission.userRole));
-    }
+//    @RequestMapping(value = "setPerm", method = RequestMethod.POST)
+//    public ResponseEntity<Permission> setPermission(@RequestBody PermissionDTO permission) {
+//        logger.info("start setPermission function");
+//        return ResponseEntity.ok(docService.setPermission(permission.userId, permission.docId, permission.userRole));
+//    }
 
     @RequestMapping(value = "getPerm", method = RequestMethod.POST)
-    public ResponseEntity<Permission> getPermission(@RequestBody PermissionDTO permission) {
+    public ResponseEntity<Response<PermissionResponse>> getPermission(@RequestBody PermissionDTO permission) {
 
-        return ResponseEntity.ok(docService.getPermission(permission.userId, permission.docId));
+        Optional<Permission> optionalPer = docService.getPermission(permission.userId, permission.docId);
+        if (optionalPer.isPresent()){
+            UserRole userRole = optionalPer.get().getUserRole();
+            return ResponseEntity.ok(Response.success(new PermissionResponse(userRole)));
+        } else {
+            return ResponseEntity.badRequest().body(Response.failure("You have no Access to this file"));
+        }
+
+
+
+//        return ResponseEntity.badRequest().body(loginResponse);
+//        else {
+//            System.out.println("Token:  ");
+//            return ResponseEntity.status(HttpStatus.OK).body(loginResponse);
+
     }
 
-    @RequestMapping(value = "changeUserRoll/{docId}")
+    @RequestMapping(value = "changeUserRoll/{docId}", method = RequestMethod.POST)
     public ResponseEntity<Boolean> changeUserRollInDoc(@PathVariable Long docId, @RequestBody ChnageRole changeRole) {
         logger.info("start changeUserRollInDoc function");
         return ResponseEntity.status(HttpStatus.OK).body(docService.editRole(docId, changeRole.ownerId, changeRole.email, changeRole.userRole, changeRole.isDelete));

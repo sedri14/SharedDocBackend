@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import javax.swing.text.html.Option;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -266,7 +267,7 @@ public class DocService {
         return p;
     }
 
-    public Permission getPermission(Long userId, Long docId) {
+    public Optional<Permission> getPermission(Long userId, Long docId) {
         User user = userService.getById(userId);
         Document doc = docRepository.findById(docId).get();
 

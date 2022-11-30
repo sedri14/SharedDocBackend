@@ -1,6 +1,8 @@
 package docSharing.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIncludeProperties;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import javax.persistence.*;
 import java.time.LocalDate;
@@ -12,9 +14,9 @@ import java.util.Set;
 @Table(name = "Document")
 public class Document extends INode {
 
-    @JsonIgnore
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "owner_id", referencedColumnName = "id")
+    @JsonIncludeProperties(value = {"id"})
+    @ManyToOne (fetch = FetchType.LAZY)
+    @JoinColumn(name="owner_id", referencedColumnName = "id")
     private User owner;
 
     @Column(name = "last_edited")
@@ -23,7 +25,7 @@ public class Document extends INode {
     @Column(name = "content")
     private String content;
 
-    @OneToMany(mappedBy = "document", cascade = CascadeType.ALL)
+    @OneToMany (mappedBy = "document", cascade = CascadeType.ALL)
     private Set<Permission> permissions = new HashSet<>();
 
     @OneToMany(mappedBy = "document", cascade = CascadeType.ALL)
