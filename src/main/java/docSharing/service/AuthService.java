@@ -1,8 +1,8 @@
 package docSharing.service;
 
 //import EmailActivation.OnRegistrationCompleteEvent;
-import com.google.gson.Gson;
 
+import com.google.gson.Gson;
 import docSharing.UserDTO.UserDTO;
 import docSharing.emailActivation.OnRegistrationCompleteEvent;
 import docSharing.entities.User;
@@ -24,7 +24,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static docSharing.entities.User.createUserFactory;
-import static docSharing.response.IdTokenPair.createIdTokenPair;
 
 @Service
 public class AuthService {
@@ -82,7 +81,7 @@ public class AuthService {
     }
 
 
-    public <T> Response<T> login(UserDTO user) {
+    public Response<IdTokenPair> login(UserDTO user) {
         logger.info("in login");
 
         User userByEmail = userRepository.findByEmail(user.getEmail());
@@ -96,8 +95,8 @@ public class AuthService {
         {
             String token = generateToken();
             mapUserTokens.put(userByEmail, token);
-            IdTokenPair idTokenPair= createIdTokenPair (userByEmail.getId(),token);
-            return (Response<T>) Response.success(idTokenPair);
+            IdTokenPair idTokenPair =IdTokenPair.createIdTokenPair(userByEmail.getId(),token);
+            return  Response.success(idTokenPair);
         }
     }
 

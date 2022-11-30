@@ -6,6 +6,7 @@ import docSharing.Utils.Validation;
 import docSharing.entities.User;
 import docSharing.entities.VerificationToken;
 import docSharing.repository.UserRepository;
+import docSharing.response.IdTokenPair;
 import docSharing.response.Response;
 import docSharing.service.AuthService;
 import docSharing.service.UserService;
@@ -42,10 +43,10 @@ public class AuthController {
     }
 
     /**
-     *
+     * discription
      * @param user
      * @param request
-     * @return String- failure message in case
+     * @return
      */
     @RequestMapping(value = "register", method = RequestMethod.POST)
     public ResponseEntity<String> createUser(@RequestBody UserDTO user, HttpServletRequest request) {
@@ -88,34 +89,20 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.OK).body(gson.toJson(authService.updateTokenEmailKey(user, newEmail)));
     }
 
-//    @RequestMapping(value = "login", method = RequestMethod.POST)//
-//    public ResponseEntity<String> login(@RequestBody UserDTO user) {
-//
-//        logger.info("in login");
-//        System.out.println("in login");
-//
-//        Response<String> loginResponse = authService.login(user);
-//        if (!loginResponse.isSuccess() || loginResponse.getData() == null)
-//            return ResponseEntity.badRequest().body(loginResponse.getMessage());
-//        else {
-//            System.out.println("Token:  ");
-//            return ResponseEntity.status(HttpStatus.OK).body(loginResponse.getData());
-//
-//        }
-//    }
 
     @RequestMapping(value = "login", method = RequestMethod.POST)//
-    public <T> ResponseEntity<Response<T>> login(@RequestBody UserDTO user) {
+    public ResponseEntity<Response<IdTokenPair>> login(@RequestBody UserDTO user) {
 
         logger.info("in login");
         System.out.println("in login");
 
-        Response<T> loginResponse = authService.login(user);
-        if (!loginResponse.isSuccess() || loginResponse.getData() == null)
-            return ResponseEntity.badRequest().body(loginResponse);
+        //Response<LoginObject> loginResponse = authService.login(user);
+        Response<IdTokenPair> idTokenPairResponse= authService.login(user);
+        if (!idTokenPairResponse.isSuccess() || idTokenPairResponse.getData() == null)
+            return ResponseEntity.badRequest().body(idTokenPairResponse);
         else {
             System.out.println("Token:  ");
-            return ResponseEntity.status(HttpStatus.OK).body(loginResponse);
+            return ResponseEntity.status(HttpStatus.OK).body(idTokenPairResponse);
 
         }
     }
