@@ -6,7 +6,7 @@ import docSharing.Utils.Validation;
 import docSharing.entities.User;
 import docSharing.entities.VerificationToken;
 import docSharing.repository.UserRepository;
-import docSharing.response.IdTokenPair;
+import docSharing.response.LoginObject;
 import docSharing.response.Response;
 import docSharing.service.AuthService;
 import docSharing.service.UserService;
@@ -90,19 +90,24 @@ public class AuthController {
     }
 
 
+//    String msg= loginObject.getMsg();
+//            switch (msg) {
+//        case:
+//    }
+
     @RequestMapping(value = "login", method = RequestMethod.POST)//
-    public ResponseEntity<Response<IdTokenPair>> login(@RequestBody UserDTO user) {
+    public ResponseEntity<Response<LoginObject>> login(@RequestBody UserDTO user) {
 
         logger.info("in login");
         System.out.println("in login");
 
-        //Response<LoginObject> loginResponse = authService.login(user);
-        Response<IdTokenPair> idTokenPairResponse= authService.login(user);
-        if (!idTokenPairResponse.isSuccess() || idTokenPairResponse.getData() == null)
-            return ResponseEntity.badRequest().body(idTokenPairResponse);
+        LoginObject loginObject = authService.login(user);
+
+        if (loginObject.getMsg()!=null) //error happened
+            return ResponseEntity.badRequest().body(Response.failure(loginObject.getMsg()));
         else {
             System.out.println("Token:  ");
-            return ResponseEntity.status(HttpStatus.OK).body(idTokenPairResponse);
+            return ResponseEntity.status(HttpStatus.OK).body(Response.success(loginObject));
 
         }
     }

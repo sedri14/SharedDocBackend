@@ -9,8 +9,8 @@ import docSharing.entities.User;
 import docSharing.entities.VerificationToken;
 import docSharing.repository.TokenRepository;
 import docSharing.repository.UserRepository;
-import docSharing.response.IdTokenPair;
 import docSharing.response.LoginEnum;
+import docSharing.response.LoginObject;
 import docSharing.response.Response;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -24,6 +24,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static docSharing.entities.User.createUserFactory;
+import static docSharing.response.LoginObject.createLoginObject;
 
 @Service
 public class AuthService {
@@ -81,22 +82,22 @@ public class AuthService {
     }
 
 
-    public Response<IdTokenPair> login(UserDTO user) {
+    public LoginObject login(UserDTO user) {
         logger.info("in login");
 
         User userByEmail = userRepository.findByEmail(user.getEmail());
         if (userByEmail == null) //User doesn't exist
-            return Response.failure(String.valueOf(LoginEnum.EMAIL_NOT_EXIST));
+            return createLoginObject(userByEmail.getId(),null, String.valueOf(LoginEnum.EMAIL_NOT_EXIST));
         if (!isEnabledUser(user))
-            return Response.failure(String.valueOf(LoginEnum.CONFIRM_EMAIL));
+            return createLoginObject(userByEmail.getId(),null, String.valueOf(LoginEnum.CONFIRM_EMAIL));
         if (!userByEmail.getPassword().equals(user.getPassword()))  //User exist check password
-            return Response.failure(String.valueOf(LoginEnum.INVALID_PASSWORD));
+            return createLoginObject(userByEmail.getId(),null, String.valueOf(LoginEnum.INVALID_PASSWORD));
         else
         {
             String token = generateToken();
             mapUserTokens.put(userByEmail, token);
-            IdTokenPair idTokenPair =IdTokenPair.createIdTokenPair(userByEmail.getId(),token);
-            return  Response.success(idTokenPair);
+            LoginObject loginObject=createLoginObject(userByEmail.getId(),token,null);
+            return  loginObject;
         }
     }
 
