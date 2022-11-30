@@ -75,7 +75,7 @@ public class DocController {
         return ResponseEntity.ok(docService.getPermission(permission.userId, permission.docId));
     }
 
-    @RequestMapping(value = "changeUserRoll/{docId}")
+    @RequestMapping(value = "changeUserRoll/{docId}", method = RequestMethod.POST)
     public ResponseEntity<Boolean> changeUserRollInDoc(@PathVariable Long docId, @RequestBody ChnageRole changeRole) {
         logger.info("start changeUserRollInDoc function");
         return ResponseEntity.status(HttpStatus.OK).body(docService.editRole(docId, changeRole.ownerId, changeRole.email, changeRole.userRole, changeRole.isDelete));
