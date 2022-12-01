@@ -1,8 +1,4 @@
-package docSharing.UserDTO;
-
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+package docSharing.DTO.User;
 
 public class UserDTO {
     private String email, name, password;

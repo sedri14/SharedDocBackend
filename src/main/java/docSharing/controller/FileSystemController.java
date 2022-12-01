@@ -1,8 +1,10 @@
 package docSharing.controller;
 
-import docSharing.DTO.*;
+import docSharing.DTO.FS.AddINodeDTO;
+import docSharing.DTO.FS.INodeDTO;
+import docSharing.DTO.FS.MoveINodeDTO;
+import docSharing.DTO.FS.RenameINodeDTO;
 import docSharing.entities.INode;
-import docSharing.service.AuthService;
 import docSharing.service.FileSystemService;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.LogManager;
@@ -11,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import upload.FileWithData;
 
 import java.io.IOException;
 import java.util.List;
@@ -123,24 +124,24 @@ public class FileSystemController {
     }
 
     /**
-     * @param fileWithData contains: parentInodeId - id of parent node
+     * @param fileWithDataDTO contains: parentInodeId - id of parent node
      *                     userId - id of owner user
      *                     file
      * @return a new document identical to the uploaded file
      */
     @RequestMapping(value = "/uploadFile", method = RequestMethod.POST)
-    public ResponseEntity<INode> uploadFile(@ModelAttribute FileWithData fileWithData) {
+    public ResponseEntity<INode> uploadFile(@ModelAttribute MoveINodeDTO.FileWithDataDTO fileWithDataDTO) {
         logger.info("start uploadFile function");
-        logger.debug("uploadFile function parameters: userId:%d, parentId:%d, filename:%s", fileWithData.getUserId(), fileWithData.getParentInodeId(), fileWithData.getFile().getOriginalFilename());
-        System.out.println(fileWithData);
-        if (fileWithData == null || fileWithData.getParentInodeId() == null || fileWithData.getUserId() == null || fileWithData.getFile() == null) {
+        logger.debug("uploadFile function parameters: userId:%d, parentId:%d, filename:%s", fileWithDataDTO.getUserId(), fileWithDataDTO.getParentInodeId(), fileWithDataDTO.getFile().getOriginalFilename());
+        System.out.println(fileWithDataDTO);
+        if (fileWithDataDTO == null || fileWithDataDTO.getParentInodeId() == null || fileWithDataDTO.getUserId() == null || fileWithDataDTO.getFile() == null) {
             logger.error("parameters missing");
             throw new IllegalArgumentException("Request unavailable");
         }
 
-        Long parentId = fileWithData.getParentInodeId();
-        Long userId = fileWithData.getUserId();
-        MultipartFile file = fileWithData.getFile();
+        Long parentId = fileWithDataDTO.getParentInodeId();
+        Long userId = fileWithDataDTO.getUserId();
+        MultipartFile file = fileWithDataDTO.getFile();
 
         String fileExtension = FilenameUtils.getExtension(file.getOriginalFilename());
         if (!fileExtension.equals("txt")) {

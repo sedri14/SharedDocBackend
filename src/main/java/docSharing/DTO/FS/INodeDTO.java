@@ -1,4 +1,4 @@
-package docSharing.DTO;
+package docSharing.DTO.FS;
 
 public class INodeDTO {
 

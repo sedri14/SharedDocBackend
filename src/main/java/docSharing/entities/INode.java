@@ -45,6 +45,15 @@ public class INode implements Serializable {
         this.parent = parent;
     }
 
+    public INode(Long id, String name, INodeType type, LocalDateTime creationDate, Set<INode> children, INode parent) {
+        this.id = id;
+        this.name = name;
+        this.type = type;
+        this.creationDate = creationDate;
+        this.children = children;
+        this.parent = parent;
+    }
+
     public static INode createNewDirectory(String name, INode parent) {
         return new INode(name, INodeType.DIR, LocalDateTime.now(), null, parent);
     }

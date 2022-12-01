@@ -1,12 +1,11 @@
 package docSharing.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import docSharing.UserDTO.UserDTO;
+import docSharing.DTO.User.UserDTO;
 
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Set;
 
 @Entity

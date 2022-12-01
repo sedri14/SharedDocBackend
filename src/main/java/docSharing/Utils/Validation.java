@@ -1,12 +1,13 @@
 package docSharing.Utils;
 
-import docSharing.controller.AuthController;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
 import java.util.regex.Pattern;
 
 public class Validation {
-    private static Logger logger = LogManager.getLogger(AuthController.class.getName());
+    private static Logger logger = LogManager.getLogger(Validation.class.getName());
 
     public static boolean isValidPassword(String password) {
         logger.debug("in AuthenticationController.isValidPassword() - int Level:500");
@@ -31,7 +32,17 @@ public class Validation {
                 .matches();
     }
 
-
+    /**
+     *
+     * @param obj
+     * @param <T>
+     */
+    public static <T> void nullCheck(T obj) {
+        if (obj == null) {
+            logger.error("param is null");
+            throw new IllegalArgumentException("the parameter is null");
+        }
+    }
 
 
 }

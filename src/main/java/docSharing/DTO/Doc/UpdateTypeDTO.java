@@ -1,6 +1,6 @@
-package docSharing.test;
+package docSharing.DTO.Doc;
 
-public enum UpdateType {
+public enum UpdateTypeDTO {
     DELETE,
     APPEND,
     DELETE_RANGE,

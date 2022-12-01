@@ -1,16 +1,17 @@
 package docSharing.controller;
 
-import docSharing.DTO.PermissionDTO;
-import docSharing.DTO.ReturnDocumentMessage;
+import docSharing.DTO.FS.PermissionDTO;
+import docSharing.DTO.Doc.UpdateDocContentRes;
+import docSharing.Utils.Validation;
 import docSharing.entities.Document;
 import docSharing.entities.Permission;
 import docSharing.entities.UserRole;
 import docSharing.response.PermissionResponse;
 import docSharing.response.Response;
 import docSharing.service.DocService;
-import docSharing.test.ChnageRole;
-import docSharing.test.OnlineUser;
-import docSharing.test.ManipulatedText;
+import docSharing.DTO.Doc.ChangeRoleDTO;
+import docSharing.DTO.Doc.CurrentViewingUserDTO;
+import docSharing.DTO.Doc.ManipulatedTextDTO;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,11 +22,11 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.web.bind.annotation.*;
 
+
 import java.util.List;
 import java.util.Optional;
 
 
-//@Controller
 @RequestMapping("/doc")
 @CrossOrigin
 @RestController
@@ -36,90 +37,127 @@ public class DocController {
     private static final Logger logger = LogManager.getLogger(DocController.class.getName());
 
     /**
-     * @param docId           document id
-     * @param manipulatedText the change in the text
-     * @return the changes to all subscribed users
+     * @param docId              document id
+     * @param manipulatedTextDTO the change in the text
+     * @return the changed content to all subscribed users
      */
     @MessageMapping("/update/{docId}")
     @SendTo("/topic/updates/{docId}")
-    public ReturnDocumentMessage sendUpdatedText(@DestinationVariable Long docId, ManipulatedText manipulatedText) {
+    public UpdateDocContentRes sendUpdatedText(@DestinationVariable Long docId, ManipulatedTextDTO manipulatedTextDTO) {
 
         logger.info("start sendUpdatedText function");
-        return docService.sendUpdatedText(docId, manipulatedText);
+        logger.info("validate docId param");
+        Validation.nullCheck(docId);
+        logger.info("validate manipulatedTextDTO param");
+        Validation.nullCheck(manipulatedTextDTO);
+
+        return docService.UpdateDocContent(docId, manipulatedTextDTO);
     }
+
 
     /**
      * @param docId document id
-     * @return document
+     * @return Document OBJ
      */
     @RequestMapping(value = "/{docId}", method = RequestMethod.GET)
     public ResponseEntity<Document> getDocument(@PathVariable Long docId) {
+
         logger.info("start getDocument function");
+        logger.info("validate docId param");
+        Validation.nullCheck(docId);
+
         return ResponseEntity.status(HttpStatus.OK).body(docService.getDocument(docId));
     }
 
 
+    /**
+     * @param docId document Id
+     * @param user  Current Viewing User userName
+     * @return the list of all the current viewing user to the document
+     */
     @MessageMapping("/join/{docId}")
     @SendTo("/topic/usersJoin/{docId}")
-    public List<String> sendNewUserJoinMessage(@DestinationVariable Long docId, OnlineUser user) {
+    public List<String> sendNewUserJoinMessage(@DestinationVariable Long docId, CurrentViewingUserDTO user) {
+
         logger.info("start sendNewUserJoinMessage function");
-        if (user == null) {
-            throw new IllegalArgumentException("there is no user provided");
-        }
-        return docService.addUserToViewingUsers(docId, user.getUserName());
+        logger.info("validate docId param");
+        Validation.nullCheck(docId);
+        logger.info("validate User param");
+        Validation.nullCheck(user);
+
+        return docService.addUserToViewingUsers(docId, user.userName);
     }
 
+
+    /**
+     * @param docId document Id
+     * @param user  Current Viewing User userName
+     * @return the list of all the current viewing user to the document
+     */
     @MessageMapping("/userDisconnect/{docId}")
     @SendTo("/topic/userDisconnect/{docId}")
-    public List<String> removeUserFromViewingUsers(@DestinationVariable Long docId, OnlineUser user) {
-        if (user == null) {
-            throw new IllegalArgumentException("there is no user provided");
-        }
+    public List<String> removeUserFromViewingUsers(@DestinationVariable Long docId, CurrentViewingUserDTO user) {
+
         logger.info("start sendNewUserJoinMessage function");
-        return docService.removeUserFromViewingUsers(docId, user.getUserName());
+        logger.info("validate docId param");
+        Validation.nullCheck(docId);
+        logger.info("validate User param");
+        Validation.nullCheck(user);
+        Validation.nullCheck(user.userName);
+
+        return docService.removeUserFromViewingUsers(docId, user.userName);
 
     }
 
-//    @RequestMapping(value = "setPerm", method = RequestMethod.POST)
-//    public ResponseEntity<Permission> setPermission(@RequestBody PermissionDTO permission) {
-//        logger.info("start setPermission function");
-//        return ResponseEntity.ok(docService.setPermission(permission.userId, permission.docId, permission.userRole));
-//    }
 
+    /**
+     * @param permissionDTO usersId  and DocId
+     * @return response Entity of the userRole
+     */
     @RequestMapping(value = "getPerm", method = RequestMethod.POST)
-    public ResponseEntity<Response<PermissionResponse>> getPermission(@RequestBody PermissionDTO permission) {
+    public ResponseEntity<Response<PermissionResponse>> getPermission(@RequestBody PermissionDTO permissionDTO) {
 
-        Optional<Permission> optionalPer = docService.getPermission(permission.userId, permission.docId);
-        if (optionalPer.isPresent()){
+        logger.info("start getPerm Function");
+        logger.info("validate permission param");
+        Validation.nullCheck(permissionDTO);
+        Validation.nullCheck(permissionDTO.docId);
+        Validation.nullCheck(permissionDTO.userId);
+
+        Optional<Permission> optionalPer = docService.getPermission(permissionDTO.userId, permissionDTO.docId);
+        if (optionalPer.isPresent()) {
             UserRole userRole = optionalPer.get().getUserRole();
+
             return ResponseEntity.ok(Response.success(new PermissionResponse(userRole)));
         } else {
+
             return ResponseEntity.badRequest().body(Response.failure("You have no Access to this file"));
         }
 
-
-
-//        return ResponseEntity.badRequest().body(loginResponse);
-//        else {
-//            System.out.println("Token:  ");
-//            return ResponseEntity.status(HttpStatus.OK).body(loginResponse);
-
     }
 
+
+    /**
+     * @param docId         document Id
+     * @param changeRoleDTO Param to change the role of user
+     * @return if the change is done or note
+     */
     @RequestMapping(value = "changeUserRoll/{docId}", method = RequestMethod.POST)
-    public ResponseEntity<Boolean> changeUserRollInDoc(@PathVariable Long docId, @RequestBody ChnageRole changeRole) {
+    public ResponseEntity<Boolean> changeUserRole(@PathVariable Long docId, @RequestBody ChangeRoleDTO changeRoleDTO) {
+
         logger.info("start changeUserRollInDoc function");
-        return ResponseEntity.status(HttpStatus.OK).body(docService.editRole(docId, changeRole.ownerId, changeRole.email, changeRole.userRole, changeRole.isDelete));
+        logger.info("validate docId param");
+        Validation.nullCheck(docId);
+        logger.info("validate ChnageRoleDTO param");
+        Validation.nullCheck(changeRoleDTO);
+        Validation.nullCheck(changeRoleDTO.userRole);
+        Validation.nullCheck(changeRoleDTO.ownerId);
+        Validation.nullCheck(changeRoleDTO.email);
+        Validation.nullCheck(changeRoleDTO.isDelete);
+
+        boolean res = docService.editRole(docId, changeRoleDTO.ownerId, changeRoleDTO.email, changeRoleDTO.userRole, changeRoleDTO.isDelete);
+
+        return ResponseEntity.status(HttpStatus.OK).body(res);
 
     }
-
-
-//    @RequestMapping(value = "/savecontent/{docId}", method = RequestMethod.POST)
-//    public ResponseEntity<Void> test(@PathVariable Long docId) {
-//        logger.info("start saveContent function");
-//        return ResponseEntity.status(HttpStatus.OK).body(docService.saveOneDocContentToDB(docId, "what the hell is here"));
-//
-//    }
-
 
 }

@@ -38,6 +38,9 @@ public class Log {
     @Column(name = "logContent")
     private String logContent;
 
+    @Column(name = "action")
+    private String action;
+
     @Column(name = "time")
     private LocalDateTime localDateTime;
 
@@ -46,11 +49,12 @@ public class Log {
 
     }
 
-    public Log(Long userId, Long docId, String logContent, LocalDateTime localDateTime) {
+    public Log(Long userId, Long docId, String logContent, String action, LocalDateTime localDateTime) {
 
         this.userId = userId;
         this.docId = docId;
         this.logContent = logContent;
+        this.action = action;
         this.localDateTime = localDateTime;
     }
 
