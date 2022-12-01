@@ -4,6 +4,7 @@ import docSharing.DTO.FS.AddINodeDTO;
 import docSharing.DTO.FS.INodeDTO;
 import docSharing.DTO.FS.MoveINodeDTO;
 import docSharing.DTO.FS.RenameINodeDTO;
+import docSharing.Utils.Validation;
 import docSharing.entities.INode;
 import docSharing.service.FileSystemService;
 import org.apache.commons.io.FilenameUtils;
@@ -40,10 +41,13 @@ public class FileSystemController {
     public ResponseEntity<INode> addInode(@RequestBody AddINodeDTO addINodeDTO) {
         logger.info("start addInode function");
         logger.debug("addInode function parameters: userId:%d, name:%s, type:%s, parentId:%d", addINodeDTO.userId, addINodeDTO.name, addINodeDTO.type, addINodeDTO.parentId);
-        if (addINodeDTO == null || addINodeDTO.name == null || addINodeDTO.type == null || addINodeDTO.parentId == null || addINodeDTO.userId == null) {
-            logger.error("parameters missing");
-            throw new IllegalArgumentException("Request unavailable");
-        }
+        Validation.nullCheck(addINodeDTO);
+        Validation.nullCheck(addINodeDTO.name);
+        Validation.nullCheck(addINodeDTO.type);
+        Validation.nullCheck(addINodeDTO.parentId);
+        Validation.nullCheck(addINodeDTO.userId);
+
+
         logger.info("In addInode adding %s", addINodeDTO.type);
 
         return ResponseEntity.ok(fsService.addInode(addINodeDTO));
@@ -60,10 +64,9 @@ public class FileSystemController {
     public ResponseEntity<INode> rename(@RequestBody RenameINodeDTO renameINodeDTO) {
         logger.info("start rename function");
         logger.debug("rename function parameters: name:%s, id:%d", renameINodeDTO.name, renameINodeDTO.id);
-        if (renameINodeDTO == null || renameINodeDTO.name == null || renameINodeDTO.id == null) {
-            logger.error("parameters missing");
-            throw new IllegalArgumentException("Request unavailable");
-        }
+        Validation.nullCheck(renameINodeDTO);
+        Validation.nullCheck(renameINodeDTO.name);
+        Validation.nullCheck(renameINodeDTO.id);
 
         return ResponseEntity.ok(fsService.renameInode(renameINodeDTO.id, renameINodeDTO.name));
     }
@@ -78,10 +81,8 @@ public class FileSystemController {
     public ResponseEntity<List<INode>> getChildren(@RequestBody INodeDTO inodeDTO) {
         logger.info("start getChildren function");
         logger.debug("getChildren function parameters: id:%d", inodeDTO.id);
-        if (inodeDTO == null || inodeDTO.id == null) {
-            logger.error("parameters missing");
-            throw new IllegalArgumentException("Request unavailable");
-        }
+        Validation.nullCheck(inodeDTO);
+        Validation.nullCheck(inodeDTO.id);
 
         return ResponseEntity.ok(fsService.getInodesInLevel(inodeDTO.id));
     }
@@ -97,10 +98,9 @@ public class FileSystemController {
     public ResponseEntity<INode> move(@RequestBody MoveINodeDTO moveINodeDTO) {
         logger.info("start move function");
         logger.debug("move function parameters: userId:%d, sourceId:%d, targetId:%d", moveINodeDTO.userId, moveINodeDTO.sourceId, moveINodeDTO.targetId);
-        if (moveINodeDTO == null || moveINodeDTO.sourceId == null || moveINodeDTO.targetId == null) {
-            logger.error("parameters missing");
-            throw new IllegalArgumentException("Request unavailable");
-        }
+        Validation.nullCheck(moveINodeDTO);
+        Validation.nullCheck(moveINodeDTO.sourceId);
+        Validation.nullCheck(moveINodeDTO.targetId);
 
         return ResponseEntity.ok(fsService.move(moveINodeDTO.sourceId, moveINodeDTO.targetId));
     }
@@ -115,10 +115,8 @@ public class FileSystemController {
     public ResponseEntity<List<INode>> delete(@RequestBody INodeDTO inodeDTO) {
         logger.info("start delete function");
         logger.debug("delete function parameters: id:%d", inodeDTO.id);
-        if (inodeDTO == null || inodeDTO.id == null) {
-            logger.error("parameters missing");
-            throw new IllegalArgumentException("Request unavailable");
-        }
+        Validation.nullCheck(inodeDTO);
+        Validation.nullCheck(inodeDTO.id);
 
         return ResponseEntity.ok(fsService.removeById(inodeDTO.id));
     }
@@ -134,10 +132,10 @@ public class FileSystemController {
         logger.info("start uploadFile function");
         logger.debug("uploadFile function parameters: userId:%d, parentId:%d, filename:%s", fileWithDataDTO.getUserId(), fileWithDataDTO.getParentInodeId(), fileWithDataDTO.getFile().getOriginalFilename());
         System.out.println(fileWithDataDTO);
-        if (fileWithDataDTO == null || fileWithDataDTO.getParentInodeId() == null || fileWithDataDTO.getUserId() == null || fileWithDataDTO.getFile() == null) {
-            logger.error("parameters missing");
-            throw new IllegalArgumentException("Request unavailable");
-        }
+        Validation.nullCheck(fileWithDataDTO);
+        Validation.nullCheck(fileWithDataDTO.getParentInodeId());
+        Validation.nullCheck(fileWithDataDTO.getUserId());
+        Validation.nullCheck(fileWithDataDTO.getFile());
 
         Long parentId = fileWithDataDTO.getParentInodeId();
         Long userId = fileWithDataDTO.getUserId();
