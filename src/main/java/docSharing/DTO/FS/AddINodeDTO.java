@@ -1,4 +1,4 @@
-package docSharing.DTO;
+package docSharing.DTO.FS;
 
 import docSharing.entities.INodeType;
 
@@ -19,6 +19,7 @@ public class AddINodeDTO {
         this.name = name;
         this.type = type;
     }
+
 
     public void setUserId(Long userId) {
         this.userId = userId;

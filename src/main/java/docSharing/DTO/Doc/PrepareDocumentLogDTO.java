@@ -1,16 +1,16 @@
-package docSharing.test;
+package docSharing.DTO.Doc;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class PrepareDocumentLog {
+public class PrepareDocumentLogDTO {
 
     List<String> content;
     List<Integer> index;
     List<String> Action;
     List<Long> UserId;
 
-    public PrepareDocumentLog() {
+    public PrepareDocumentLogDTO() {
         content = new ArrayList<>();
         index = new ArrayList<>();
         Action = new ArrayList<>();
