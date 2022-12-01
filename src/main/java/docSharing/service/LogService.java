@@ -55,9 +55,9 @@ public class LogService {
             case DELETE_RANGE:
                 deleteRangeContentToLog(docId, manipulatedTextDTO);
                 break;
-//            case APPEND_RANGE:
-//                appendRangeContentToLog(docId, manipulatedText);
-//                break;
+            case APPEND_RANGE:
+                appendRangeContentToLog(docId, manipulatedTextDTO);
+                break;
 
         }
 
@@ -155,92 +155,33 @@ public class LogService {
 
     }
 
-    private static void makeCorrectionToDelete(Long docId, ManipulatedTextDTO manipulatedTextDTO) {
-        PrepareDocumentLogDTO docLog = userLogByDocIdMap.get(docId);
-        int rightIndex = 0;
-        for (int j = 0; j < docLog.getIndex().size(); j++) {
-            if (docLog.getIndex().get(j) >= manipulatedTextDTO.getStartPosition()) {
-                rightIndex = j;
-                break;
-            }
-
-        }
-        logger.info("the right place to start is" + rightIndex);
-//        docLog.getIndex().remove(rightIndex);
-//        docLog.getUserId().remove(rightIndex);
-//        docLog.getAction().remove(rightIndex);
-//        docLog.getContent().remove(rightIndex);
-        for (int i = rightIndex + 1; i < docLog.getIndex().size(); i++) {
-            if (docLog.getIndex().get(i) > manipulatedTextDTO.getStartPosition()) {
-                docLog.getIndex().set(i, docLog.getIndex().get(i) - 1);
-            }
-
-        }
-
-
-        for (Map.Entry<Long, PrepareDocumentLogDTO> entry : userLogByDocIdMap.entrySet()) {
-            PrepareDocumentLogDTO value = entry.getValue();
-
-            for (int i = value.getIndex().indexOf(manipulatedTextDTO.getStartPosition()) + 1; i < value.getIndex().size(); i++) {
-                value.getIndex().set(i, value.getIndex().get(i) - 1);
-            }
-        }
-        logger.info("after correction");
-        logger.info(userLogByDocIdMap.get(docId));
-    }
-
-
     private static void deleteRangeContentToLog(Long docId, ManipulatedTextDTO manipulatedTextDTO) {
         for (int i = 0; i < manipulatedTextDTO.getContent().length(); i++) {
-            deleteContentToLog(docId, new ManipulatedTextDTO(
-                    manipulatedTextDTO.getUserId()
-                    , UpdateTypeDTO.DELETE
-                    , manipulatedTextDTO.getContent().substring(i, i + 1)
-                    , manipulatedTextDTO.getStartPosition() + i + 1
-                    , manipulatedTextDTO.getStartPosition() + i + 1)
-            );
-        }
-//        for (int i = 0; i < manipulatedText.getContent().length(); i++) {
-//            userLogByDocIdMap.get(docId).getContent().add(manipulatedText.getContent().substring(i, i + 1));
-//            userLogByDocIdMap.get(docId).getIndex().add(manipulatedText.getStartPosition() + i);
-//            userLogByDocIdMap.get(docId).getAction().add("A");
-//        }
-//    }
-//
-//}
 
-//    private static void appendRangeContentToLog(Long docId, ManipulatedText manipulatedText) {
-//        for (int i = 0; i < manipulatedText.getContent().length(); i++) {
-//            appendContentToLog(docId, new ManipulatedText(
-//                    manipulatedText.getUser()
-//                    , UpdateType.APPEND
-//                    , manipulatedText.getContent().substring(i, i + 1)
-//                    , manipulatedText.getStartPosition() + i
-//                    , manipulatedText.getStartPosition() + i)
-//            );
-//        }
-//        for (int i = 0; i < manipulatedText.getContent().length(); i++) {
-//            userLogByDocIdMap.get(docId).getContent().add(manipulatedText.getContent().substring(i, i + 1));
-//            userLogByDocIdMap.get(docId).getIndex().add(manipulatedText.getStartPosition() + i);
-//            userLogByDocIdMap.get(docId).getAction().add("A");
-//        }
-//
-//    }
-//
-//    private static void makeCorrectionToDelete(Long docId, ManipulatedText manipulatedText) {
-//        for (Map.Entry<Long, UserLogByDoc> entry : userLogByDocIdMap.entrySet()) {
-//            UserLogByDoc value = entry.getValue();
-////            if ((String) value.getUserId() == manipulatedText.getUser()) {//this one should be long and by the id and not by the email
-////                  continue;
-////            }
-//            if (value.getIndex().get(value.getIndex().size()) < manipulatedText.getStartPosition()) {
-//                for (int i = manipulatedText.getStartPosition(); i < value.getIndex().size(); i++) {
-//                    value.getIndex().set(i, value.getIndex().get(i) + 1);
-//                }
-//            }
-//
-//        }
-//    }
+            ManipulatedTextDTO contentSlice = new ManipulatedTextDTO(
+                    manipulatedTextDTO.userId
+                    , manipulatedTextDTO.action
+                    , manipulatedTextDTO.getContent().substring(i, i + 1)
+                    , manipulatedTextDTO.startPosition
+                    , manipulatedTextDTO.endPosition);
+
+            deleteContentToLog(docId, contentSlice);
+        }
+    }
+
+    private static void appendRangeContentToLog(Long docId, ManipulatedTextDTO manipulatedTextDTO) {
+        for (int i = 0; i < manipulatedTextDTO.getContent().length(); i++) {
+
+            ManipulatedTextDTO contentSlice = new ManipulatedTextDTO(
+                    manipulatedTextDTO.userId
+                    , manipulatedTextDTO.action
+                    , manipulatedTextDTO.getContent().substring(i, i + 1)
+                    , manipulatedTextDTO.startPosition
+                    , manipulatedTextDTO.endPosition);
+
+            appendContentToLog(docId, contentSlice);
+
+        }
 
     }
 
@@ -293,4 +234,40 @@ public class LogService {
         logger.info("the log object is " + log);
         logRepository.save(log);
     }
+
+
+//    private static void makeCorrectionToDelete(Long docId, ManipulatedTextDTO manipulatedTextDTO) {
+//        PrepareDocumentLogDTO docLog = userLogByDocIdMap.get(docId);
+//        int rightIndex = 0;
+//        for (int j = 0; j < docLog.getIndex().size(); j++) {
+//            if (docLog.getIndex().get(j) >= manipulatedTextDTO.getStartPosition()) {
+//                rightIndex = j;
+//                break;
+//            }
+//
+//        }
+//        logger.info("the right place to start is" + rightIndex);
+////        docLog.getIndex().remove(rightIndex);
+////        docLog.getUserId().remove(rightIndex);
+////        docLog.getAction().remove(rightIndex);
+////        docLog.getContent().remove(rightIndex);
+//        for (int i = rightIndex + 1; i < docLog.getIndex().size(); i++) {
+//            if (docLog.getIndex().get(i) > manipulatedTextDTO.getStartPosition()) {
+//                docLog.getIndex().set(i, docLog.getIndex().get(i) - 1);
+//            }
+//
+//        }
+//
+//
+//        for (Map.Entry<Long, PrepareDocumentLogDTO> entry : userLogByDocIdMap.entrySet()) {
+//            PrepareDocumentLogDTO value = entry.getValue();
+//
+//            for (int i = value.getIndex().indexOf(manipulatedTextDTO.getStartPosition()) + 1; i < value.getIndex().size(); i++) {
+//                value.getIndex().set(i, value.getIndex().get(i) - 1);
+//            }
+//        }
+//        logger.info("after correction");
+//        logger.info(userLogByDocIdMap.get(docId));
+//    }
+
 }

@@ -123,8 +123,8 @@ public class FileSystemController {
 
     /**
      * @param fileWithDataDTO contains: parentInodeId - id of parent node
-     *                     userId - id of owner user
-     *                     file
+     *                        userId - id of owner user
+     *                        file
      * @return a new document identical to the uploaded file
      */
     @RequestMapping(value = "/uploadFile", method = RequestMethod.POST)
