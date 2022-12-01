@@ -1,7 +1,7 @@
 package docSharing.controller;
 
-import docSharing.DTO.AddINodeDTO;
-import docSharing.DTO.INodeDTO;
+import docSharing.DTO.FS.AddINodeDTO;
+import docSharing.DTO.FS.INodeDTO;
 import docSharing.entities.INode;
 import docSharing.entities.INodeType;
 import docSharing.repository.DocRepository;
@@ -42,6 +42,7 @@ public class FileSystemControllerTests {
 //        logRepository.deleteAll();
 //        docRepository.deleteAll();
 //        fileSystemRepository.deleteAll();
+
     }
 
     @Test
@@ -51,7 +52,7 @@ public class FileSystemControllerTests {
         Long fileId = newFile.getBody().getId();
         boolean isFileExists = fileSystemRepository.findById(fileId).isPresent();
 
-        assertEquals(true, isFileExists);
+        assertTrue(isFileExists);
 
     }
 
@@ -80,7 +81,8 @@ public class FileSystemControllerTests {
 
         List<INode> children = fileSystemController.getChildren(root).getBody();
 
-        assertEquals(files, children);
+
+        assertEquals(files.size(), children.size());
 
 
     }

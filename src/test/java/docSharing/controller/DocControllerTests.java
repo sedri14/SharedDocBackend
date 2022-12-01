@@ -1,16 +1,18 @@
 package docSharing.controller;
 
 
-import docSharing.DTO.AddINodeDTO;
-import docSharing.DTO.PermissionDTO;
+import docSharing.DTO.FS.AddINodeDTO;
+import docSharing.DTO.FS.PermissionDTO;
 import docSharing.entities.*;
 import docSharing.repository.*;
+import docSharing.response.PermissionResponse;
+import docSharing.response.Response;
 import docSharing.service.DocService;
 import docSharing.service.LogService;
-import docSharing.test.ChnageRole;
-import docSharing.test.ManipulatedText;
-import docSharing.test.OnlineUser;
-import docSharing.test.UpdateType;
+import docSharing.DTO.Doc.ChangeRoleDTO;
+import docSharing.DTO.Doc.ManipulatedTextDTO;
+import docSharing.DTO.Doc.CurrentViewingUserDTO;
+import docSharing.DTO.Doc.UpdateTypeDTO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,7 +53,8 @@ public class DocControllerTests {
 //        logRepository.deleteAll();
 //        docRepository.deleteAll();
 //        fileSystemRepository.deleteAll();
-//        fileSystemRepository.save(new INode("root", INodeType.DIR, LocalDateTime.now(), null, null));
+//        fileSystemRepository.save(new INode( "root", INodeType.DIR, LocalDateTime.now(), null, null));
+//        Set<INode> byParentIdAndTypeEquals = fileSystemRepository.findByParentIdAndTypeEquals(null, INodeType.DIR);
     }
 
 //    @Test
@@ -61,11 +64,11 @@ public class DocControllerTests {
 
     @Test
     void getDocument_GetContentExistsDoc_Works() throws InterruptedException {
-        ResponseEntity<INode> newFile = fileSystemController.addInode(new AddINodeDTO(2L, 1L, "khaderFile6", INodeType.FILE));
+        ResponseEntity<INode> newFile = fileSystemController.addInode(new AddINodeDTO(2L, 1L, "khaderFile8", INodeType.FILE));
         Document doc = (Document) newFile.getBody();
         String content = "k";
         docController.getDocument(doc.getId());
-        docController.sendUpdatedText(doc.getId(), new ManipulatedText("1L", UpdateType.APPEND, content, 0, 0));
+        docController.sendUpdatedText(doc.getId(), new ManipulatedTextDTO(2L, UpdateTypeDTO.APPEND, content, 0, 0));
         Thread.sleep(6000);
         ResponseEntity<Document> document = docController.getDocument(doc.getId());
         assertEquals(content, document.getBody().getContent(), "the content isn't equal");
@@ -76,7 +79,7 @@ public class DocControllerTests {
     void getDocument_GetContentNotExistDoc_Exception() {
         Long docId = 1000L;
         boolean isFound = docRepository.findById(docId).isPresent();
-        assertEquals(false, isFound);
+        assertFalse(isFound);
         assertThrows(Exception.class, () -> {
             docController.getDocument(docId);
         }, "the document doesn't exist");
@@ -88,7 +91,7 @@ public class DocControllerTests {
         Document doc = (Document) newFile.getBody();
         String content = "k";
         docController.getDocument(doc.getId());
-        docController.sendUpdatedText(doc.getId(), new ManipulatedText("1L", UpdateType.APPEND, content, 0, 0));
+        docController.sendUpdatedText(doc.getId(), new ManipulatedTextDTO(2L, UpdateTypeDTO.APPEND, content, 0, 0));
         Thread.sleep(6000);
         ResponseEntity<Document> document = docController.getDocument(doc.getId());
         assertEquals(content, document.getBody().getContent(), "the content isn't equal");
@@ -98,9 +101,8 @@ public class DocControllerTests {
     @Test
     void sendUpdatedText_ProvideWrongParam_Exception() throws InterruptedException {
 
-        ResponseEntity<INode> newFile = fileSystemController.addInode(new AddINodeDTO(2L, 1L, "khaderFile7", INodeType.FILE));
+        ResponseEntity<INode> newFile = fileSystemController.addInode(new AddINodeDTO(2L, 1L, "khaderFile9", INodeType.FILE));
         Document doc = (Document) newFile.getBody();
-        String content = "k";
         docController.getDocument(doc.getId());
 
         assertThrows(Exception.class, () -> {
@@ -112,18 +114,18 @@ public class DocControllerTests {
     @Test
     void sendNewUserJoinMessage_ProvideRightParam_Works() {
 
-        ResponseEntity<INode> newFile = fileSystemController.addInode(new AddINodeDTO(2L, 1L, "khaderFile6", INodeType.FILE));
+        ResponseEntity<INode> newFile = fileSystemController.addInode(new AddINodeDTO(2L, 1L, "khaderFile10", INodeType.FILE));
         Document doc = (Document) newFile.getBody();
         List<String> currentViewingUsers = new ArrayList<>();
         currentViewingUsers.add("khader");
-        docController.sendNewUserJoinMessage(doc.getId(), new OnlineUser("khader"));
+        docController.sendNewUserJoinMessage(doc.getId(), new CurrentViewingUserDTO("khader"));
         assertEquals(currentViewingUsers, docService.getCurrentViewingUserList(doc.getId()));
 
     }
 
     @Test
     void sendNewUserJoinMessage_ProvideWrongParam_Exception() {
-        ResponseEntity<INode> newFile = fileSystemController.addInode(new AddINodeDTO(2L, 1L, "khaderFile6", INodeType.FILE));
+        ResponseEntity<INode> newFile = fileSystemController.addInode(new AddINodeDTO(2L, 1L, "khaderFile11", INodeType.FILE));
         Document doc = (Document) newFile.getBody();
         assertThrows(Exception.class, () -> {
             docController.sendNewUserJoinMessage(doc.getId(), null);
@@ -133,20 +135,20 @@ public class DocControllerTests {
     @Test
     void removeUserFromViewingUsers_ProvideRightParam_Works() {
 
-        ResponseEntity<INode> newFile = fileSystemController.addInode(new AddINodeDTO(2L, 1L, "khaderFile6", INodeType.FILE));
+        ResponseEntity<INode> newFile = fileSystemController.addInode(new AddINodeDTO(2L, 1L, "khaderFile12", INodeType.FILE));
         Document doc = (Document) newFile.getBody();
         List<String> currentViewingUsers = new ArrayList<>();
         currentViewingUsers.add("khader");
-        docController.sendNewUserJoinMessage(doc.getId(), new OnlineUser("khader"));
+        docController.sendNewUserJoinMessage(doc.getId(), new CurrentViewingUserDTO("khader"));
         assertEquals(currentViewingUsers, docService.getCurrentViewingUserList(doc.getId()));
         currentViewingUsers.remove("khader");
-        docController.removeUserFromViewingUsers(doc.getId(), new OnlineUser("khader"));
+        docController.removeUserFromViewingUsers(doc.getId(), new CurrentViewingUserDTO("khader"));
         assertEquals(currentViewingUsers, docService.getCurrentViewingUserList(doc.getId()));
     }
 
     @Test
     void removeUserFromViewingUsers_ProvideWrongParam_Exception() {
-        ResponseEntity<INode> newFile = fileSystemController.addInode(new AddINodeDTO(2L, 1L, "khaderFile6", INodeType.FILE));
+        ResponseEntity<INode> newFile = fileSystemController.addInode(new AddINodeDTO(2L, 1L, "khaderFile13", INodeType.FILE));
         Document doc = (Document) newFile.getBody();
         assertThrows(Exception.class, () -> {
             docController.removeUserFromViewingUsers(doc.getId(), null);
@@ -156,27 +158,31 @@ public class DocControllerTests {
     @Test
     void getPermission_ProvideRightParam_Works() {
 
-        ResponseEntity<INode> newFile = fileSystemController.addInode(new AddINodeDTO(2L, 1L, "khaderFile6", INodeType.FILE));
+        ResponseEntity<INode> newFile = fileSystemController.addInode(new AddINodeDTO(2L, 1L, "khaderFile16", INodeType.FILE));
         Document doc = (Document) newFile.getBody();
-        assertEquals(UserRole.EDITOR, docController.getPermission(new PermissionDTO(2L, doc.getId(), null)));
+        Response<PermissionResponse> permission = docController.getPermission(new PermissionDTO(2L, doc.getId())).getBody();
+        UserRole role = permission.getData().getUserRole();
+        assertEquals(UserRole.EDITOR, role);
     }
 
     @Test
     void getPermission_ProvideWrongParam_Exception() {
 
-        ResponseEntity<INode> newFile = fileSystemController.addInode(new AddINodeDTO(2L, 1L, "khaderFile6", INodeType.FILE));
+        ResponseEntity<INode> newFile = fileSystemController.addInode(new AddINodeDTO(2L, 1L, "khaderFile17", INodeType.FILE));
         Document doc = (Document) newFile.getBody();
         assertThrows(Exception.class, () -> {
-            docController.getPermission(new PermissionDTO(null, doc.getId(), null));
+            docController.getPermission(new PermissionDTO(null, doc.getId()));
         });
     }
 
     @Test
     void changeUserRollInDoc_ProvideRightParam_Works() {
-        ResponseEntity<INode> newFile = fileSystemController.addInode(new AddINodeDTO(2L, 1L, "khaderFile5", INodeType.FILE));
+        ResponseEntity<INode> newFile = fileSystemController.addInode(new AddINodeDTO(2L, 1L, "khaderFile19", INodeType.FILE));
         Document doc = (Document) newFile.getBody();
-        docController.changeUserRollInDoc(doc.getId(), new ChnageRole(2L, "khaderzatari@gmail.com", UserRole.EDITOR));
-        assertEquals(UserRole.EDITOR, docController.getPermission(new PermissionDTO(2L, doc.getId(), null)));
+        docController.changeUserRole(doc.getId(), new ChangeRoleDTO(2L, "wefjerjvf@gmail.com", UserRole.EDITOR));
+        Response<PermissionResponse> permission = docController.getPermission(new PermissionDTO(2L, doc.getId())).getBody();
+        UserRole role = permission.getData().getUserRole();
+        assertEquals(UserRole.EDITOR, role);
     }
 
     @Test
@@ -184,7 +190,7 @@ public class DocControllerTests {
         ResponseEntity<INode> newFile = fileSystemController.addInode(new AddINodeDTO(2L, 1L, "khaderFile5", INodeType.FILE));
         Document doc = (Document) newFile.getBody();
         assertThrows(Exception.class, () -> {
-            docController.changeUserRollInDoc(doc.getId(), new ChnageRole(2L, "khaderzatari@gmail.com", UserRole.EDITOR));
+            docController.changeUserRole(doc.getId(), new ChangeRoleDTO(2L, "khaderzatari@gmail.com", UserRole.EDITOR));
         });
     }
 
