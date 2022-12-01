@@ -18,4 +18,15 @@ public class UpdateDocContentRes {
         this.updateTypeDTO = updateTypeDTO;
 
     }
+
+    @Override
+    public String toString() {
+        return "UpdateDocContentRes{" +
+                "userId=" + userId +
+                ", documentText='" + documentText + '\'' +
+                ", startPosition=" + startPosition +
+                ", endPosition=" + endPosition +
+                ", updateTypeDTO=" + updateTypeDTO +
+                '}';
+    }
 }
