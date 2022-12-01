@@ -183,7 +183,7 @@ public class DocControllerTests {
     void changeUserRollInDoc_ProvideRightParam_Works() {
         ResponseEntity<INode> newFile = fileSystemController.addInode(new AddINodeDTO(2L, rootId, "khaderFile19", INodeType.FILE));
         Document doc = (Document) newFile.getBody();
-        docController.changeUserRole(doc.getId(), new ChangeRoleDTO(2L, "wefjerjvf@gmail.com", UserRole.EDITOR));
+        docController.changeUserRole(doc.getId(), new ChangeRoleDTO(2L, "abc@gmail.com", UserRole.EDITOR));
         Response<PermissionResponse> permission = docController.getPermission(new PermissionDTO(2L, doc.getId())).getBody();
         UserRole role = permission.getData().getUserRole();
         assertEquals(UserRole.EDITOR, role);
@@ -194,7 +194,7 @@ public class DocControllerTests {
         ResponseEntity<INode> newFile = fileSystemController.addInode(new AddINodeDTO(2L, rootId, "khaderFile5", INodeType.FILE));
         Document doc = (Document) newFile.getBody();
         assertThrows(Exception.class, () -> {
-            docController.changeUserRole(doc.getId(), new ChangeRoleDTO(2L, "khaderzatari@gmail.com", UserRole.EDITOR));
+            docController.changeUserRole(doc.getId(), null);
         });
     }
 

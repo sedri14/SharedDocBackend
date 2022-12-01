@@ -87,7 +87,7 @@ public class FileSystemControllerTests {
             ResponseEntity<INode> newFile = fileSystemController.addInode(node);
             files.add(newFile.getBody());
         }
-        Long rootId = 1L;
+
         INodeDTO root = new INodeDTO(rootId);
 
         List<INode> children = fileSystemController.getChildren(root).getBody();
@@ -105,11 +105,11 @@ public class FileSystemControllerTests {
         });
     }
 
-    @Test
-    void uploadFile_ProvideRightParam_Works() {
-        Long rootId = 1L;
-//        fileSystemController.uploadFile(new FileWithData(rootId, userId, new)).getBody()
-    }
+//    @Test
+//    void uploadFile_ProvideRightParam_Works() {
+//        Long rootId = 1L;
+////        fileSystemController.uploadFile(new FileWithData(rootId, userId, new)).getBody()
+//    }
 
     @Test
     void uploadFile_ProvideWrongParam_Exception() {
