@@ -1,7 +1,7 @@
 package docSharing.controller;
 
 import com.google.gson.Gson;
-import docSharing.UserDTO.UserDTO;
+import docSharing.DTO.User.UserDTO;
 import docSharing.Utils.Validation;
 import docSharing.entities.User;
 import docSharing.entities.VerificationToken;

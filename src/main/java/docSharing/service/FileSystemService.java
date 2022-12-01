@@ -1,16 +1,12 @@
 package docSharing.service;
 
-import com.mysql.cj.jdbc.exceptions.OperationNotSupportedException;
-import docSharing.DTO.AddINodeDTO;
+import docSharing.DTO.FS.AddINodeDTO;
 import docSharing.entities.*;
 import docSharing.repository.FileSystemRepository;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.EntityNotFoundException;
-import java.lang.management.RuntimeMXBean;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -59,6 +55,7 @@ public class FileSystemService {
         }
 
         INode parentInode = fsRepository.findById(addInode.parentId).get();
+
         if (!isDir(parentInode)) {
             throw new RuntimeException("Destination to add must be a directory");
         }

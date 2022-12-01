@@ -1,6 +1,6 @@
 package docSharing.response;
 
-import docSharing.UserDTO.UserDTO;
+import docSharing.DTO.User.UserDTO;
 
 public class RegisterObject {
 
