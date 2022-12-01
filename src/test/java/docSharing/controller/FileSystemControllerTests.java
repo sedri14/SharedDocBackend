@@ -9,13 +9,16 @@ import docSharing.repository.FileSystemRepository;
 import docSharing.repository.LogRepository;
 import docSharing.repository.PermissionRepository;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.ResponseEntity;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -35,19 +38,26 @@ public class FileSystemControllerTests {
     @Autowired
     LogRepository logRepository;
 
+    Long rootId;
 
-    @AfterEach
+    @BeforeEach
     void setup() {
-//        permissionRepository.deleteAll();
-//        logRepository.deleteAll();
-//        docRepository.deleteAll();
-//        fileSystemRepository.deleteAll();
+        permissionRepository.deleteAll();
+        logRepository.deleteAll();
+        docRepository.deleteAll();
+        fileSystemRepository.deleteAll();
+        INode root = new INode("root", INodeType.DIR, LocalDateTime.now(), null, null);
+        fileSystemRepository.save(root);
+        INode foundRoot = fileSystemRepository.findByName("root");
+
+        rootId = foundRoot.getId();
+
 
     }
 
     @Test
     void addInode_ProvideRightParam_Works() {
-        AddINodeDTO node = new AddINodeDTO(2L, 1L, "khaderFile11", INodeType.FILE);
+        AddINodeDTO node = new AddINodeDTO(2L, rootId, "khaderFile11", INodeType.FILE);
         ResponseEntity<INode> newFile = fileSystemController.addInode(node);
         Long fileId = newFile.getBody().getId();
         boolean isFileExists = fileSystemRepository.findById(fileId).isPresent();
@@ -58,6 +68,7 @@ public class FileSystemControllerTests {
 
     @Test
     void addInode_ProvideWrongParam_Exception() {
+
         assertThrows(Exception.class, () -> {
             fileSystemController.addInode(null);
         });
@@ -72,11 +83,11 @@ public class FileSystemControllerTests {
 
         List<INode> files = new ArrayList<>();
         for (String fileName : filesName) {
-            AddINodeDTO node = new AddINodeDTO(2L, 1L, fileName, INodeType.DIR);
+            AddINodeDTO node = new AddINodeDTO(2L, rootId, fileName, INodeType.DIR);
             ResponseEntity<INode> newFile = fileSystemController.addInode(node);
             files.add(newFile.getBody());
         }
-        Long rootId = 1L;
+
         INodeDTO root = new INodeDTO(rootId);
 
         List<INode> children = fileSystemController.getChildren(root).getBody();
@@ -94,15 +105,15 @@ public class FileSystemControllerTests {
         });
     }
 
-    @Test
-    void uploadFile_ProvideRightParam_Works() {
-        Long rootId = 1L;
-//        fileSystemController.uploadFile(new FileWithData(rootId, userId, new)).getBody()
-    }
+//    @Test
+//    void uploadFile_ProvideRightParam_Works() {
+//        Long rootId = 1L;
+////        fileSystemController.uploadFile(new FileWithData(rootId, userId, new)).getBody()
+//    }
 
     @Test
     void uploadFile_ProvideWrongParam_Exception() {
-        Long rootId = 1L;
+
         assertThrows(Exception.class, () -> {
             fileSystemController.uploadFile(null).getBody();
         });

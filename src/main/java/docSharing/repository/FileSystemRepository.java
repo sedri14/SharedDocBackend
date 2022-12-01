@@ -12,12 +12,14 @@ import java.util.Set;
 @Repository
 public interface FileSystemRepository extends JpaRepository<INode, Long> {
 
-   List<INode> findByParentId(Long parentId);
+    List<INode> findByParentId(Long parentId);
 
     @Transactional
     List<INode> removeById(Long id);
 
     Set<INode> findByParentIdAndTypeEquals(Long parentId, INodeType type);
+
+    INode findByName(String name);
 
 
 }

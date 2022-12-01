@@ -149,7 +149,7 @@ public class DocController {
         Validation.nullCheck(docId);
         logger.info("validate ChnageRoleDTO param");
         Validation.nullCheck(changeRoleDTO);
-        Validation.nullCheck(changeRoleDTO.userRole);
+//        Validation.nullCheck(changeRoleDTO.userRole);
         Validation.nullCheck(changeRoleDTO.ownerId);
         Validation.nullCheck(changeRoleDTO.email);
         Validation.nullCheck(changeRoleDTO.isDelete);
