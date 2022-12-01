@@ -51,20 +51,20 @@ public class AuthController {
      * @return
      */
     @RequestMapping(value = "register", method = RequestMethod.POST)
-    public ResponseEntity<String> createUser(@RequestBody UserDTO user, HttpServletRequest request) {
+    public ResponseEntity<Response<UserDTO>> createUser(@RequestBody UserDTO user, HttpServletRequest request) {
         if (!Validation.isValidEmail(user.getEmail()) || user.getEmail() == null) {
             logger.error("In AuthenticationController.register: invalid email - int Level:200");
-            return ResponseEntity.badRequest().body(Response.failure("Invalid email address!").getMessage());
+            return ResponseEntity.badRequest().body(Response.failure("Invalid email address!"));
 
         }
         if (!Validation.isValidName(user.getName()) || user.getEmail() == null) {
             logger.error("In AuthenticationController.register: invalid name - int Level:200");
-            return ResponseEntity.badRequest().body(Response.failure("Invalid name!").getMessage());
+            return ResponseEntity.badRequest().body(Response.failure("Invalid name!"));
 
         }
         if (!Validation.isValidPassword(user.getPassword()) || user.getPassword() == null) {
             logger.error("In AuthenticationController.register: invalid password - int Level:200");
-            return ResponseEntity.badRequest().body(Response.failure("Invalid password!").getMessage());
+            return ResponseEntity.badRequest().body(Response.failure("Invalid password!"));
         }
 
         try {
@@ -74,13 +74,13 @@ public class AuthController {
                 //String appUrl = request.getContextPath();
 //                authService.publishRegistrationEvent(createdUser, request.getLocale(), appUrl);
 //                System.out.println("inside AuthController");
-                return ResponseEntity.status(HttpStatus.OK).body(gson.toJson(createdUser));
+                return ResponseEntity.status(HttpStatus.OK).body(Response.success(createdUser));
             } else
-                return ResponseEntity.badRequest().body(Response.failure("Email already exist").getMessage());
+                return ResponseEntity.badRequest().body(Response.failure("Email already exist"));
 
         } catch (
                 SQLDataException e) {
-            return ResponseEntity.badRequest().body(Response.failure("Email already exist").getMessage());
+            return ResponseEntity.badRequest().body(Response.failure("Email already exist"));
         }
 
     }

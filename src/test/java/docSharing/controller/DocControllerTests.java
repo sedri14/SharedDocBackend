@@ -3,30 +3,20 @@ package docSharing.controller;
 
 import docSharing.DTO.AddINodeDTO;
 import docSharing.DTO.PermissionDTO;
-import docSharing.UserDTO.UserDTO;
 import docSharing.entities.*;
 import docSharing.repository.*;
-import docSharing.response.IdTokenPair;
-import docSharing.response.Response;
 import docSharing.service.DocService;
 import docSharing.service.LogService;
-import docSharing.service.PermissionService;
-import docSharing.service.UserService;
 import docSharing.test.ChnageRole;
 import docSharing.test.ManipulatedText;
 import docSharing.test.OnlineUser;
 import docSharing.test.UpdateType;
-import org.checkerframework.checker.units.qual.A;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import javax.print.Doc;
-
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 

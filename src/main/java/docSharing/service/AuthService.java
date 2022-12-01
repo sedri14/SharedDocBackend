@@ -87,16 +87,16 @@ public class AuthService {
 
         User userByEmail = userRepository.findByEmail(user.getEmail());
         if (userByEmail == null) //User doesn't exist
-            return createLoginObject(userByEmail.getId(),null, String.valueOf(LoginEnum.EMAIL_NOT_EXIST));
+            return createLoginObject(userByEmail.getId(),null, String.valueOf(LoginEnum.EMAIL_NOT_EXIST), userByEmail.getName());
         if (!isEnabledUser(user))
-            return createLoginObject(userByEmail.getId(),null, String.valueOf(LoginEnum.CONFIRM_EMAIL));
+            return createLoginObject(userByEmail.getId(),null, String.valueOf(LoginEnum.CONFIRM_EMAIL), userByEmail.getName());
         if (!userByEmail.getPassword().equals(user.getPassword()))  //User exist check password
-            return createLoginObject(userByEmail.getId(),null, String.valueOf(LoginEnum.INVALID_PASSWORD));
+            return createLoginObject(userByEmail.getId(),null, String.valueOf(LoginEnum.INVALID_PASSWORD), userByEmail.getName());
         else
         {
             String token = generateToken();
             mapUserTokens.put(userByEmail, token);
-            LoginObject loginObject=createLoginObject(userByEmail.getId(),token,null);
+            LoginObject loginObject = createLoginObject(userByEmail.getId(),token,null, userByEmail.getName());
             return  loginObject;
         }
     }
