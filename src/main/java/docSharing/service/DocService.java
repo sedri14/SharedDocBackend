@@ -209,8 +209,7 @@ public class DocService {
 
         if (!docIsPresent) {
             logger.error("there is no document with this id");
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "there is no document with this id");
-            //this should be changed
+            throw new IllegalArgumentException("there is no document with this id");
         }
 
         Document doc = docRepository.findById(documentId).get();
@@ -223,7 +222,6 @@ public class DocService {
         logger.info("the content in the hashmap is" + docContentByDocId.get(documentId));
 
         return doc;
-
     }
 
 
@@ -279,35 +277,38 @@ public class DocService {
      * @param isDelete        true if we want to delete the permission to that user
      * @return true if everything is done
      */
-    public boolean editRole(Long docId, Long ownerId, String editRoleToEmail, UserRole userRole, boolean isDelete) {
+    public UserRole editRole(Long docId, Long ownerId, String editRoleToEmail, UserRole userRole, boolean isDelete) {
 
         logger.info("start editRole function");
 
         if (!Objects.equals(getOwner(docId), ownerId)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "you are not the owner");
+            throw new IllegalArgumentException("you are not the owner");
         }
 
         boolean docIsPresent = docRepository.findById(docId).isPresent();
-
         if (!docIsPresent) {
             logger.error("there is no document with this id");
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "there is no document with this id");
-            //this should be changed.
+            throw new IllegalArgumentException("there is no document with this id");
         }
         Document doc = docRepository.findById(docId).get();
         User user = userService.findByEmail(editRoleToEmail);
 
+        if (user == null) {
+            throw new IllegalArgumentException("user does not exist");
+        }
+        Permission modified;
         if (isDelete && permissionService.isExist(doc, user)) {
-            permissionService.delete(doc, user);
+            modified = permissionService.delete(doc, user);
+            return UserRole.NON;
         } else {
             if (permissionService.isExist(doc, user)) {
-                permissionService.updatePermission(doc, user, userRole);
+                modified = permissionService.updatePermission(doc, user, userRole);
             } else {
-                permissionService.addPermission(doc, user, userRole);
+                modified = permissionService.addPermission(doc, user, userRole);
             }
         }
 
-        return true;
+        return modified.getUserRole();
     }
 
 
@@ -382,7 +383,7 @@ public class DocService {
         boolean isDocument = docRepository.findById(docId).isPresent();
         if (!isDocument) {
             logger.error("there is no document with this id");
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "there is no document with this id");
+            throw new IllegalArgumentException("there is no document with this id");
         }
         Document doc = docRepository.findById(docId).get();
         return doc.getOwner().getId();

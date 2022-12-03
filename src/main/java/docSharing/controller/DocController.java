@@ -21,6 +21,7 @@ import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 
 import java.util.List;
@@ -60,13 +61,19 @@ public class DocController {
      * @return Document OBJ
      */
     @RequestMapping(value = "/{docId}", method = RequestMethod.GET)
-    public ResponseEntity<Document> getDocument(@PathVariable Long docId) {
-
+    public ResponseEntity<Response<Document>> getDocument(@PathVariable Long docId) {
         logger.info("start getDocument function");
         logger.info("validate docId param");
         Validation.nullCheck(docId);
 
-        return ResponseEntity.status(HttpStatus.OK).body(docService.getDocument(docId));
+        Document document;
+        try {
+            document = docService.getDocument(docId);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Response.failure(e.getMessage()));
+        }
+
+        return ResponseEntity.status(HttpStatus.OK).body(Response.success(document));
     }
 
 
@@ -124,15 +131,12 @@ public class DocController {
         Validation.nullCheck(permissionDTO.userId);
 
         Optional<Permission> optionalPer = docService.getPermission(permissionDTO.userId, permissionDTO.docId);
-        if (optionalPer.isPresent()) {
-            UserRole userRole = optionalPer.get().getUserRole();
-
-            return ResponseEntity.ok(Response.success(new PermissionResponse(userRole)));
-        } else {
-
+        if (!optionalPer.isPresent()) {
             return ResponseEntity.badRequest().body(Response.failure("You have no Access to this file"));
         }
+        UserRole userRole = optionalPer.get().getUserRole();
 
+        return ResponseEntity.ok(Response.success(new PermissionResponse(userRole)));
     }
 
 
@@ -142,7 +146,7 @@ public class DocController {
      * @return if the change is done or note
      */
     @RequestMapping(value = "changeUserRoll/{docId}", method = RequestMethod.POST)
-    public ResponseEntity<Boolean> changeUserRole(@PathVariable Long docId, @RequestBody ChangeRoleDTO changeRoleDTO) {
+    public ResponseEntity<Response<PermissionResponse>> changeUserRole(@PathVariable Long docId, @RequestBody ChangeRoleDTO changeRoleDTO) {
 
         logger.info("start changeUserRollInDoc function");
         logger.info("validate docId param");
@@ -154,10 +158,14 @@ public class DocController {
         Validation.nullCheck(changeRoleDTO.email);
         Validation.nullCheck(changeRoleDTO.isDelete);
 
-        boolean res = docService.editRole(docId, changeRoleDTO.ownerId, changeRoleDTO.email, changeRoleDTO.userRole, changeRoleDTO.isDelete);
+        UserRole userRole;
+        try {
+            userRole = docService.editRole(docId, changeRoleDTO.ownerId, changeRoleDTO.email, changeRoleDTO.userRole, changeRoleDTO.isDelete);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Response.failure(e.getMessage()));
+        }
 
-        return ResponseEntity.status(HttpStatus.OK).body(res);
-
+        return ResponseEntity.status(HttpStatus.OK).body(Response.success(new PermissionResponse(userRole)));
     }
 
 }

@@ -74,8 +74,8 @@ public class DocControllerTests {
         docController.getDocument(doc.getId());
         docController.sendUpdatedText(doc.getId(), new ManipulatedTextDTO(2L, UpdateTypeDTO.APPEND, content, 0, 0));
         Thread.sleep(6000);
-        ResponseEntity<Document> document = docController.getDocument(doc.getId());
-        assertEquals(content, document.getBody().getContent(), "the content isn't equal");
+        ResponseEntity<Response<Document>> document = docController.getDocument(doc.getId());
+        assertEquals(content, document.getBody().getData().getContent(), "the content isn't equal");
 
     }
 
@@ -97,8 +97,8 @@ public class DocControllerTests {
         docController.getDocument(doc.getId());
         docController.sendUpdatedText(doc.getId(), new ManipulatedTextDTO(2L, UpdateTypeDTO.APPEND, content, 0, 0));
         Thread.sleep(6000);
-        ResponseEntity<Document> document = docController.getDocument(doc.getId());
-        assertEquals(content, document.getBody().getContent(), "the content isn't equal");
+        ResponseEntity<Response<Document>> document = docController.getDocument(doc.getId());
+        assertEquals(content, document.getBody().getData().getContent(), "the content isn't equal");
 
     }
 
