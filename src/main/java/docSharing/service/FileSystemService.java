@@ -36,12 +36,12 @@ public class FileSystemService {
      * @param id the parent inode id
      * @return A List of children inodes
      */
-    public List<INode> getAllChildrenInodes(Long id) throws IllegalArgumentException{
+    public List<INode> getAllChildrenInodes(Long id) throws IllegalArgumentException {
         if (!isExist(id)) {
             throw new IllegalArgumentException("Inode does not exist");
         }
 
-        if (!isDir(id)){
+        if (!isDir(id)) {
             throw new IllegalArgumentException("only an inode of type DIR can have children");
         }
 
@@ -57,7 +57,7 @@ public class FileSystemService {
      *                 type - type of inode (DIR/FILE)
      * @return added inode
      */
-    public INode addInode(AddINodeDTO addInode, User owner) throws IllegalArgumentException{
+    public INode addInode(AddINodeDTO addInode, User owner) throws IllegalArgumentException {
         if (inodeNameExistsInDir(addInode.parentId, addInode.type, addInode.name)) {
             throw new IllegalArgumentException(String.format("Can not add %s, Name %s already exists in this directory.",
                     addInode.type == INodeType.DIR ? "directory" : "file", addInode.name));
@@ -97,12 +97,12 @@ public class FileSystemService {
      * @param targetId - id of the new parent inode
      * @return the moved inode
      */
-    public INode move(Long sourceId, Long targetId) throws IllegalArgumentException{
+    public INode move(Long sourceId, Long targetId) throws IllegalArgumentException {
         if (!isDir(targetId)) {
             throw new IllegalArgumentException("Destination of move must be a directory");
         }
 
-        if(!isExist(sourceId) || !isExist(targetId)) {
+        if (!isExist(sourceId) || !isExist(targetId)) {
             throw new IllegalArgumentException("Inodes not found");
         }
 
@@ -146,12 +146,12 @@ public class FileSystemService {
      * @param id - inode id
      * @return list of inodes removed
      */
-    public List<INode> removeById(Long id) throws IllegalArgumentException{
+    public List<INode> removeById(Long id) throws IllegalArgumentException {
         if (id == 1L) {
             throw new IllegalArgumentException("Can not remove root directory");
         }
 
-        if (!isExist(id)){
+        if (!isExist(id)) {
             throw new IllegalArgumentException("Inode does not exist. can not delete");
         }
 
@@ -165,7 +165,7 @@ public class FileSystemService {
      * @param name - new name
      * @return the renamed inode
      */
-    public INode renameInode(Long id, String name) throws IllegalArgumentException{
+    public INode renameInode(Long id, String name) throws IllegalArgumentException {
         INode inode = fsRepository.findById(id).get();
         Long parentId = inode.getParent().getId();
         INodeType type = inode.getType();
@@ -191,9 +191,9 @@ public class FileSystemService {
     /**
      * Creates a new inode of type FILE (document)
      *
-     * @param file              - uploaded file
-     * @param parentId          - parent node id under which the created document will be assigned
-     * @param owner                 - owner User
+     * @param file     - uploaded file
+     * @param parentId - parent node id under which the created document will be assigned
+     * @param owner    - owner User
      * @return a new Document inode created from the uploaded .txt file
      */
     public Document uploadFile(MultipartFile file, Long parentId, User owner) throws IllegalArgumentException {

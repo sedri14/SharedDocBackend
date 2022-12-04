@@ -9,6 +9,8 @@ import docSharing.entities.User;
 import docSharing.entities.UserRole;
 import docSharing.response.PermissionResponse;
 import docSharing.response.Response;
+import docSharing.response.TokenError;
+import docSharing.service.AuthService;
 import docSharing.service.DocService;
 import docSharing.DTO.Doc.ChangeRoleDTO;
 import docSharing.DTO.Doc.CurrentViewingUserDTO;
@@ -42,6 +44,8 @@ public class DocController {
     UserService userService;
     @Autowired
     private PermissionService permissionService;
+    @Autowired
+    AuthService authService;
 
     private static final Logger logger = LogManager.getLogger(DocController.class.getName());
 
@@ -69,9 +73,13 @@ public class DocController {
      * @return Document OBJ
      */
     @RequestMapping(value = "/{docId}", method = RequestMethod.GET)
-    public ResponseEntity<Response<Document>> getDocument(@PathVariable Long docId) {
+    public ResponseEntity<Response<Document>> getDocument(@PathVariable Long docId, @RequestHeader String token, @RequestHeader Long userId) {
         logger.info("start getDocument function");
         logger.info("validate docId param");
+
+        if (!authService.isValidToken(userId, token)) {
+            return ResponseEntity.badRequest().body(Response.failure(TokenError.INVALID_TOKEN.toString()));
+        }
         Validation.nullCheck(docId);
 
         Document document;
@@ -95,6 +103,8 @@ public class DocController {
     public List<String> sendNewUserJoinMessage(@DestinationVariable Long docId, CurrentViewingUserDTO user) {
 
         logger.info("start sendNewUserJoinMessage function");
+
+
         logger.info("validate docId param");
         Validation.nullCheck(docId);
         logger.info("validate User param");
@@ -130,9 +140,14 @@ public class DocController {
      * @return response Entity of the userRole
      */
     @RequestMapping(value = "getPerm", method = RequestMethod.POST)
-    public ResponseEntity<Response<PermissionResponse>> getPermission(@RequestBody PermissionDTO permissionDTO) {
+    public ResponseEntity<Response<PermissionResponse>> getPermission(@RequestBody PermissionDTO permissionDTO, @RequestHeader String token, @RequestHeader Long userId) {
 
         logger.info("start getPerm Function");
+
+        if (!authService.isValidToken(userId, token)) {
+            return ResponseEntity.badRequest().body(Response.failure(TokenError.INVALID_TOKEN.toString()));
+        }
+
         logger.info("validate permission param");
         Validation.nullCheck(permissionDTO);
         Validation.nullCheck(permissionDTO.docId);
@@ -159,9 +174,14 @@ public class DocController {
      * @return if the change is done or note
      */
     @RequestMapping(value = "changeUserRoll/{docId}", method = RequestMethod.POST)
-    public ResponseEntity<Response<PermissionResponse>> changeUserRole(@PathVariable Long docId, @RequestBody ChangeRoleDTO changeRoleDTO) {
+    public ResponseEntity<Response<PermissionResponse>> changeUserRole(@PathVariable Long docId, @RequestBody ChangeRoleDTO changeRoleDTO, @RequestHeader String token, @RequestHeader Long userId) {
 
         logger.info("start changeUserRollInDoc function");
+
+        if (!authService.isValidToken(userId, token)) {
+            return ResponseEntity.badRequest().body(Response.failure(TokenError.INVALID_TOKEN.toString()));
+        }
+
         logger.info("validate docId param");
         Validation.nullCheck(docId);
         logger.info("validate ChangeRoleDTO param");
@@ -178,7 +198,7 @@ public class DocController {
         logger.info("find the user and the document object according to their id");
         Document doc = docService.findDocById(docId);
         User user = userService.findByEmail(changeRoleDTO.email);
-
+        Validation.nullCheck(user);
         UserRole userRole;
         try {
             userRole = permissionService.changeRole(doc, user, changeRoleDTO.userRole, changeRoleDTO.isDelete);

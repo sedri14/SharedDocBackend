@@ -38,13 +38,13 @@ public class UserController {
         if (!Validation.isValidName(user.getName())) {
             return ResponseEntity.badRequest().build();
         }
-        validateToken(user.getEmail(), token);
+//        validateToken(user, token);
         return ResponseEntity.status(HttpStatus.OK).body(userService.updateUserName(user.getEmail(), user.getName()));
     }
 
-    private void validateToken(String email, String token) throws IOException {
-        if (!authService.isValidToken(email, token)) {
-            throw new AccessDeniedException(String.format("User with email address: %s is not logged in!", email));
+    private void validateToken(Long userId, String token) throws IOException {
+        if (!authService.isValidToken(userId, token)) {
+            throw new AccessDeniedException(String.format("User with email address: %s is not logged in!", userId));
         }
     }
 
@@ -71,7 +71,7 @@ public class UserController {
 
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Void> deleteUser(@RequestParam String email, @RequestHeader String token) throws IOException {
-        validateToken(email, token);
+//        validateToken(email, token);
         //delete user should return something.
         userService.deleteUser(email);
 
