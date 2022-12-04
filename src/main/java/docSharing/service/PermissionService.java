@@ -39,22 +39,21 @@ public class PermissionService {
         permissionRepository.save(p);
     }
 
-    public void updatePermission(Document doc, User user, UserRole userRole) {
+    public Permission updatePermission(Document doc, User user, UserRole userRole) {
         Permission permission = permissionRepository.findByUserAndDocument(user, doc).get();
         permission.setUserRole(userRole);
-        permissionRepository.save(permission);
+        return permissionRepository.save(permission);
     }
 
-    public boolean addPermission(Document doc, User user, UserRole userRole) {
-        Permission p = new Permission(user, doc, userRole);
-        permissionRepository.save(p);
-        return true;
+    public Permission addPermission(Document doc, User user, UserRole userRole) {
+        Permission p = new Permission(user,doc,userRole);
+        return permissionRepository.save(p);
     }
 
-    public boolean delete(Document doc, User user) {
+    public Permission delete(Document doc, User user) {
         Permission p = permissionRepository.findByUserAndDocument(user, doc).get();
         permissionRepository.delete(p);
-        return true;
+        return p;
     }
 
     public boolean isExist(Document doc, User user) {

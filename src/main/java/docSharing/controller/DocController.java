@@ -69,13 +69,19 @@ public class DocController {
      * @return Document OBJ
      */
     @RequestMapping(value = "/{docId}", method = RequestMethod.GET)
-    public ResponseEntity<Document> getDocument(@PathVariable Long docId) {
-
+    public ResponseEntity<Response<Document>> getDocument(@PathVariable Long docId) {
         logger.info("start getDocument function");
         logger.info("validate docId param");
         Validation.nullCheck(docId);
 
-        return ResponseEntity.status(HttpStatus.OK).body(docService.getDocument(docId));
+        Document document;
+        try {
+            document = docService.getDocument(docId);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Response.failure(e.getMessage()));
+        }
+
+        return ResponseEntity.status(HttpStatus.OK).body(Response.success(document));
     }
 
 
@@ -138,15 +144,12 @@ public class DocController {
 
         logger.info("get the permission");
         Optional<Permission> optionalPer = permissionService.getPermission(user, doc);
-        if (optionalPer.isPresent()) {
-            UserRole userRole = optionalPer.get().getUserRole();
-
-            return ResponseEntity.ok(Response.success(new PermissionResponse(userRole)));
-        } else {
-
+        if (!optionalPer.isPresent()) {
             return ResponseEntity.badRequest().body(Response.failure("You have no Access to this file"));
         }
+        UserRole userRole = optionalPer.get().getUserRole();
 
+        return ResponseEntity.ok(Response.success(new PermissionResponse(userRole)));
     }
 
 
@@ -156,7 +159,7 @@ public class DocController {
      * @return if the change is done or note
      */
     @RequestMapping(value = "changeUserRoll/{docId}", method = RequestMethod.POST)
-    public ResponseEntity<Boolean> changeUserRole(@PathVariable Long docId, @RequestBody ChangeRoleDTO changeRoleDTO) {
+    public ResponseEntity<Response<PermissionResponse>> changeUserRole(@PathVariable Long docId, @RequestBody ChangeRoleDTO changeRoleDTO) {
 
         logger.info("start changeUserRollInDoc function");
         logger.info("validate docId param");
@@ -169,18 +172,21 @@ public class DocController {
         Validation.nullCheck(changeRoleDTO.isDelete);
 
         if (!Objects.equals(docService.getOwner(docId), changeRoleDTO.ownerId)) {
-            ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false);
+            ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false); //should return PermissionResponse
         }
 
         logger.info("find the user and the document object according to their id");
         Document doc = docService.findDocById(docId);
         User user = userService.findByEmail(changeRoleDTO.email);
 
+        UserRole userRole;
+        try {
+            userRole = permissionService.changeRole(doc, user, changeRoleDTO.userRole, changeRoleDTO.isDelete);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Response.failure(e.getMessage()));
+        }
 
-        boolean res = permissionService.changeRole(doc, user, changeRoleDTO.userRole, changeRoleDTO.isDelete);
-
-        return ResponseEntity.status(HttpStatus.OK).body(res);
-
+        return ResponseEntity.status(HttpStatus.OK).body(Response.success(new PermissionResponse(userRole)));
     }
 
 }

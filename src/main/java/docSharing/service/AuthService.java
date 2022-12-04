@@ -30,7 +30,7 @@ import static docSharing.response.RegisterObject.createRegisterObject;
 @Service
 public class AuthService {
 
-    static Map<User,String> mapUserTokens = new HashMap<>();
+    private static Map<User,String> mapUserTokens = new HashMap<>();
     @Autowired
     private UserRepository userRepository;
     @Autowired

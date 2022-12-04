@@ -209,8 +209,7 @@ public class DocService {
 
         if (!docIsPresent) {
             logger.error("there is no document with this id");
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "there is no document with this id");
-            //this should be changed
+            throw new IllegalArgumentException("there is no document with this id");
         }
 
         Document doc = docRepository.findById(documentId).get();
@@ -223,7 +222,6 @@ public class DocService {
         logger.info("the content in the hashmap is" + docContentByDocId.get(documentId));
 
         return doc;
-
     }
 
 
@@ -307,7 +305,6 @@ public class DocService {
                 throw new RuntimeException("Role not supported.");
         }
         permissionService.setPermission(p);
-
     }
 
     public Document findDocById(Long docId) {
@@ -319,7 +316,6 @@ public class DocService {
         return docRepository.findById(docId).get();
     }
 
-
     /**
      * @param docId document id
      * @return id of the owner of that document
@@ -329,7 +325,7 @@ public class DocService {
         boolean isDocument = docRepository.findById(docId).isPresent();
         if (!isDocument) {
             logger.error("there is no document with this id");
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "there is no document with this id");
+            throw new IllegalArgumentException("there is no document with this id");
         }
         Document doc = docRepository.findById(docId).get();
         return doc.getOwner().getId();

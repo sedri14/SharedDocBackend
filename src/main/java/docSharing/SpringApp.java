@@ -2,10 +2,12 @@ package docSharing;
 
 import docSharing.entities.INode;
 import docSharing.entities.INodeType;
+//import docSharing.filter.TokenFilter;
 import docSharing.repository.FileSystemRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 
 import java.time.LocalDate;
@@ -25,4 +27,15 @@ public class SpringApp {
             }
         };
     }
+
+//    @Bean
+//    FilterRegistrationBean<TokenFilter> tokenFilterFilterRegistrationBean() {
+//        final FilterRegistrationBean<TokenFilter> filterRegistrationBean = new FilterRegistrationBean<>();
+//        filterRegistrationBean.setFilter(new TokenFilter());
+//        filterRegistrationBean.addUrlPatterns("/fs/*");
+//        filterRegistrationBean.addUrlPatterns("/doc/*");
+//        filterRegistrationBean.addUrlPatterns("/user/*");
+//
+//        return filterRegistrationBean;
+//    }
 }

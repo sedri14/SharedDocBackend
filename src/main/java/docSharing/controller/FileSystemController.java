@@ -5,8 +5,10 @@ import docSharing.DTO.FS.INodeDTO;
 import docSharing.DTO.FS.MoveINodeDTO;
 import docSharing.DTO.FS.RenameINodeDTO;
 import docSharing.Utils.Validation;
+import docSharing.entities.Document;
 import docSharing.entities.INode;
 import docSharing.entities.*;
+import docSharing.response.Response;
 import docSharing.service.FileSystemService;
 import docSharing.service.PermissionService;
 import docSharing.service.UserService;
@@ -14,6 +16,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -45,28 +48,30 @@ public class FileSystemController {
      * @return a new inode
      */
     @RequestMapping(value = "/add", method = RequestMethod.POST)
-    public ResponseEntity<INode> addInode(@RequestBody AddINodeDTO addINodeDTO) {
+    public ResponseEntity<Response<INode>> addInode(@RequestBody AddINodeDTO addINodeDTO) {
         logger.info("start addInode function");
-        logger.debug("addInode function parameters: userId:%d, name:%s, type:%s, parentId:%d", addINodeDTO.userId, addINodeDTO.name, addINodeDTO.type, addINodeDTO.parentId);
+        logger.debug("addInode function parameters: userId:{}, name:{}, type:{}, parentId:{}", addINodeDTO.userId, addINodeDTO.name, addINodeDTO.type, addINodeDTO.parentId);
         Validation.nullCheck(addINodeDTO);
         Validation.nullCheck(addINodeDTO.name);
         Validation.nullCheck(addINodeDTO.type);
         Validation.nullCheck(addINodeDTO.parentId);
         Validation.nullCheck(addINodeDTO.userId);
-
-
-        logger.info("In addInode adding %s", addINodeDTO.type);
+        logger.info("In addInode adding type:{}", addINodeDTO.type);
 
         logger.info("find the owner");
         User owner = userService.getById(addINodeDTO.userId);
 
-        INode iNode = fsService.addInode(addINodeDTO, owner);
-
-        if (addINodeDTO.type == INodeType.FILE) {
-            permissionService.setPermission(new Permission(owner, (Document) iNode, UserRole.EDITOR));
+        INode inode;
+        try {
+            inode = fsService.addInode(addINodeDTO, owner);
+            if (addINodeDTO.type == INodeType.FILE) {
+                permissionService.setPermission(new Permission(owner, (Document) iNode, UserRole.EDITOR));
+            }
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Response.failure(e.getMessage()));
         }
 
-        return ResponseEntity.ok(iNode);
+        return ResponseEntity.status(HttpStatus.OK).body(Response.success(inode));
     }
 
     /**
@@ -77,14 +82,21 @@ public class FileSystemController {
      * @return renamed inode
      */
     @RequestMapping(value = "/rename", method = RequestMethod.PATCH)
-    public ResponseEntity<INode> rename(@RequestBody RenameINodeDTO renameINodeDTO) {
+    public ResponseEntity<Response<INode>> rename(@RequestBody RenameINodeDTO renameINodeDTO) {
         logger.info("start rename function");
-        logger.debug("rename function parameters: name:%s, id:%d", renameINodeDTO.name, renameINodeDTO.id);
+        logger.debug("rename function parameters: name:{}, id:{}", renameINodeDTO.name, renameINodeDTO.id);
         Validation.nullCheck(renameINodeDTO);
         Validation.nullCheck(renameINodeDTO.name);
         Validation.nullCheck(renameINodeDTO.id);
 
-        return ResponseEntity.ok(fsService.renameInode(renameINodeDTO.id, renameINodeDTO.name));
+        INode renamedInode;
+        try {
+            renamedInode = fsService.renameInode(renameINodeDTO.id, renameINodeDTO.name);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Response.failure(e.getMessage()));
+        }
+
+        return ResponseEntity.status(HttpStatus.OK).body(Response.success(renamedInode));
     }
 
     /**
@@ -94,13 +106,20 @@ public class FileSystemController {
      * @return a list of inodes
      */
     @RequestMapping(value = "/level", method = RequestMethod.POST)
-    public ResponseEntity<List<INode>> getChildren(@RequestBody INodeDTO inodeDTO) {
+    public ResponseEntity<Response<List<INode>>> getChildren(@RequestBody INodeDTO inodeDTO) {
         logger.info("start getChildren function");
-        logger.debug("getChildren function parameters: id:%d", inodeDTO.id);
+        logger.debug("getChildren function parameters: id:%{}", inodeDTO.id);
         Validation.nullCheck(inodeDTO);
         Validation.nullCheck(inodeDTO.id);
 
-        return ResponseEntity.ok(fsService.getInodesInLevel(inodeDTO.id));
+        List<INode> inodesInLevel;
+        try {
+            inodesInLevel = fsService.getAllChildrenInodes(inodeDTO.id);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Response.failure(e.getMessage()));
+        }
+
+        return ResponseEntity.status(HttpStatus.OK).body(Response.success(inodesInLevel));
     }
 
     /**
@@ -111,14 +130,21 @@ public class FileSystemController {
      * @return inode with a new parent
      */
     @RequestMapping(value = "/move", method = RequestMethod.POST)
-    public ResponseEntity<INode> move(@RequestBody MoveINodeDTO moveINodeDTO) {
+    public ResponseEntity<Response<INode>> move(@RequestBody MoveINodeDTO moveINodeDTO) {
         logger.info("start move function");
-        logger.debug("move function parameters: userId:%d, sourceId:%d, targetId:%d", moveINodeDTO.userId, moveINodeDTO.sourceId, moveINodeDTO.targetId);
+        logger.debug("move function parameters: userId:{}, sourceId:{}, targetId:{}", moveINodeDTO.userId, moveINodeDTO.sourceId, moveINodeDTO.targetId);
         Validation.nullCheck(moveINodeDTO);
         Validation.nullCheck(moveINodeDTO.sourceId);
         Validation.nullCheck(moveINodeDTO.targetId);
 
-        return ResponseEntity.ok(fsService.move(moveINodeDTO.sourceId, moveINodeDTO.targetId));
+        INode movedInode;
+        try {
+            movedInode = fsService.move(moveINodeDTO.sourceId, moveINodeDTO.targetId);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Response.failure(e.getMessage()));
+        }
+
+        return ResponseEntity.status(HttpStatus.OK).body(Response.success(movedInode));
     }
 
     /**
@@ -128,13 +154,20 @@ public class FileSystemController {
      * @return list of inodes deleted
      */
     @RequestMapping(value = "/delete", method = RequestMethod.DELETE)
-    public ResponseEntity<List<INode>> delete(@RequestBody INodeDTO inodeDTO) {
+    public ResponseEntity<Response<List<INode>>> delete(@RequestBody INodeDTO inodeDTO) {
         logger.info("start delete function");
-        logger.debug("delete function parameters: id:%d", inodeDTO.id);
+        logger.debug("delete function parameters: id:{}", inodeDTO.id);
         Validation.nullCheck(inodeDTO);
         Validation.nullCheck(inodeDTO.id);
 
-        return ResponseEntity.ok(fsService.removeById(inodeDTO.id));
+        List<INode> deletedInode;
+        try {
+            deletedInode = fsService.removeById(inodeDTO.id);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Response.failure(e.getMessage()));
+        }
+
+        return ResponseEntity.status(HttpStatus.OK).body(Response.success(deletedInode));
     }
 
     /**
@@ -144,10 +177,9 @@ public class FileSystemController {
      * @return a new document identical to the uploaded file
      */
     @RequestMapping(value = "/uploadFile", method = RequestMethod.POST)
-    public ResponseEntity<INode> uploadFile(@ModelAttribute MoveINodeDTO.FileWithDataDTO fileWithDataDTO) {
+    public ResponseEntity<Response<INode>> uploadFile(@ModelAttribute MoveINodeDTO.FileWithDataDTO fileWithDataDTO) {
         logger.info("start uploadFile function");
-        logger.debug("uploadFile function parameters: userId:%d, parentId:%d, filename:%s", fileWithDataDTO.getUserId(), fileWithDataDTO.getParentInodeId(), fileWithDataDTO.getFile().getOriginalFilename());
-        System.out.println(fileWithDataDTO);
+        logger.debug("uploadFile function parameters: userId:{}, parentId:{}, filename:{}", fileWithDataDTO.getUserId(), fileWithDataDTO.getParentInodeId(), fileWithDataDTO.getFile().getOriginalFilename());
         Validation.nullCheck(fileWithDataDTO);
         Validation.nullCheck(fileWithDataDTO.getParentInodeId());
         Validation.nullCheck(fileWithDataDTO.getUserId());
@@ -160,23 +192,20 @@ public class FileSystemController {
         String fileExtension = FilenameUtils.getExtension(file.getOriginalFilename());
         if (!fileExtension.equals("txt")) {
             logger.error("file type is not supported");
-            throw new IllegalArgumentException("File type is not supported");
-        }
-
-        String content = null;
-        try {
-            content = new String(file.getBytes());
-        } catch (IOException e) {
-            logger.error("Can not parse file content: %s", file.getOriginalFilename());
-            throw new IllegalArgumentException("Can not parse file content");
+            return ResponseEntity.badRequest().body(Response.failure("file type is not supported"));
         }
 
         logger.info("find the owner");
         User owner = userService.getById(userId);
 
-        Document doc = fsService.uploadFile(FilenameUtils.removeExtension(file.getOriginalFilename()), content, parentId, owner);
-        permissionService.setPermission(new Permission(owner, doc, UserRole.EDITOR));
-        return ResponseEntity.ok(doc);
-    }
+        Document importedDoc;
+        try {
+            importedDoc = fsService.uploadFile(FilenameUtils.removeExtension(file.getOriginalFilename()), content, parentId, owner);
+            permissionService.setPermission(new Permission(owner, doc, UserRole.EDITOR));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Response.failure(e.getMessage()));
+        }
 
+        return ResponseEntity.status(HttpStatus.OK).body(Response.success(importedDoc));
+    }
 }

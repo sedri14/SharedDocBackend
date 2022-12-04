@@ -8,6 +8,7 @@ import docSharing.repository.DocRepository;
 import docSharing.repository.FileSystemRepository;
 import docSharing.repository.LogRepository;
 import docSharing.repository.PermissionRepository;
+import docSharing.response.Response;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -58,8 +59,8 @@ public class FileSystemControllerTests {
     @Test
     void addInode_ProvideRightParam_Works() {
         AddINodeDTO node = new AddINodeDTO(2L, rootId, "khaderFile11", INodeType.FILE);
-        ResponseEntity<INode> newFile = fileSystemController.addInode(node);
-        Long fileId = newFile.getBody().getId();
+        ResponseEntity<Response<INode>> newFile = fileSystemController.addInode(node);
+        Long fileId = newFile.getBody().getData().getId();
         boolean isFileExists = fileSystemRepository.findById(fileId).isPresent();
 
         assertTrue(isFileExists);
@@ -84,16 +85,16 @@ public class FileSystemControllerTests {
         List<INode> files = new ArrayList<>();
         for (String fileName : filesName) {
             AddINodeDTO node = new AddINodeDTO(2L, rootId, fileName, INodeType.DIR);
-            ResponseEntity<INode> newFile = fileSystemController.addInode(node);
-            files.add(newFile.getBody());
+            ResponseEntity<Response<INode>> newFile = fileSystemController.addInode(node);
+            files.add(newFile.getBody().getData());
         }
 
         INodeDTO root = new INodeDTO(rootId);
 
-        List<INode> children = fileSystemController.getChildren(root).getBody();
+        Response<List<INode>> children = fileSystemController.getChildren(root).getBody();
 
 
-        assertEquals(files.size(), children.size());
+        assertEquals(files.size(), children.getData().size());
 
 
     }
