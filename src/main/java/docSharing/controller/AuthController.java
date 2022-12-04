@@ -121,9 +121,9 @@ public class AuthController {
 
         User user = verificationToken.getUser();
         Calendar cal = Calendar.getInstance();
-        if ((verificationToken.getExpiryDate().getTime() - cal.getTime().getTime()) <= 0) {
-            return "redirect:/badUser.html?lang=" + locale.getLanguage();
-        }
+//        if ((verificationToken.getExpiryDate().getTime() - cal.getTime().getTime()) <= 0) {
+//            return "redirect:/badUser.html?lang=" + locale.getLanguage();
+//        }
 
         userService.updateEnabled(user.getId(), true);
         authService.deleteVerificationToken(token);

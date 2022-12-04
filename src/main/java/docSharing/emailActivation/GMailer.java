@@ -32,7 +32,7 @@ import static javax.mail.Message.RecipientType.TO;
 
 public class GMailer {
 
-    private static final String TEST_EMAIL = "nitzan.la4@gmail.com";
+    private static final String TEST_EMAIL = "khaderzatari@gmail.com";
     private final Gmail service;
 
     public GMailer() throws Exception {

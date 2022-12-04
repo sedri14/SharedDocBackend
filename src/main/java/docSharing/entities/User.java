@@ -44,7 +44,7 @@ public class User implements Serializable {
         this.name = name;
         this.email = email;
         this.password = password;
-        this.enabled = true;  //TOdo: after activation change it to false
+        this.enabled = false;
     }
 
     public static User createUserFactory(String name, String email, String password) {
