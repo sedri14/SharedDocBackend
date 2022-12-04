@@ -65,7 +65,7 @@ public class FileSystemController {
         try {
             inode = fsService.addInode(addINodeDTO, owner);
             if (addINodeDTO.type == INodeType.FILE) {
-                permissionService.setPermission(new Permission(owner, (Document) iNode, UserRole.EDITOR));
+                permissionService.setPermission(new Permission(owner, (Document) inode, UserRole.EDITOR));
             }
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Response.failure(e.getMessage()));
@@ -200,12 +200,15 @@ public class FileSystemController {
 
         Document importedDoc;
         try {
-            importedDoc = fsService.uploadFile(FilenameUtils.removeExtension(file.getOriginalFilename()), content, parentId, owner);
-            permissionService.setPermission(new Permission(owner, doc, UserRole.EDITOR));
+            logger.info("");
+//            importedDoc = fsService.uploadFile(FilenameUtils.removeExtension(file.getOriginalFilename()), parentId, owner);
+//            permissionService.setPermission(new Permission(owner, importedDoc, UserRole.EDITOR));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Response.failure(e.getMessage()));
         }
 
-        return ResponseEntity.status(HttpStatus.OK).body(Response.success(importedDoc));
+//        return ResponseEntity.status(HttpStatus.OK).body(Response.success(importedDoc));
+        logger.info("");
+        return null;
     }
 }

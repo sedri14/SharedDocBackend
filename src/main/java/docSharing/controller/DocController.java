@@ -178,7 +178,7 @@ public class DocController {
         logger.info("find the user and the document object according to their id");
         Document doc = docService.findDocById(docId);
         User user = userService.findByEmail(changeRoleDTO.email);
-
+        Validation.nullCheck(user);
         UserRole userRole;
         try {
             userRole = permissionService.changeRole(doc, user, changeRoleDTO.userRole, changeRoleDTO.isDelete);
