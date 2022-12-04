@@ -46,7 +46,7 @@ public class PermissionService {
     }
 
     public boolean addPermission(Document doc, User user, UserRole userRole) {
-        Permission p = new Permission(user,doc,userRole);
+        Permission p = new Permission(user, doc, userRole);
         permissionRepository.save(p);
         return true;
     }
@@ -58,7 +58,22 @@ public class PermissionService {
     }
 
     public boolean isExist(Document doc, User user) {
-        return permissionRepository.existsByUserAndDocument(user,doc);
+        return permissionRepository.existsByUserAndDocument(user, doc);
+    }
+
+    public boolean changeRole(Document doc, User user, UserRole userRole, boolean isDelete) {
+
+        if (isDelete && isExist(doc, user)) {
+            delete(doc, user);
+        } else {
+            if (isExist(doc, user)) {
+                updatePermission(doc, user, userRole);
+            } else {
+                addPermission(doc, user, userRole);
+            }
+        }
+
+        return true;
     }
 }
 

@@ -5,6 +5,7 @@ import docSharing.DTO.Doc.UpdateDocContentRes;
 import docSharing.Utils.Validation;
 import docSharing.entities.Document;
 import docSharing.entities.Permission;
+import docSharing.entities.User;
 import docSharing.entities.UserRole;
 import docSharing.response.PermissionResponse;
 import docSharing.response.Response;
@@ -12,6 +13,8 @@ import docSharing.service.DocService;
 import docSharing.DTO.Doc.ChangeRoleDTO;
 import docSharing.DTO.Doc.CurrentViewingUserDTO;
 import docSharing.DTO.Doc.ManipulatedTextDTO;
+import docSharing.service.PermissionService;
+import docSharing.service.UserService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,9 +24,11 @@ import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 
@@ -33,6 +38,10 @@ import java.util.Optional;
 public class DocController {
     @Autowired
     DocService docService;
+    @Autowired
+    UserService userService;
+    @Autowired
+    private PermissionService permissionService;
 
     private static final Logger logger = LogManager.getLogger(DocController.class.getName());
 
@@ -123,7 +132,12 @@ public class DocController {
         Validation.nullCheck(permissionDTO.docId);
         Validation.nullCheck(permissionDTO.userId);
 
-        Optional<Permission> optionalPer = docService.getPermission(permissionDTO.userId, permissionDTO.docId);
+        logger.info("find the user and the document object according to their id");
+        Document doc = docService.findDocById(permissionDTO.docId);
+        User user = userService.getById(permissionDTO.userId);
+
+        logger.info("get the permission");
+        Optional<Permission> optionalPer = permissionService.getPermission(user, doc);
         if (optionalPer.isPresent()) {
             UserRole userRole = optionalPer.get().getUserRole();
 
@@ -147,14 +161,23 @@ public class DocController {
         logger.info("start changeUserRollInDoc function");
         logger.info("validate docId param");
         Validation.nullCheck(docId);
-        logger.info("validate ChnageRoleDTO param");
+        logger.info("validate ChangeRoleDTO param");
         Validation.nullCheck(changeRoleDTO);
 //        Validation.nullCheck(changeRoleDTO.userRole);
         Validation.nullCheck(changeRoleDTO.ownerId);
         Validation.nullCheck(changeRoleDTO.email);
         Validation.nullCheck(changeRoleDTO.isDelete);
 
-        boolean res = docService.editRole(docId, changeRoleDTO.ownerId, changeRoleDTO.email, changeRoleDTO.userRole, changeRoleDTO.isDelete);
+        if (!Objects.equals(docService.getOwner(docId), changeRoleDTO.ownerId)) {
+            ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false);
+        }
+
+        logger.info("find the user and the document object according to their id");
+        Document doc = docService.findDocById(docId);
+        User user = userService.findByEmail(changeRoleDTO.email);
+
+
+        boolean res = permissionService.changeRole(doc, user, changeRoleDTO.userRole, changeRoleDTO.isDelete);
 
         return ResponseEntity.status(HttpStatus.OK).body(res);
 
