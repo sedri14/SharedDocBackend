@@ -27,16 +27,12 @@ public class UserController {
 
 
     /**
-     *Method updates user's name
+     * Method updates user's name
+     *
      * @param token
      * @return User in case of success OR Error
      */
 
-    //here you should not throw exception you should return an error or something.
-    //check if things are null
-    //why i should send all the user to update the name?
-
-    //we cna send a String instead.
     @RequestMapping(value = "/name", method = RequestMethod.PATCH)
     public ResponseEntity<User> updateUserName(@RequestBody UserDTO user, @RequestHeader String token) throws IOException {
         if (!Validation.isValidName(user.getName())) {
@@ -59,15 +55,13 @@ public class UserController {
 //        try {
 //            validateToken(user.getEmail(), token);
 //        } catch (IOException e) {
-//            ResponseEntity.badRequest(); //TODO: check how to wrap it with responser entity with user
+//            ResponseEntity.badRequest();
 //        }
 //        return ResponseEntity.status(HttpStatus.OK).body(userService.updateUserEmail(user.id, user.getEmail()));
 //    }
 
-    //chante to requestBody ->
-    //change the response to string.
     @RequestMapping(value = "/password", method = RequestMethod.PATCH)
-    public ResponseEntity<User> updateUserPassword(@RequestBody User user, @RequestParam String password, @RequestHeader String token){
+    public ResponseEntity<User> updateUserPassword(@RequestBody User user, @RequestParam String password, @RequestHeader String token) {
         if (!Validation.isValidPassword(password)) {
             return ResponseEntity.badRequest().build();
         }
@@ -75,9 +69,6 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).body(userService.updateUserPassword(user.getEmail(), password));
     }
 
-//don't throw an exception here.
-    //this should reutrn a string entity.
-    //PathVariables use id
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Void> deleteUser(@RequestParam String email, @RequestHeader String token) throws IOException {
         validateToken(email, token);
@@ -89,8 +80,8 @@ public class UserController {
 
     @DeleteMapping("/delete/{id}")
     @RequestMapping(value = "/all", method = RequestMethod.GET)
-    public ResponseEntity<List<User>> all(){
-    //userservice.fidall could return null
+    public ResponseEntity<List<User>> all() {
+
         return ResponseEntity.status(HttpStatus.OK).body(userService.findAll());
     }
 
