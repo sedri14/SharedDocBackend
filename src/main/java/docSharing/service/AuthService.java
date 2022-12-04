@@ -30,7 +30,7 @@ import static docSharing.response.RegisterObject.createRegisterObject;
 @Service
 public class AuthService {
 
-    private static Map<User, String> mapUserTokens = new HashMap<>();
+    private static Map<Long, String> mapUserTokens = new HashMap<>();
     @Autowired
     private UserRepository userRepository;
     @Autowired
@@ -69,7 +69,7 @@ public class AuthService {
 
     private boolean isExistingEmail(String email) {
         User user = userRepository.findByEmail(email);
-        return (user != null) ? true : false;
+        return user != null;
     }
 
     public String generateToken() {
@@ -90,7 +90,7 @@ public class AuthService {
             return createLoginObject(userByEmail.getId(), null, String.valueOf(LoginEnum.INVALID_PASSWORD), userByEmail.getName());
         else {
             String token = generateToken();
-            mapUserTokens.put(userByEmail, token);
+            mapUserTokens.put(userByEmail.getId(), token);
             LoginObject loginObject = createLoginObject(userByEmail.getId(), token, null, userByEmail.getName());
             return loginObject;
         }
@@ -110,13 +110,17 @@ public class AuthService {
 
     // ------------------ verification token ------------------
 
-    public boolean isValidToken(String email, String token) {
-        return mapUserTokens.get(email).compareTo(token) == 0;
+//    public boolean isValidToken(String email, String token) {
+//        return mapUserTokens.get(email).compareTo(token) == 0;
+//    }
+
+    public boolean isValidToken(Long userId, String token) {
+        return mapUserTokens.get(userId).compareTo(token) == 0;
     }
 
     public UserDTO updateTokenEmailKey(UserDTO user, String newEmail) {
         User createduser = createUserFactory(user);
-        mapUserTokens.put(createduser, mapUserTokens.get(user.getEmail()));
+        mapUserTokens.put(createduser.getId(), mapUserTokens.get(user.getEmail()));
         mapUserTokens.remove(user.getEmail());
         return user;
     }
@@ -142,9 +146,8 @@ public class AuthService {
     }
 
 
-    public void publishRegistrationEvent(UserDTO createdUser, Locale locale, String appUrl) {
-        User user = userRepository.findByEmail(createdUser.getEmail());
-        eventPublisher.publishEvent(new OnRegistrationCompleteEvent(user, locale, appUrl));
+    public void publishRegistrationEvent(User createdUser, Locale locale, String appUrl) {
+        eventPublisher.publishEvent(new OnRegistrationCompleteEvent(createdUser, locale, appUrl));
         System.out.println("inside publishRegistrationEvent");
     }
 
