@@ -21,13 +21,14 @@ public class VerificationToken {
 
     private Date expiryDate;
 
-    public VerificationToken() {}
+    public VerificationToken() {
+    }
 
     public VerificationToken(String token, User user) {
         this.token = token;
         this.user = user;
 //        this.expiryDate = calculateExpiryDate(EXPIRATION);
-        this.expiryDate = calculateExpiryDate(1);
+        this.expiryDate = calculateExpiryDate(60 * 24);
     }
 
     private Date calculateExpiryDate(int expiryTimeInMinutes) {
