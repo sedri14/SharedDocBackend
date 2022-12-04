@@ -7,8 +7,11 @@ import docSharing.DTO.FS.RenameINodeDTO;
 import docSharing.Utils.Validation;
 import docSharing.entities.Document;
 import docSharing.entities.INode;
+import docSharing.entities.*;
 import docSharing.response.Response;
 import docSharing.service.FileSystemService;
+import docSharing.service.PermissionService;
+import docSharing.service.UserService;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -28,6 +31,10 @@ public class FileSystemController {
 
     @Autowired
     private FileSystemService fsService;
+    @Autowired
+    UserService userService;
+    @Autowired
+    PermissionService permissionService;
 
     private static Logger logger = LogManager.getLogger(FileSystemController.class.getName());
 
@@ -51,9 +58,15 @@ public class FileSystemController {
         Validation.nullCheck(addINodeDTO.userId);
         logger.info("In addInode adding type:{}", addINodeDTO.type);
 
+        logger.info("find the owner");
+        User owner = userService.getById(addINodeDTO.userId);
+
         INode inode;
         try {
-            inode = fsService.addInode(addINodeDTO);
+            inode = fsService.addInode(addINodeDTO, owner);
+            if (addINodeDTO.type == INodeType.FILE) {
+                permissionService.setPermission(new Permission(owner, (Document) iNode, UserRole.EDITOR));
+            }
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Response.failure(e.getMessage()));
         }
@@ -149,8 +162,8 @@ public class FileSystemController {
 
         List<INode> deletedInode;
         try {
-        deletedInode = fsService.removeById(inodeDTO.id);
-        } catch (IllegalArgumentException e){
+            deletedInode = fsService.removeById(inodeDTO.id);
+        } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Response.failure(e.getMessage()));
         }
 
@@ -182,14 +195,17 @@ public class FileSystemController {
             return ResponseEntity.badRequest().body(Response.failure("file type is not supported"));
         }
 
+        logger.info("find the owner");
+        User owner = userService.getById(userId);
+
         Document importedDoc;
         try {
-            importedDoc = fsService.uploadFile(file, parentId, userId);
+            importedDoc = fsService.uploadFile(FilenameUtils.removeExtension(file.getOriginalFilename()), content, parentId, owner);
+            permissionService.setPermission(new Permission(owner, doc, UserRole.EDITOR));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Response.failure(e.getMessage()));
         }
 
         return ResponseEntity.status(HttpStatus.OK).body(Response.success(importedDoc));
     }
-
 }

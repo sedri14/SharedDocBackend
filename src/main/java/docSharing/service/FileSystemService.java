@@ -57,7 +57,7 @@ public class FileSystemService {
      *                 type - type of inode (DIR/FILE)
      * @return added inode
      */
-    public INode addInode(AddINodeDTO addInode) throws IllegalArgumentException{
+    public INode addInode(AddINodeDTO addInode, User owner) throws IllegalArgumentException{
         if (inodeNameExistsInDir(addInode.parentId, addInode.type, addInode.name)) {
             throw new IllegalArgumentException(String.format("Can not add %s, Name %s already exists in this directory.",
                     addInode.type == INodeType.DIR ? "directory" : "file", addInode.name));
@@ -67,7 +67,7 @@ public class FileSystemService {
         if (!isDir(parentInode)) {
             throw new IllegalArgumentException("Destination to add must be a directory");
         }
-        User owner = userService.getById(addInode.userId);
+//        User owner = userService.getById(addInode.userId);
         INode newInode;
         switch (addInode.type) {
             case DIR:
@@ -81,10 +81,10 @@ public class FileSystemService {
         }
 
         INode savedInode = fsRepository.save(newInode);
-        if (addInode.type == INodeType.FILE) {
-            Long docId = savedInode.getId();
-            docService.setPermission(addInode.userId, docId, UserRole.EDITOR);
-        }
+//        if (addInode.type == INodeType.FILE) {
+//            Long docId = savedInode.getId();
+//            docService.setPermission(addInode.userId, docId, UserRole.EDITOR);
+//        }
 
         return savedInode;
     }
@@ -193,10 +193,10 @@ public class FileSystemService {
      *
      * @param file              - uploaded file
      * @param parentId          - parent node id under which the created document will be assigned
-     * @param userId            - id of the owner user
+     * @param owner                 - owner User
      * @return a new Document inode created from the uploaded .txt file
      */
-    public Document uploadFile(MultipartFile file, Long parentId, Long userId) throws IllegalArgumentException {
+    public Document uploadFile(MultipartFile file, Long parentId, User owner) throws IllegalArgumentException {
         String nameWithExtension = FilenameUtils.removeExtension(file.getOriginalFilename());
         String content = null;
         try {
@@ -214,10 +214,8 @@ public class FileSystemService {
             throw new IllegalArgumentException(String.format("File name %s already exist in this directory", FilenameUtils.removeExtension(nameWithExtension)));
         }
 
-        User owner = userService.getById(userId);
         Document newDoc = Document.createNewImportedDocument(nameWithExtension, content, parent, owner);
         Document savedDoc = fsRepository.save(newDoc);
-        docService.setPermission(userId, savedDoc.getId(), UserRole.EDITOR);
 
         return newDoc;
     }

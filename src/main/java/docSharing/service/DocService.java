@@ -24,8 +24,8 @@ import java.util.concurrent.TimeUnit;
 public class DocService {
     @Autowired
     private DocRepository docRepository;
-    @Autowired
-    private AuthService authService;
+    //    @Autowired
+//    private AuthService authService;
     @Autowired
     private PermissionService permissionService;
     @Autowired
@@ -270,49 +270,6 @@ public class DocService {
 
 
     /**
-     * @param docId           document id
-     * @param ownerId         owner id of the document
-     * @param editRoleToEmail email to the user who we want to change its role in the document
-     * @param userRole        the userRole
-     * @param isDelete        true if we want to delete the permission to that user
-     * @return true if everything is done
-     */
-    public UserRole editRole(Long docId, Long ownerId, String editRoleToEmail, UserRole userRole, boolean isDelete) {
-
-        logger.info("start editRole function");
-
-        if (!Objects.equals(getOwner(docId), ownerId)) {
-            throw new IllegalArgumentException("you are not the owner");
-        }
-
-        boolean docIsPresent = docRepository.findById(docId).isPresent();
-        if (!docIsPresent) {
-            logger.error("there is no document with this id");
-            throw new IllegalArgumentException("there is no document with this id");
-        }
-        Document doc = docRepository.findById(docId).get();
-        User user = userService.findByEmail(editRoleToEmail);
-
-        if (user == null) {
-            throw new IllegalArgumentException("user does not exist");
-        }
-        Permission modified;
-        if (isDelete && permissionService.isExist(doc, user)) {
-            modified = permissionService.delete(doc, user);
-            return UserRole.NON;
-        } else {
-            if (permissionService.isExist(doc, user)) {
-                modified = permissionService.updatePermission(doc, user, userRole);
-            } else {
-                modified = permissionService.addPermission(doc, user, userRole);
-            }
-        }
-
-        return modified.getUserRole();
-    }
-
-
-    /**
      * @param userId   userId
      * @param docId    docId
      * @param userRole userRole
@@ -348,31 +305,16 @@ public class DocService {
                 throw new RuntimeException("Role not supported.");
         }
         permissionService.setPermission(p);
-
     }
 
-
-    /**
-     * @param userId userId
-     * @param docId  DocId
-     * @return optional of the permission of that user for that docId
-     */
-    public Optional<Permission> getPermission(Long userId, Long docId) {
-
-        logger.info("start getPermission function");
-
-        User user = userService.getById(userId);
-
+    public Document findDocById(Long docId) {
         boolean docIsPresent = docRepository.findById(docId).isPresent();
         if (!docIsPresent) {
             logger.error("there is no document with this id");
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "there is no document with this id");
         }
-        Document doc = docRepository.findById(docId).get();
-
-        return permissionService.getPermission(user, doc);
+        return docRepository.findById(docId).get();
     }
-
 
     /**
      * @param docId document id
