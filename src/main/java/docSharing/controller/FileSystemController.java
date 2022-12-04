@@ -4,8 +4,10 @@ import docSharing.DTO.FS.AddINodeDTO;
 import docSharing.DTO.FS.INodeDTO;
 import docSharing.DTO.FS.MoveINodeDTO;
 import docSharing.DTO.FS.RenameINodeDTO;
-import docSharing.entities.INode;
+import docSharing.entities.*;
 import docSharing.service.FileSystemService;
+import docSharing.service.PermissionService;
+import docSharing.service.UserService;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -24,6 +26,10 @@ public class FileSystemController {
 
     @Autowired
     private FileSystemService fsService;
+    @Autowired
+    UserService userService;
+    @Autowired
+    PermissionService permissionService;
 
     private static Logger logger = LogManager.getLogger(FileSystemController.class.getName());
 
@@ -46,7 +52,16 @@ public class FileSystemController {
         }
         logger.info("In addInode adding %s", addINodeDTO.type);
 
-        return ResponseEntity.ok(fsService.addInode(addINodeDTO));
+        logger.info("find the owner");
+        User owner = userService.getById(addINodeDTO.userId);
+
+        INode iNode = fsService.addInode(addINodeDTO, owner);
+
+        if (addINodeDTO.type == INodeType.FILE) {
+            permissionService.setPermission(new Permission(owner, (Document) iNode, UserRole.EDITOR));
+        }
+
+        return ResponseEntity.ok(iNode);
     }
 
     /**
@@ -157,7 +172,12 @@ public class FileSystemController {
             throw new IllegalArgumentException("Can not parse file content");
         }
 
-        return ResponseEntity.ok(fsService.uploadFile(FilenameUtils.removeExtension(file.getOriginalFilename()), content, parentId, userId));
+        logger.info("find the owner");
+        User owner = userService.getById(userId);
+
+        Document doc = fsService.uploadFile(FilenameUtils.removeExtension(file.getOriginalFilename()), content, parentId, owner);
+        permissionService.setPermission(new Permission(owner, doc, UserRole.EDITOR));
+        return ResponseEntity.ok(doc);
     }
 
 }
