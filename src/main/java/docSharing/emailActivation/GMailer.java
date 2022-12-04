@@ -46,7 +46,7 @@ public class GMailer {
     private static Credential getCredentials(final NetHttpTransport httpTransport, GsonFactory jsonFactory)
             throws IOException {
         GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(jsonFactory, new InputStreamReader(GMailer.class.getResourceAsStream
-                ("/client_secret_89807580359-6t815ru72tfu3rrasrah72p8so26fmfa.apps.googleusercontent.com.json")));
+                ("/client_secret_689882631229-p25eh1j9c1ja1v5pfuo1u8hhk3n7qioh.apps.googleusercontent.com.json")));
 
         GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(
                 httpTransport, jsonFactory, clientSecrets, Set.of(GMAIL_SEND))

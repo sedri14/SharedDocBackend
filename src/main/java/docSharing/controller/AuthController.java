@@ -71,9 +71,9 @@ public class AuthController {
             RegisterObject registerUser = authService.createUser(user);
             UserDTO createdUser = registerUser.getUser();
             if (createdUser != null) {
-                //String appUrl = request.getContextPath();
-//                authService.publishRegistrationEvent(createdUser, request.getLocale(), appUrl);
-//                System.out.println("inside AuthController");
+                String appUrl = request.getContextPath();
+                authService.publishRegistrationEvent(createdUser, request.getLocale(), appUrl);
+                System.out.println("inside AuthController");
                 return ResponseEntity.status(HttpStatus.OK).body(Response.success(createdUser));
             } else
                 return ResponseEntity.badRequest().body(Response.failure("Email already exist"));
