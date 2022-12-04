@@ -30,7 +30,7 @@ import static docSharing.response.RegisterObject.createRegisterObject;
 @Service
 public class AuthService {
 
-    private static Map<User,String> mapUserTokens = new HashMap<>();
+    private static Map<Long, String> mapUserTokens = new HashMap<>();
     @Autowired
     private UserRepository userRepository;
     @Autowired
@@ -53,30 +53,26 @@ public class AuthService {
         this.tokenRepository = tokenRepository;
     }
 
-    public AuthService() {}
+    public AuthService() {
+    }
 
 
     public RegisterObject createUser(UserDTO user) throws SQLDataException {
         logger.info("in createUser");
-        if (!isExistingEmail(user.getEmail()))
-        {
+        if (!isExistingEmail(user.getEmail())) {
             userRepository.save(createUserFactory(user));
-            return createRegisterObject(user,null);
-        }
-        else
-            return createRegisterObject(null,"Email is already exist");
+            return createRegisterObject(user, null);
+        } else
+            return createRegisterObject(null, "Email is already exist");
     }
 
 
-
-    private boolean isExistingEmail (String email)
-    {
+    private boolean isExistingEmail(String email) {
         User user = userRepository.findByEmail(email);
-        return (user!=null)?true:false;
+        return user != null;
     }
 
-    public String generateToken()
-    {
+    public String generateToken() {
         UUID uuid = UUID.randomUUID();
         return uuid.toString();
     }
@@ -87,17 +83,16 @@ public class AuthService {
 
         User userByEmail = userRepository.findByEmail(user.getEmail());
         if (userByEmail == null) //User doesn't exist
-            return createLoginObject(userByEmail.getId(),null, String.valueOf(LoginEnum.EMAIL_NOT_EXIST), userByEmail.getName());
+            return createLoginObject(userByEmail.getId(), null, String.valueOf(LoginEnum.EMAIL_NOT_EXIST), userByEmail.getName());
         if (!isEnabledUser(user))
-            return createLoginObject(userByEmail.getId(),null, String.valueOf(LoginEnum.CONFIRM_EMAIL), userByEmail.getName());
+            return createLoginObject(userByEmail.getId(), null, String.valueOf(LoginEnum.CONFIRM_EMAIL), userByEmail.getName());
         if (!userByEmail.getPassword().equals(user.getPassword()))  //User exist check password
-            return createLoginObject(userByEmail.getId(),null, String.valueOf(LoginEnum.INVALID_PASSWORD), userByEmail.getName());
-        else
-        {
+            return createLoginObject(userByEmail.getId(), null, String.valueOf(LoginEnum.INVALID_PASSWORD), userByEmail.getName());
+        else {
             String token = generateToken();
-            mapUserTokens.put(userByEmail, token);
-            LoginObject loginObject = createLoginObject(userByEmail.getId(),token,null, userByEmail.getName());
-            return  loginObject;
+            mapUserTokens.put(userByEmail.getId(), token);
+            LoginObject loginObject = createLoginObject(userByEmail.getId(), token, null, userByEmail.getName());
+            return loginObject;
         }
     }
 
@@ -115,13 +110,17 @@ public class AuthService {
 
     // ------------------ verification token ------------------
 
-    public boolean isValidToken(String email, String token) {
-        return mapUserTokens.get(email).compareTo(token) == 0;
+//    public boolean isValidToken(String email, String token) {
+//        return mapUserTokens.get(email).compareTo(token) == 0;
+//    }
+
+    public boolean isValidToken(Long userId, String token) {
+        return mapUserTokens.get(userId).compareTo(token) == 0;
     }
 
     public UserDTO updateTokenEmailKey(UserDTO user, String newEmail) {
-        User createduser= createUserFactory(user);
-        mapUserTokens.put(createduser, mapUserTokens.get(user.getEmail()));
+        User createduser = createUserFactory(user);
+        mapUserTokens.put(createduser.getId(), mapUserTokens.get(user.getEmail()));
         mapUserTokens.remove(user.getEmail());
         return user;
     }
@@ -129,7 +128,7 @@ public class AuthService {
     private boolean isValidCredentials(String email, String password) {
         User user = userRepository.findByEmail(email);
 
-        if (user!= null) {
+        if (user != null) {
             return user.getPassword().equals(password);
         }
 
@@ -147,7 +146,7 @@ public class AuthService {
     }
 
 
-    public void publishRegistrationEvent(User createdUser, Locale locale, String appUrl  ) {
+    public void publishRegistrationEvent(User createdUser, Locale locale, String appUrl) {
         eventPublisher.publishEvent(new OnRegistrationCompleteEvent(createdUser, locale, appUrl));
         System.out.println("inside publishRegistrationEvent");
     }
@@ -155,6 +154,7 @@ public class AuthService {
     public void deleteVerificationToken(String token) {
         tokenRepository.deleteByToken(token);
     }
+
     public VerificationToken getVerificationToken(String VerificationToken) {
         return tokenRepository.findByToken(VerificationToken);
     }
@@ -170,7 +170,7 @@ public class AuthService {
                 filter(token -> token.getExpiryDate().getTime() - cal.getTime().getTime() <= 0)
                 .collect(Collectors.toList());
 
-        for (VerificationToken token: expiredTokens) {
+        for (VerificationToken token : expiredTokens) {
             deleteVerificationToken(token.getToken());
             userRepository.deleteById(token.getUser().getId());
             logger.debug("verification token for user_id#" + token.getUser().getId() + " and non activated user was deleted");
@@ -180,7 +180,6 @@ public class AuthService {
     public void saveRegisteredUser(User user) {
         userRepository.save(user);
     }
-
 
 
 }

@@ -1,12 +1,12 @@
 package docSharing.response;
 
-public enum Error {
+public enum TokenError {
 
-    UNVALID_TOKEN("Unvalid token");
+    INVALID_TOKEN("Invalid token");
 
     private final String text;
 
-    Error(final String text) {
+    TokenError(final String text) {
         this.text = text;
     }
 

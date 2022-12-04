@@ -9,6 +9,8 @@ import docSharing.entities.Document;
 import docSharing.entities.INode;
 import docSharing.entities.*;
 import docSharing.response.Response;
+import docSharing.response.TokenError;
+import docSharing.service.AuthService;
 import docSharing.service.FileSystemService;
 import docSharing.service.PermissionService;
 import docSharing.service.UserService;
@@ -35,6 +37,8 @@ public class FileSystemController {
     UserService userService;
     @Autowired
     PermissionService permissionService;
+    @Autowired
+    AuthService authService;
 
     private static Logger logger = LogManager.getLogger(FileSystemController.class.getName());
 
@@ -48,8 +52,13 @@ public class FileSystemController {
      * @return a new inode
      */
     @RequestMapping(value = "/add", method = RequestMethod.POST)
-    public ResponseEntity<Response<INode>> addInode(@RequestBody AddINodeDTO addINodeDTO) {
+    public ResponseEntity<Response<INode>> addInode(@RequestBody AddINodeDTO addINodeDTO, @RequestHeader String token, @RequestHeader Long userId) {
         logger.info("start addInode function");
+
+        if (!authService.isValidToken(userId, token)) {
+            return ResponseEntity.badRequest().body(Response.failure(TokenError.INVALID_TOKEN.toString()));
+        }
+
         logger.debug("addInode function parameters: userId:{}, name:{}, type:{}, parentId:{}", addINodeDTO.userId, addINodeDTO.name, addINodeDTO.type, addINodeDTO.parentId);
         Validation.nullCheck(addINodeDTO);
         Validation.nullCheck(addINodeDTO.name);
@@ -82,8 +91,13 @@ public class FileSystemController {
      * @return renamed inode
      */
     @RequestMapping(value = "/rename", method = RequestMethod.PATCH)
-    public ResponseEntity<Response<INode>> rename(@RequestBody RenameINodeDTO renameINodeDTO) {
+    public ResponseEntity<Response<INode>> rename(@RequestBody RenameINodeDTO renameINodeDTO, @RequestHeader String token, @RequestHeader Long userId) {
         logger.info("start rename function");
+
+        if (!authService.isValidToken(userId, token)) {
+            return ResponseEntity.badRequest().body(Response.failure(TokenError.INVALID_TOKEN.toString()));
+        }
+
         logger.debug("rename function parameters: name:{}, id:{}", renameINodeDTO.name, renameINodeDTO.id);
         Validation.nullCheck(renameINodeDTO);
         Validation.nullCheck(renameINodeDTO.name);
@@ -106,8 +120,13 @@ public class FileSystemController {
      * @return a list of inodes
      */
     @RequestMapping(value = "/level", method = RequestMethod.POST)
-    public ResponseEntity<Response<List<INode>>> getChildren(@RequestBody INodeDTO inodeDTO) {
+    public ResponseEntity<Response<List<INode>>> getChildren(@RequestBody INodeDTO inodeDTO, @RequestHeader String token, @RequestHeader Long userId) {
         logger.info("start getChildren function");
+
+        if (!authService.isValidToken(userId, token)) {
+            return ResponseEntity.badRequest().body(Response.failure(TokenError.INVALID_TOKEN.toString()));
+        }
+
         logger.debug("getChildren function parameters: id:%{}", inodeDTO.id);
         Validation.nullCheck(inodeDTO);
         Validation.nullCheck(inodeDTO.id);
@@ -130,8 +149,13 @@ public class FileSystemController {
      * @return inode with a new parent
      */
     @RequestMapping(value = "/move", method = RequestMethod.POST)
-    public ResponseEntity<Response<INode>> move(@RequestBody MoveINodeDTO moveINodeDTO) {
+    public ResponseEntity<Response<INode>> move(@RequestBody MoveINodeDTO moveINodeDTO, @RequestHeader String token, @RequestHeader Long userId) {
         logger.info("start move function");
+
+        if (!authService.isValidToken(userId, token)) {
+            return ResponseEntity.badRequest().body(Response.failure(TokenError.INVALID_TOKEN.toString()));
+        }
+
         logger.debug("move function parameters: userId:{}, sourceId:{}, targetId:{}", moveINodeDTO.userId, moveINodeDTO.sourceId, moveINodeDTO.targetId);
         Validation.nullCheck(moveINodeDTO);
         Validation.nullCheck(moveINodeDTO.sourceId);
@@ -154,8 +178,13 @@ public class FileSystemController {
      * @return list of inodes deleted
      */
     @RequestMapping(value = "/delete", method = RequestMethod.DELETE)
-    public ResponseEntity<Response<List<INode>>> delete(@RequestBody INodeDTO inodeDTO) {
+    public ResponseEntity<Response<List<INode>>> delete(@RequestBody INodeDTO inodeDTO, @RequestHeader String token, @RequestHeader Long userId) {
         logger.info("start delete function");
+
+        if (!authService.isValidToken(userId, token)) {
+            return ResponseEntity.badRequest().body(Response.failure(TokenError.INVALID_TOKEN.toString()));
+        }
+
         logger.debug("delete function parameters: id:{}", inodeDTO.id);
         Validation.nullCheck(inodeDTO);
         Validation.nullCheck(inodeDTO.id);
@@ -177,8 +206,12 @@ public class FileSystemController {
      * @return a new document identical to the uploaded file
      */
     @RequestMapping(value = "/uploadFile", method = RequestMethod.POST)
-    public ResponseEntity<Response<INode>> uploadFile(@ModelAttribute MoveINodeDTO.FileWithDataDTO fileWithDataDTO) {
+    public ResponseEntity<Response<INode>> uploadFile(@ModelAttribute MoveINodeDTO.FileWithDataDTO fileWithDataDTO, @RequestHeader String token, @RequestHeader Long userId) {
         logger.info("start uploadFile function");
+
+        if (!authService.isValidToken(userId, token)) {
+            return ResponseEntity.badRequest().body(Response.failure(TokenError.INVALID_TOKEN.toString()));
+        }
         logger.debug("uploadFile function parameters: userId:{}, parentId:{}, filename:{}", fileWithDataDTO.getUserId(), fileWithDataDTO.getParentInodeId(), fileWithDataDTO.getFile().getOriginalFilename());
         Validation.nullCheck(fileWithDataDTO);
         Validation.nullCheck(fileWithDataDTO.getParentInodeId());
@@ -186,7 +219,6 @@ public class FileSystemController {
         Validation.nullCheck(fileWithDataDTO.getFile());
 
         Long parentId = fileWithDataDTO.getParentInodeId();
-        Long userId = fileWithDataDTO.getUserId();
         MultipartFile file = fileWithDataDTO.getFile();
 
         String fileExtension = FilenameUtils.getExtension(file.getOriginalFilename());
@@ -196,7 +228,7 @@ public class FileSystemController {
         }
 
         logger.info("find the owner");
-        User owner = userService.getById(userId);
+        User owner = userService.getById(fileWithDataDTO.getUserId());
 
         Document importedDoc;
         try {
