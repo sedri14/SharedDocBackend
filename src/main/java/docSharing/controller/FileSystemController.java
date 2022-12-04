@@ -201,14 +201,13 @@ public class FileSystemController {
         Document importedDoc;
         try {
             logger.info("");
-//            importedDoc = fsService.uploadFile(FilenameUtils.removeExtension(file.getOriginalFilename()), parentId, owner);
-//            permissionService.setPermission(new Permission(owner, importedDoc, UserRole.EDITOR));
+            importedDoc = fsService.uploadFile(file, parentId, owner);
+            permissionService.setPermission(new Permission(owner, importedDoc, UserRole.EDITOR));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Response.failure(e.getMessage()));
         }
 
-//        return ResponseEntity.status(HttpStatus.OK).body(Response.success(importedDoc));
-        logger.info("");
-        return null;
+        return ResponseEntity.status(HttpStatus.OK).body(Response.success(importedDoc));
+
     }
 }
