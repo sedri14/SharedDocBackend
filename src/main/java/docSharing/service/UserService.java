@@ -86,13 +86,13 @@ public class UserService {
     }
 
     public Optional<User> updateEnabled(Long id, Boolean enabled) {
-        Long lines = userRepository.updateUserEnabledById(id, enabled);
+        int lines = userRepository.updateUserEnabledById(id, enabled);
         logger.debug("lines updated: " + lines);
 
         return getUpdatedUser(id, lines);
     }
 
-    private Optional<User> getUpdatedUser(Long id, Long lines) {
+    private Optional<User> getUpdatedUser(Long id, int lines) {
         if (lines == 1) {
             User user = userRepository.findById(id).get();
             logger.debug("User #" + id + " updated: " + user);

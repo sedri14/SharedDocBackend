@@ -146,8 +146,9 @@ public class AuthService {
     }
 
 
-    public void publishRegistrationEvent(User createdUser, Locale locale, String appUrl) {
-        eventPublisher.publishEvent(new OnRegistrationCompleteEvent(createdUser, locale, appUrl));
+    public void publishRegistrationEvent(UserDTO createdUser, Locale locale, String appUrl) {
+        User user = userRepository.findByEmail(createdUser.getEmail());
+        eventPublisher.publishEvent(new OnRegistrationCompleteEvent(user, locale, appUrl));
         System.out.println("inside publishRegistrationEvent");
     }
 

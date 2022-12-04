@@ -9,10 +9,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
-        public  User findByEmail(String email);
+    public User findByEmail(String email);
 
-        @Transactional
-        @Modifying
-        @Query("UPDATE User u SET u.enabled = ?2 WHERE u.id = ?1")
-        Long updateUserEnabledById(Long id, Boolean enabled);
+    @Transactional
+    @Modifying
+    @Query("UPDATE User u SET u.enabled = ?2 WHERE u.id = ?1")
+    int updateUserEnabledById(Long id, Boolean enabled);
 }

@@ -71,9 +71,9 @@ public class AuthController {
             RegisterObject registerUser = authService.createUser(user);
             UserDTO createdUser = registerUser.getUser();
             if (createdUser != null) {
-                //String appUrl = request.getContextPath();
-//                authService.publishRegistrationEvent(createdUser, request.getLocale(), appUrl);
-//                System.out.println("inside AuthController");
+                String appUrl = request.getContextPath();
+                authService.publishRegistrationEvent(createdUser, request.getLocale(), appUrl);
+                System.out.println("inside AuthController");
                 return ResponseEntity.status(HttpStatus.OK).body(Response.success(createdUser));
             } else
                 return ResponseEntity.badRequest().body(Response.failure("Email already exist"));
@@ -121,9 +121,9 @@ public class AuthController {
 
         User user = verificationToken.getUser();
         Calendar cal = Calendar.getInstance();
-        if ((verificationToken.getExpiryDate().getTime() - cal.getTime().getTime()) <= 0) {
-            return "redirect:/badUser.html?lang=" + locale.getLanguage();
-        }
+//        if ((verificationToken.getExpiryDate().getTime() - cal.getTime().getTime()) <= 0) {
+//            return "redirect:/badUser.html?lang=" + locale.getLanguage();
+//        }
 
         userService.updateEnabled(user.getId(), true);
         authService.deleteVerificationToken(token);
