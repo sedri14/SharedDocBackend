@@ -10,7 +10,6 @@ import docSharing.response.LoginObject;
 import docSharing.response.PermissionResponse;
 import docSharing.response.Response;
 import docSharing.service.DocService;
-import docSharing.service.LogService;
 import docSharing.DTO.Doc.ChangeRoleDTO;
 import docSharing.DTO.Doc.ManipulatedTextDTO;
 import docSharing.DTO.Doc.CurrentViewingUserDTO;
@@ -42,8 +41,6 @@ public class DocControllerTests {
     @Autowired
     DocService docService;
 
-    @Autowired
-    LogService logService;
     @Autowired
     PermissionRepository permissionRepository;
     @Autowired

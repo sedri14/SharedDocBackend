@@ -1,10 +1,10 @@
-package docSharing.service;
+package docSharing.Utils;
 
 import docSharing.entities.Log;
 import docSharing.repository.LogRepository;
 import docSharing.DTO.Doc.ManipulatedTextDTO;
 import docSharing.DTO.Doc.PrepareDocumentLogDTO;
-import docSharing.DTO.Doc.UpdateTypeDTO;
+
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -21,15 +21,13 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 @Service
-public class LogService {
-    @Autowired
-    UserService userService;
+public class LogUtils {
     @Autowired
     LogRepository logRepository;
-    private static final Logger logger = LogManager.getLogger(LogService.class.getName());
+    private static final Logger logger = LogManager.getLogger(LogUtils.class.getName());
     static Map<Long, PrepareDocumentLogDTO> userLogByDocIdMap = new HashMap<>();
 
-    public LogService() {
+    public LogUtils() {
         Runnable saveContentToDBRunnable = new Runnable() {
             public void run() {
                 saveAllLogsToDB();
@@ -41,6 +39,10 @@ public class LogService {
         executor.scheduleAtFixedRate(saveContentToDBRunnable, 0, 10, TimeUnit.SECONDS);
     }
 
+    /**
+     * @param docId              document id
+     * @param manipulatedTextDTO the updated text object
+     */
     public void addToLog(Long docId, ManipulatedTextDTO manipulatedTextDTO) {
         if (!userLogByDocIdMap.containsKey(docId)) {
             userLogByDocIdMap.put(docId, new PrepareDocumentLogDTO());
@@ -63,6 +65,11 @@ public class LogService {
 
     }
 
+
+    /**
+     * @param docId              document id
+     * @param manipulatedTextDTO the updated text object
+     */
     private static void appendContentToLog(Long docId, ManipulatedTextDTO manipulatedTextDTO) {
         insertIntoListAppend(
                 manipulatedTextDTO.getStartPosition()
@@ -83,15 +90,21 @@ public class LogService {
 
     }
 
+    /**
+     * @param pointerPosition update text pointer postion
+     * @param content         updated content
+     * @param action          updated action
+     * @param userId          user id
+     * @param contentList     log content list
+     * @param indexList       log index list
+     * @param actionList      log action list
+     * @param userIdList      log user id list
+     */
     private static void insertIntoListAppend(int pointerPosition, String content, String action, Long userId, List<String> contentList, List<Integer> indexList, List<String> actionList, List<Long> userIdList) {
         int rightPlace = indexList.size();
         for (int i = 0; i < indexList.size(); i++) {
             if (indexList.get(i) >= pointerPosition) {
-                if (i == 0) {
-                    rightPlace = 0;
-                } else {
-                    rightPlace = i;
-                }
+                rightPlace = i;
                 break;
             }
         }
@@ -102,6 +115,11 @@ public class LogService {
 
     }
 
+
+    /**
+     * @param docId              document id
+     * @param manipulatedTextDTO the updated text object
+     */
     private static void makeCorrectionToAppending(Long docId, ManipulatedTextDTO manipulatedTextDTO) {
 
         PrepareDocumentLogDTO docLog = userLogByDocIdMap.get(docId);
@@ -125,6 +143,10 @@ public class LogService {
     }
 
 
+    /**
+     * @param docId              document id
+     * @param manipulatedTextDTO the updated text object
+     */
     private static void deleteContentToLog(Long docId, ManipulatedTextDTO manipulatedTextDTO) {
 
         insertIntoListDelete(
@@ -146,6 +168,16 @@ public class LogService {
 
     }
 
+    /**
+     * @param pointerPosition update text pointer postion
+     * @param content         updated content
+     * @param action          updated action
+     * @param userId          user id
+     * @param contentList     log content list
+     * @param indexList       log index list
+     * @param actionList      log action list
+     * @param userIdList      log user id list
+     */
     private static void insertIntoListDelete(int pointerPosition, String content, String action, Long userId, List<String> contentList, List<Integer> indexList, List<String> actionList, List<Long> userIdList) {
         int rightPlace = indexList.size();
         contentList.add(rightPlace, content);
@@ -155,6 +187,11 @@ public class LogService {
 
     }
 
+
+    /**
+     * @param docId              document id
+     * @param manipulatedTextDTO the updated text object
+     */
     private static void deleteRangeContentToLog(Long docId, ManipulatedTextDTO manipulatedTextDTO) {
         for (int i = 0; i < manipulatedTextDTO.getContent().length(); i++) {
 
@@ -169,6 +206,11 @@ public class LogService {
         }
     }
 
+
+    /**
+     * @param docId              document id
+     * @param manipulatedTextDTO the updated text object
+     */
     private static void appendRangeContentToLog(Long docId, ManipulatedTextDTO manipulatedTextDTO) {
         for (int i = 0; i < manipulatedTextDTO.getContent().length(); i++) {
 
@@ -229,6 +271,12 @@ public class LogService {
         }
     }
 
+    /**
+     * @param logContent log content
+     * @param action     log action
+     * @param userId     log user id
+     * @param docId      log document id
+     */
     public void saveOneLogToDB(String logContent, String action, Long userId, Long docId) {
         Log log = new Log(userId, docId, logContent, action, LocalDateTime.now());
         logger.info("the log object is " + log);
