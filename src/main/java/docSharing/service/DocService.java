@@ -1,11 +1,7 @@
 package docSharing.service;
 
 import docSharing.DTO.Doc.UpdateDocContentRes;
-import docSharing.Utils.Validation;
 import docSharing.entities.Document;
-import docSharing.entities.Permission;
-import docSharing.entities.User;
-import docSharing.entities.UserRole;
 import docSharing.repository.DocRepository;
 import docSharing.DTO.Doc.ManipulatedTextDTO;
 import org.apache.logging.log4j.LogManager;
@@ -24,14 +20,6 @@ import java.util.concurrent.TimeUnit;
 public class DocService {
     @Autowired
     private DocRepository docRepository;
-    //    @Autowired
-//    private AuthService authService;
-    @Autowired
-    private PermissionService permissionService;
-    @Autowired
-    UserService userService;
-    @Autowired
-    LogService logService;
 
     static Map<Long, String> docContentByDocId = new HashMap<>();
     static Map<Long, List<String>> viewingUsersByDocId = new HashMap<>();
@@ -89,8 +77,6 @@ public class DocService {
                 , manipulatedTextDTO.getStartPosition()
                 , manipulatedTextDTO.getEndPosition()
                 , manipulatedTextDTO.getAction());
-
-        logService.addToLog(docId, manipulatedTextDTO);
 
         logger.info("all subscribed users gets" + updateDocContentRes);
 
@@ -199,7 +185,7 @@ public class DocService {
 
 
     /**
-     * @param documentId doument id
+     * @param documentId document id
      * @return the document content from the repository
      */
     public Document getDocument(Long documentId) {
@@ -270,43 +256,9 @@ public class DocService {
 
 
     /**
-     * @param userId   userId
-     * @param docId    docId
-     * @param userRole userRole
+     * @param docId document id
+     * @return document object
      */
-    public void setPermission(Long userId, Long docId, UserRole userRole) {
-
-        logger.info("start setPermission function");
-
-        Validation.nullCheck(userId);
-        Validation.nullCheck(docId);
-        Validation.nullCheck(userRole);
-
-        User user = userService.getById(userId);
-
-        boolean docIsPresent = docRepository.findById(docId).isPresent();
-
-        if (!docIsPresent) {
-            logger.error("there is no document with this id");
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "there is no document with this id");
-        }
-
-        Document doc = docRepository.findById(docId).get();
-
-        Permission p;
-        switch (userRole) {
-            case EDITOR:
-                p = Permission.newEditorPermission(user, doc);
-                break;
-            case VIEWER:
-                p = Permission.newViewerPermission(user, doc);
-                break;
-            default:
-                throw new RuntimeException("Role not supported.");
-        }
-        permissionService.setPermission(p);
-    }
-
     public Document findDocById(Long docId) {
         boolean docIsPresent = docRepository.findById(docId).isPresent();
         if (!docIsPresent) {
@@ -315,6 +267,7 @@ public class DocService {
         }
         return docRepository.findById(docId).get();
     }
+
 
     /**
      * @param docId document id

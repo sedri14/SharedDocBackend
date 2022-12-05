@@ -23,7 +23,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -49,6 +48,8 @@ public class FileSystemController {
      *                    parentId - id of parent inode
      *                    name - inode name
      *                    type - type of inode (DIR/FILE)
+     * @param token token
+     * @param userId userid
      * @return a new inode
      */
     @RequestMapping(value = "/add", method = RequestMethod.POST)
@@ -88,6 +89,8 @@ public class FileSystemController {
      *
      * @param renameINodeDTO contains: id - inode id
      *                       name - inode name
+     * @param token token
+     * @param userId userid
      * @return renamed inode
      */
     @RequestMapping(value = "/rename", method = RequestMethod.PATCH)
@@ -117,6 +120,8 @@ public class FileSystemController {
      * Returns all inodes that are direct descendants of an inode
      *
      * @param inodeDTO contains: id - inode id
+     * @param token token
+     * @param userId userid
      * @return a list of inodes
      */
     @RequestMapping(value = "/level", method = RequestMethod.POST)
@@ -146,6 +151,8 @@ public class FileSystemController {
      *
      * @param moveINodeDTO contains: sourceId - id of an inode that is going to be moved
      *                     targetId - id of an inode that is the new parent
+     * @param token token
+     * @param userId userid
      * @return inode with a new parent
      */
     @RequestMapping(value = "/move", method = RequestMethod.POST)
@@ -175,6 +182,8 @@ public class FileSystemController {
      * Deletes an inode and all of its descendants
      *
      * @param inodeDTO contains: id - inode id
+     * @param token token
+     * @param userId userid
      * @return list of inodes deleted
      */
     @RequestMapping(value = "/delete", method = RequestMethod.DELETE)
@@ -203,6 +212,8 @@ public class FileSystemController {
      * @param fileWithDataDTO contains: parentInodeId - id of parent node
      *                        userId - id of owner user
      *                        file
+     * @param token token
+     * @param userId userid
      * @return a new document identical to the uploaded file
      */
     @RequestMapping(value = "/uploadFile", method = RequestMethod.POST)

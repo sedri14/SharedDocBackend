@@ -2,6 +2,7 @@ package docSharing.controller;
 
 import docSharing.DTO.FS.PermissionDTO;
 import docSharing.DTO.Doc.UpdateDocContentRes;
+import docSharing.Utils.LogUtils;
 import docSharing.Utils.Validation;
 import docSharing.entities.Document;
 import docSharing.entities.Permission;
@@ -10,13 +11,10 @@ import docSharing.entities.UserRole;
 import docSharing.response.PermissionResponse;
 import docSharing.response.Response;
 import docSharing.response.TokenError;
-import docSharing.service.AuthService;
-import docSharing.service.DocService;
+import docSharing.service.*;
 import docSharing.DTO.Doc.ChangeRoleDTO;
 import docSharing.DTO.Doc.CurrentViewingUserDTO;
 import docSharing.DTO.Doc.ManipulatedTextDTO;
-import docSharing.service.PermissionService;
-import docSharing.service.UserService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +24,6 @@ import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 
 import java.util.List;
@@ -46,6 +43,8 @@ public class DocController {
     private PermissionService permissionService;
     @Autowired
     AuthService authService;
+    @Autowired
+    LogUtils logUtils;
 
     private static final Logger logger = LogManager.getLogger(DocController.class.getName());
 
@@ -64,13 +63,18 @@ public class DocController {
         logger.info("validate manipulatedTextDTO param");
         Validation.nullCheck(manipulatedTextDTO);
 
-        return docService.UpdateDocContent(docId, manipulatedTextDTO);
+        UpdateDocContentRes updateDocContentRes = docService.UpdateDocContent(docId, manipulatedTextDTO);
+        logUtils.addToLog(docId, manipulatedTextDTO);
+
+        return updateDocContentRes;
     }
 
 
     /**
-     * @param docId document id
-     * @return Document OBJ
+     * @param docId  document Id
+     * @param token  token of logged in user
+     * @param userId user id
+     * @return document response
      */
     @RequestMapping(value = "/{docId}", method = RequestMethod.GET)
     public ResponseEntity<Response<Document>> getDocument(@PathVariable Long docId, @RequestHeader String token, @RequestHeader Long userId) {
@@ -137,6 +141,8 @@ public class DocController {
 
     /**
      * @param permissionDTO usersId  and DocId
+     * @param token         token of logged in user
+     * @param userId        user id
      * @return response Entity of the userRole
      */
     @RequestMapping(value = "getPerm", method = RequestMethod.POST)
@@ -171,6 +177,8 @@ public class DocController {
     /**
      * @param docId         document Id
      * @param changeRoleDTO Param to change the role of user
+     * @param token         token of logged in user
+     * @param userId        user id
      * @return if the change is done or note
      */
     @RequestMapping(value = "changeUserRoll/{docId}", method = RequestMethod.POST)
