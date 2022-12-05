@@ -63,6 +63,10 @@ public class FileSystemService {
                     addInode.type == INodeType.DIR ? "directory" : "file", addInode.name));
         }
 
+        if (addInode.name == "") {
+            throw new IllegalArgumentException("Name can't be empty");
+        }
+
         INode parentInode = fsRepository.findById(addInode.parentId).get();
         if (!isDir(parentInode)) {
             throw new IllegalArgumentException("Destination to add must be a directory");
