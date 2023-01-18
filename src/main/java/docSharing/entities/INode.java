@@ -12,7 +12,7 @@ import java.util.Set;
 
 @Entity
 //@DiscriminatorValue("0")
-@Table(name = "fs_inodes")
+@Table(name = "inodes")
 @Inheritance(strategy = InheritanceType.JOINED)
 public class INode implements Serializable {
 

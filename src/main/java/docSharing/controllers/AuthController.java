@@ -1,4 +1,4 @@
-package docSharing.controller;
+package docSharing.controllers;
 
 import com.google.gson.Gson;
 import docSharing.DTO.User.UserDTO;

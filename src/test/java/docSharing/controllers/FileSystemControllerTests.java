@@ -1,18 +1,16 @@
-package docSharing.controller;
+package docSharing.controllers;
 
 import docSharing.DTO.FS.AddINodeDTO;
 import docSharing.DTO.FS.INodeDTO;
 import docSharing.DTO.User.UserDTO;
 import docSharing.entities.INode;
 import docSharing.entities.INodeType;
-import docSharing.entities.User;
 import docSharing.repository.DocRepository;
 import docSharing.repository.FileSystemRepository;
 import docSharing.repository.LogRepository;
 import docSharing.repository.PermissionRepository;
 import docSharing.response.LoginObject;
 import docSharing.response.Response;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +20,6 @@ import org.springframework.http.ResponseEntity;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 

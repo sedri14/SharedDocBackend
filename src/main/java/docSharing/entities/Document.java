@@ -25,21 +25,12 @@ public class Document extends INode {
     @Column(name = "content")
     private String content;
 
+    //Map<User,UserRole>
     @OneToMany (mappedBy = "document", cascade = CascadeType.ALL)
     private Set<Permission> permissions = new HashSet<>();
 
     @OneToMany(mappedBy = "document", cascade = CascadeType.ALL)
     private Set<Log> log = new HashSet<>();
-//    @OneToMany
-//    private List<User> editorUsers;
-
-//    @OneToMany
-//    private List<User> viewerUsers; //should it be here on server??? this is online only
-    //we should change the path for the document each time
-    //private String path;
-
-
-    //isDocumentPrivate. if private just who is in the viewing list and the editing list can access it, else get an error message
 
     Document() {
         super();

@@ -1,4 +1,4 @@
-package docSharing.controller;
+package docSharing.controllers;
 
 import docSharing.DTO.User.UserDTO;
 import docSharing.Utils.Validation;
