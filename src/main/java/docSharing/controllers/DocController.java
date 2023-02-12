@@ -1,13 +1,13 @@
 package docSharing.controllers;
 
-import docSharing.DTO.FS.PermissionDTO;
 import docSharing.DTO.Doc.UpdateDocContentRes;
 import docSharing.Utils.LogUtils;
 import docSharing.Utils.Validation;
 import docSharing.entities.Document;
-import docSharing.entities.Permission;
+import docSharing.entities.INode;
 import docSharing.entities.User;
-import docSharing.entities.UserRole;
+import docSharing.enums.UserRole;
+import docSharing.exceptions.MissingControllerParameterException;
 import docSharing.response.PermissionResponse;
 import docSharing.response.Response;
 import docSharing.response.TokenError;
@@ -24,6 +24,8 @@ import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.web.bind.annotation.*;
+import static java.util.Objects.isNull;
+import static org.hibernate.internal.util.StringHelper.isBlank;
 
 
 import java.util.List;
@@ -35,12 +37,13 @@ import java.util.Optional;
 @CrossOrigin
 @RestController
 public class DocController {
+
+    @Autowired
+    FileSystemService fsService;
     @Autowired
     DocService docService;
     @Autowired
     UserService userService;
-    @Autowired
-    private PermissionService permissionService;
     @Autowired
     AuthService authService;
     @Autowired
@@ -138,83 +141,5 @@ public class DocController {
 
     }
 
-
-    /**
-     * @param permissionDTO usersId  and DocId
-     * @param token         token of logged in user
-     * @param userId        user id
-     * @return response Entity of the userRole
-     */
-    @RequestMapping(value = "getPerm", method = RequestMethod.POST)
-    public ResponseEntity<Response<PermissionResponse>> getPermission(@RequestBody PermissionDTO permissionDTO, @RequestHeader String token, @RequestHeader Long userId) {
-
-        logger.info("start getPerm Function");
-
-        if (!authService.isValidToken(userId, token)) {
-            return ResponseEntity.badRequest().body(Response.failure(TokenError.INVALID_TOKEN.toString()));
-        }
-
-        logger.info("validate permission param");
-        Validation.nullCheck(permissionDTO);
-        Validation.nullCheck(permissionDTO.docId);
-        Validation.nullCheck(permissionDTO.userId);
-
-        logger.info("find the user and the document object according to their id");
-        Document doc = docService.findDocById(permissionDTO.docId);
-        User user = userService.getById(permissionDTO.userId);
-
-        logger.info("get the permission");
-        Optional<Permission> optionalPer = permissionService.getPermission(user, doc);
-        if (!optionalPer.isPresent()) {
-            return ResponseEntity.badRequest().body(Response.failure("You have no Access to this file"));
-        }
-        UserRole userRole = optionalPer.get().getUserRole();
-
-        return ResponseEntity.ok(Response.success(new PermissionResponse(userRole)));
-    }
-
-
-    /**
-     * @param docId         document Id
-     * @param changeRoleDTO Param to change the role of user
-     * @param token         token of logged in user
-     * @param userId        user id
-     * @return if the change is done or note
-     */
-    @RequestMapping(value = "changeUserRoll/{docId}", method = RequestMethod.POST)
-    public ResponseEntity<Response<PermissionResponse>> changeUserRole(@PathVariable Long docId, @RequestBody ChangeRoleDTO changeRoleDTO, @RequestHeader String token, @RequestHeader Long userId) {
-
-        logger.info("start changeUserRollInDoc function");
-
-        if (!authService.isValidToken(userId, token)) {
-            return ResponseEntity.badRequest().body(Response.failure(TokenError.INVALID_TOKEN.toString()));
-        }
-
-        logger.info("validate docId param");
-        Validation.nullCheck(docId);
-        logger.info("validate ChangeRoleDTO param");
-        Validation.nullCheck(changeRoleDTO);
-//        Validation.nullCheck(changeRoleDTO.userRole);
-        Validation.nullCheck(changeRoleDTO.ownerId);
-        Validation.nullCheck(changeRoleDTO.email);
-        Validation.nullCheck(changeRoleDTO.isDelete);
-
-        if (!Objects.equals(docService.getOwner(docId), changeRoleDTO.ownerId)) {
-            ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false); //should return PermissionResponse
-        }
-
-        logger.info("find the user and the document object according to their id");
-        Document doc = docService.findDocById(docId);
-        User user = userService.findByEmail(changeRoleDTO.email);
-        Validation.nullCheck(user);
-        UserRole userRole;
-        try {
-            userRole = permissionService.changeRole(doc, user, changeRoleDTO.userRole, changeRoleDTO.isDelete);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Response.failure(e.getMessage()));
-        }
-
-        return ResponseEntity.status(HttpStatus.OK).body(Response.success(new PermissionResponse(userRole)));
-    }
 
 }

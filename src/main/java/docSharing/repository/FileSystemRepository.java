@@ -1,7 +1,7 @@
 package docSharing.repository;
 
 import docSharing.entities.INode;
-import docSharing.entities.INodeType;
+import docSharing.enums.INodeType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -12,14 +12,14 @@ import java.util.Set;
 @Repository
 public interface FileSystemRepository extends JpaRepository<INode, Long> {
 
-    List<INode> findByParentId(Long parentId);
+    //List<INode> findByParentId(Long parentId);
 
     @Transactional
-    List<INode> removeById(Long id);
+    Integer removeById(Long id);
 
-    Set<INode> findByParentIdAndTypeEquals(Long parentId, INodeType type);
+    //Set<INode> findByParentIdAndTypeEquals(Long parentId, INodeType type);
 
-    INode findByName(String name);
+    //INode findByName(String name);
 
 
 }

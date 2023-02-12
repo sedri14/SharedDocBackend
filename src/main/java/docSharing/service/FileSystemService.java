@@ -1,7 +1,13 @@
 package docSharing.service;
 
-import docSharing.DTO.FS.AddINodeDTO;
+import com.google.gson.internal.Streams;
+import docSharing.DTO.FS.INodeDTO;
 import docSharing.entities.*;
+import docSharing.enums.INodeType;
+import docSharing.enums.UserRole;
+import docSharing.exceptions.INodeNameExistsException;
+import docSharing.exceptions.INodeNotFoundException;
+import docSharing.exceptions.IllegalOperationException;
 import docSharing.repository.FileSystemRepository;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.LogManager;
@@ -12,6 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -21,30 +28,27 @@ public class FileSystemService {
     @Autowired
     private FileSystemRepository fsRepository;
 
-    @Autowired
-    private UserService userService;
-
-    @Autowired
-    private DocService docService;
 
     private static Logger logger = LogManager.getLogger(FileSystemService.class.getName());
 
+
+    public INode fetchINodeById(Long id) {
+        return fsRepository.findById(id).orElseThrow(() -> new INodeNotFoundException("INode not found with id " + id));
+    }
+
     /**
-     * Returns all direct children of an inode
+     * Returns all children of an inode of type directory
      *
      * @param id the parent inode id
      * @return A List of children inodes
      */
-    public List<INode> getAllChildrenInodes(Long id) throws IllegalArgumentException {
-        if (!isExist(id)) {
-            throw new IllegalArgumentException("Inode does not exist");
+    public List<INode> getAllChildrenInodes(Long id) {
+        INode parent = fetchINodeById(id);
+        if (parent.getType() != INodeType.DIR) {
+            throw new IllegalOperationException("INode must be a directory");
         }
 
-        if (!isDir(id)) {
-            throw new IllegalArgumentException("only an inode of type DIR can have children");
-        }
-
-        return fsRepository.findByParentId(id);
+        return parent.getChildren().values().stream().collect(Collectors.toList());
     }
 
     /**
@@ -56,40 +60,30 @@ public class FileSystemService {
      *                 type - type of inode (DIR/FILE)
      * @return added inode
      */
-    public INode addInode(AddINodeDTO addInode, User owner) throws IllegalArgumentException {
+    public INode addInode(INodeDTO addInode, User owner) {
         if (inodeNameExistsInDir(addInode.parentId, addInode.type, addInode.name)) {
-            throw new IllegalArgumentException(String.format("Can not add %s, Name %s already exists in this directory.",
+            throw new INodeNameExistsException(String.format("Can not add %s, Name %s already exists in this directory.",
                     addInode.type == INodeType.DIR ? "directory" : "file", addInode.name));
         }
 
-        if (addInode.name == "") {
-            throw new IllegalArgumentException("Name can't be empty");
+        INode parent = fetchINodeById(addInode.parentId);
+        if (!isDir(parent)) {
+            throw new IllegalOperationException("Destination to add must be a directory");
         }
 
-        INode parentInode = fsRepository.findById(addInode.parentId).get();
-        if (!isDir(parentInode)) {
-            throw new IllegalArgumentException("Destination to add must be a directory");
-        }
-//        User owner = userService.getById(addInode.userId);
         INode newInode;
         switch (addInode.type) {
             case DIR:
-                newInode = INode.createNewDirectory(addInode.name, parentInode);
+                newInode = INode.createNewDirectory(addInode.name, parent, owner);
                 break;
             case FILE:
-                newInode = Document.createNewEmptyDocument(addInode.name, parentInode, owner);
+                newInode = Document.createNewEmptyDocument(addInode.name, parent, owner);
                 break;
             default:
-                throw new IllegalArgumentException("Illegal Inode type");
+                throw new IllegalOperationException("Illegal Inode type");
         }
 
-        INode savedInode = fsRepository.save(newInode);
-//        if (addInode.type == INodeType.FILE) {
-//            Long docId = savedInode.getId();
-//            docService.setPermission(addInode.userId, docId, UserRole.EDITOR);
-//        }
-
-        return savedInode;
+        return fsRepository.save(newInode);
     }
 
 
@@ -100,25 +94,43 @@ public class FileSystemService {
      * @param targetId - id of the new parent inode
      * @return the moved inode
      */
-    public INode move(Long sourceId, Long targetId) throws IllegalArgumentException {
-        if (!isDir(targetId)) {
-            throw new IllegalArgumentException("Destination of move must be a directory");
+    public INode move(Long sourceId, Long targetId) {
+        INode sourceInode = fetchINodeById(sourceId);
+        INode targetInode = fetchINodeById(targetId);
+
+        if (!isDir(targetInode)) {
+            throw new IllegalOperationException("Destination of move must be a directory");
         }
 
-        if (!isExist(sourceId) || !isExist(targetId)) {
-            throw new IllegalArgumentException("Inodes not found");
+        INodeType sourceType = sourceInode.getType();
+        if (inodeNameExistsInDir(targetId, sourceType, sourceInode.getName())) {
+            throw new IllegalOperationException(String.format("Can not move %s. the name \"%s\" already exists in target directory.",
+                    sourceType == INodeType.DIR ? "directory" : "file", sourceInode.getName()));
         }
 
-        INode inodeToMove = fsRepository.findById(sourceId).get();
-        INode targetINode = fsRepository.findById(targetId).get();
-        INodeType sourceType = inodeToMove.getType();
-        if (inodeNameExistsInDir(targetId, sourceType, inodeToMove.getName())) {
-            throw new IllegalArgumentException(String.format("Can not move %s. the name \"%s\" already exists in target directory.",
-                    sourceType == INodeType.DIR ? "directory" : "file", inodeToMove.getName()));
-        }
-        inodeToMove.setParent(targetINode);
+        //todo: check hiracally correct: check that target isn't a decendant of source
+        if (!isHierarchicallyLegalMove(sourceInode, targetInode)) {
+            throw new IllegalOperationException("Illegal move");
 
-        return fsRepository.save(inodeToMove);
+        }
+
+        sourceInode.setParent(targetInode);
+
+        return fsRepository.save(sourceInode);
+    }
+
+
+    //check if source node is an ancestor of target node
+    private boolean isHierarchicallyLegalMove(INode sourceInode, INode targetInode) {
+        INode current = targetInode;
+        while (null != current.getParent()) {
+            if (current.equals(sourceInode)) {
+                return false;
+            }
+            current = current.getParent();
+        }
+
+        return true;
     }
 
     /**
@@ -128,19 +140,7 @@ public class FileSystemService {
      * @return true of false
      */
     public boolean isDir(INode inode) {
-        return inode.getType() == INodeType.DIR;
-    }
-
-
-    /**
-     * Checks if an inode is of type DIR
-     *
-     * @param inodeId - id of an inode
-     * @return true of false
-     */
-    public boolean isDir(Long inodeId) {
-        INode inode = fsRepository.findById(inodeId).get();
-        return inode.getType() == INodeType.DIR;
+        return inode.getType().equals(INodeType.DIR);
     }
 
     /**
@@ -149,13 +149,18 @@ public class FileSystemService {
      * @param id - inode id
      * @return list of inodes removed
      */
-    public List<INode> removeById(Long id) throws IllegalArgumentException {
+    public Integer removeById(Long id) {
+
+        //check root inode
+        //todo: check how to mark a specific node to be the root (each user has a different root of course)
         if (id == 1L) {
-            throw new IllegalArgumentException("Can not remove root directory");
+            throw new IllegalOperationException("can not remove root directory");
         }
 
-        if (!isExist(id)) {
-            throw new IllegalArgumentException("Inode does not exist. can not delete");
+        try {
+            fetchINodeById(id);
+        } catch (INodeNotFoundException ex) {
+            throw new IllegalOperationException("can not delete non existing inode");
         }
 
         return fsRepository.removeById(id);
@@ -164,19 +169,19 @@ public class FileSystemService {
     /**
      * Sets a new name to an inode
      *
-     * @param id   - inode id
-     * @param name - new name
+     * @param id      - inode id
+     * @param newName - new name
      * @return the renamed inode
      */
-    public INode renameInode(Long id, String name) throws IllegalArgumentException {
-        INode inode = fsRepository.findById(id).get();
+    public INode renameInode(Long id, String newName) {
+        INode inode = fetchINodeById(id);
         Long parentId = inode.getParent().getId();
-        INodeType type = inode.getType();
+        INodeType inodeType = inode.getType();
 
-        if (inodeNameExistsInDir(parentId, type, name)) {
-            throw new IllegalArgumentException(String.format("%s name \"%s\" already exists in this directory", type == INodeType.DIR ? "directory" : "file", name));
+        if (inodeNameExistsInDir(parentId, inodeType, newName)) {
+            throw new IllegalOperationException(String.format("%s name \"%s\" already exists in this directory", inodeType == INodeType.DIR ? "directory" : "file", newName));
         }
-        inode.setName(name);
+        inode.setName(newName);
 
         return fsRepository.save(inode);
     }
@@ -191,55 +196,56 @@ public class FileSystemService {
         return fsRepository.existsById(inodeId);
     }
 
-    /**
-     * Creates a new inode of type FILE (document)
-     *
-     * @param file     - uploaded file
-     * @param parentId - parent node id under which the created document will be assigned
-     * @param owner    - owner User
-     * @return a new Document inode created from the uploaded .txt file
-     */
-    public Document uploadFile(MultipartFile file, Long parentId, User owner) throws IllegalArgumentException {
-        String nameWithExtension = FilenameUtils.removeExtension(file.getOriginalFilename());
-        String content = null;
-        try {
-            content = new String(file.getBytes());
-        } catch (IOException e) {
-            logger.error("Can not parse file content: %{}", file.getOriginalFilename());
-            throw new IllegalArgumentException("Can not parse file content");
-        }
-
-        INode parent = fsRepository.findById(parentId).get();
-        if (!isDir(parent)) {
-            throw new IllegalArgumentException("Files can be imported only to directory");
-        }
-        if (fileNameExistsInDir(parentId, nameWithExtension)) {
-            throw new IllegalArgumentException(String.format("File name %s already exist in this directory", FilenameUtils.removeExtension(nameWithExtension)));
-        }
-
-        Document newDoc = Document.createNewImportedDocument(nameWithExtension, content, parent, owner);
-        Document savedDoc = fsRepository.save(newDoc);
-
-        return newDoc;
-    }
-
-    /**
-     * Checks if there already is an inode of same type (DIR/FILE) with the same name in a specific directory.
-     *
-     * @param parentId - the id of the directory
-     * @param type     - type of inode
-     * @param name     - inode name
-     * @return true or false
-     */
+//    /**
+//     * Creates a new inode of type FILE (document)
+//     *
+//     * @param file     - uploaded file
+//     * @param parentId - parent node id under which the created document will be assigned
+//     * @param owner    - owner User
+//     * @return a new Document inode created from the uploaded .txt file
+//     */
+//    public Document uploadFile(MultipartFile file, Long parentId, User owner) throws IllegalArgumentException {
+//        String nameWithExtension = FilenameUtils.removeExtension(file.getOriginalFilename());
+//        String content = null;
+//        try {
+//            content = new String(file.getBytes());
+//        } catch (IOException e) {
+//            logger.error("Can not parse file content: %{}", file.getOriginalFilename());
+//            throw new IllegalArgumentException("Can not parse file content");
+//        }
+//
+//        INode parent = fsRepository.findById(parentId).get();
+//        if (!isDir(parent)) {
+//            throw new IllegalArgumentException("Files can be imported only to directory");
+//        }
+//        if (isFileNameExistsInDir(parentId, nameWithExtension)) {
+//            throw new IllegalArgumentException(String.format("File name %s already exist in this directory", FilenameUtils.removeExtension(nameWithExtension)));
+//        }
+//
+//        Document newDoc = Document.createNewImportedDocument(nameWithExtension, content, parent, owner);
+//        Document savedDoc = fsRepository.save(newDoc);
+//
+//        return newDoc;
+//    }
+//
+//    /**
+//     * Checks if there already is an inode of same type (DIR/FILE) with the same name in a specific directory.
+//     *
+//     * @param parentId - the id of the directory
+//     * @param type     - type of inode
+//     * @param name     - inode name
+//     * @return true or false
+//     */
 
     public boolean inodeNameExistsInDir(Long parentId, INodeType type, String name) {
+        INode parent = fetchINodeById(parentId);
         boolean isNameExists;
         switch (type) {
             case DIR:
-                isNameExists = dirNameExistsInDir(parentId, name);
+                isNameExists = isDirNameExistsInDir(parent, name);
                 break;
             case FILE:
-                isNameExists = fileNameExistsInDir(parentId, name);
+                isNameExists = isFileNameExistsInDir(parent, name);
                 break;
             default:
                 throw new IllegalArgumentException("Inode type not supported");
@@ -252,28 +258,44 @@ public class FileSystemService {
     /**
      * Checks if a file name already exists in a specific directory.
      *
-     * @param parentId id of directory
+     * @param parent
      * @param fileName name of file
      * @return true or false
      */
-    public boolean fileNameExistsInDir(Long parentId, String fileName) {
-        Set<INode> allFilesInParentInode = fsRepository.findByParentIdAndTypeEquals(parentId, INodeType.FILE);
-        Set<String> names = allFilesInParentInode.stream().map(INode::getName).collect(Collectors.toSet());
-
-        return names.contains(fileName);
+    public boolean isFileNameExistsInDir(INode parent, String fileName) {
+        INode file = parent.getChildren().get(fileName);
+        if (null == file || file.getType() == INodeType.DIR) {
+            return false;
+        } else {
+            return true;
+        }
     }
 
     /**
      * Checks if a directory name already exists in a specific directory.
      *
-     * @param parentId id of directory
-     * @param dirName  name of directory
+     * @param parent
+     * @param dirName name of directory
      * @return true or false
      */
-    private boolean dirNameExistsInDir(Long parentId, String dirName) {
-        Set<INode> allDirsInParentInode = fsRepository.findByParentIdAndTypeEquals(parentId, INodeType.DIR);
-        Set<String> names = allDirsInParentInode.stream().map(INode::getName).collect(Collectors.toSet());
+    private boolean isDirNameExistsInDir(INode parent, String dirName) {
+        INode dir = parent.getChildren().get(dirName);
+        if (null == dir || dir.getType() == INodeType.FILE) {
+            return false;
+        } else {
+            return true;
+        }
+    }
 
-        return names.contains(dirName);
+    public UserRole changeUserRole(INode inode, User user, UserRole userRole) {
+
+        if (userRole == UserRole.NON) {
+            inode.getRoles().remove(user);
+        } else {
+            inode.getRoles().put(user, userRole);
+        }
+        fsRepository.save(inode);
+
+        return userRole;
     }
 }

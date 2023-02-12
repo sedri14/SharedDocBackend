@@ -254,21 +254,6 @@ public class DocService {
 
     }
 
-
-    /**
-     * @param docId document id
-     * @return document object
-     */
-    public Document findDocById(Long docId) {
-        boolean docIsPresent = docRepository.findById(docId).isPresent();
-        if (!docIsPresent) {
-            logger.error("there is no document with this id");
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "there is no document with this id");
-        }
-        return docRepository.findById(docId).get();
-    }
-
-
     /**
      * @param docId document id
      * @return id of the owner of that document

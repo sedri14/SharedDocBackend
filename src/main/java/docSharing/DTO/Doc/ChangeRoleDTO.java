@@ -1,19 +1,18 @@
 package docSharing.DTO.Doc;
 
-import docSharing.entities.UserRole;
+import docSharing.enums.UserRole;
 
 public class ChangeRoleDTO {
-    public Long ownerId;
     public String email;
     public UserRole userRole;
-    public boolean isDelete;
+    public boolean isDeleteRole;
 
     public ChangeRoleDTO() {
     }
 
-    public ChangeRoleDTO(Long ownerId, String email, UserRole userRole) {
-        this.ownerId = ownerId;
+    public ChangeRoleDTO(String email, UserRole userRole, boolean isDeleteRole) {
         this.email = email;
         this.userRole = userRole;
+        this.isDeleteRole = isDeleteRole;
     }
 }

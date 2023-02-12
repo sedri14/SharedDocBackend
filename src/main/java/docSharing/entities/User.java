@@ -30,8 +30,11 @@ public class User implements Serializable {
     @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL)
     private Set<Document> myDocs;   //my owned docs
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    private Set<Permission> permissions = new HashSet<>(); //docs I have permission (viewer/editor).
+//    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+//    private Set<Permission> permissions = new HashSet<>(); //docs I have permission (viewer/editor).
+
+    @OneToMany(cascade = CascadeType.ALL)
+    private Set<INode> sharedWithMe;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private Set<Log> log = new HashSet<>();
