@@ -23,15 +23,12 @@ public class User implements Serializable {
     @Column(name = "password", nullable = false)
     private String password;
 
-    @Column(name = "enabled")
-    private boolean enabled;
+    @OneToOne(cascade = CascadeType.ALL)
+    private INode rootDirectory;
 
     @JsonIgnore
     @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL)
     private Set<Document> myDocs;   //my owned docs
-
-//    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-//    private Set<Permission> permissions = new HashSet<>(); //docs I have permission (viewer/editor).
 
     @OneToMany(cascade = CascadeType.ALL)
     private Set<INode> sharedWithMe;
@@ -47,7 +44,6 @@ public class User implements Serializable {
         this.name = name;
         this.email = email;
         this.password = password;
-        this.enabled = false;
     }
 
     public static User createNewUserFromUserDTO(UserDTO userDTO) {
@@ -87,20 +83,15 @@ public class User implements Serializable {
         this.password = password;
     }
 
-    public boolean isEnabled() {
-        return enabled;
+    public INode getRootDirectory() {
+        return rootDirectory;
     }
 
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
+    public void setRootDirectory(INode rootDirectory) {
+        this.rootDirectory = rootDirectory;
     }
 
-    //    public void setMyDocs(List<Path> myDocs) {
-//        this.myDocs = myDocs;
-//    }
-
-
-    //change the hashcode and the equal to newer one.
+    //Todo:change the hashcode and the equal to newer one.
 
     @Override
     public String toString() {

@@ -2,18 +2,17 @@ package docSharing.service;
 
 import com.google.gson.Gson;
 import docSharing.DTO.User.UserDTO;
+import docSharing.entities.INode;
 import docSharing.entities.User;
+import docSharing.exceptions.InvalidFormatException;
 import docSharing.repository.TokenRepository;
 import docSharing.repository.UserRepository;
-import docSharing.response.LoginEnum;
-import docSharing.response.LoginObject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import java.util.*;
-import static docSharing.response.LoginObject.createLoginObject;
+
 
 @Service
 public class AuthService {
@@ -21,10 +20,6 @@ public class AuthService {
     private static Map<String, User> userByToken = new HashMap<>();
     @Autowired
     private UserRepository userRepository;
-    @Autowired
-    private TokenRepository tokenRepository;
-    @Autowired
-    ApplicationEventPublisher eventPublisher;
 
     private static final Logger logger = LogManager.getLogger(AuthService.class.getName());
 
@@ -32,13 +27,8 @@ public class AuthService {
 
     private static final Gson gson = new Gson();
 
-    public AuthService(TokenRepository tokenRepository) {
-        this.tokenRepository = tokenRepository;
-    }
-
     public AuthService(UserRepository userRepository, TokenRepository tokenRepository) {
         this.userRepository = userRepository;
-        this.tokenRepository = tokenRepository;
     }
 
     public AuthService() {
@@ -47,6 +37,9 @@ public class AuthService {
 
     public User register(UserDTO userDTO) {
         User newUser = User.createNewUserFromUserDTO(userDTO);
+        INode rootDir = INode.createRootDir(newUser);
+        newUser.setRootDirectory(rootDir);
+
         return userRepository.save(newUser);
     }
 
@@ -61,19 +54,17 @@ public class AuthService {
     }
 
 
-    public LoginObject login(UserDTO userDTO) {
+    public String login(UserDTO userDTO) {
         logger.info("in login");
 
         User user = userRepository.findByEmail(userDTO.getEmail());
-        if (user == null)
-            return createLoginObject(user.getId(), null, String.valueOf(LoginEnum.EMAIL_NOT_EXIST.toString()), user.getName());
-        if (!user.getPassword().equals(userDTO.getPassword()))
-            return createLoginObject(user.getId(), null, String.valueOf(LoginEnum.INVALID_PASSWORD.toString()), user.getName());
-        else {  //login credentials ok
-            userByToken.put(generateToken(), user);
-            LoginObject loginObject = createLoginObject(user.getId(), "remember to destroy this stupid loginObject", null, user.getName());
-            return loginObject;
+        if (!user.getPassword().equals(userDTO.getPassword())) {
+            throw new InvalidFormatException(userDTO.getEmail());
         }
+        String token = generateToken();
+        userByToken.put(token, user);
+
+        return token;
     }
 
     public User getCachedUser(String token) {

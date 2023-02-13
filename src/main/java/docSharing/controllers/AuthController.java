@@ -4,26 +4,15 @@ import com.google.gson.Gson;
 import docSharing.DTO.User.UserDTO;
 import docSharing.Utils.Validation;
 import docSharing.entities.User;
-import docSharing.entities.VerificationToken;
 import docSharing.exceptions.InvalidFormatException;
 import docSharing.repository.UserRepository;
-import docSharing.response.LoginObject;
-import docSharing.response.RegisterObject;
-import docSharing.response.Response;
 import docSharing.service.AuthService;
 import docSharing.service.UserService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.context.request.WebRequest;
-
-import javax.servlet.http.HttpServletRequest;
-import java.sql.SQLDataException;
-import java.util.Calendar;
-import java.util.Locale;
 
 
 @RestController
@@ -48,7 +37,6 @@ public class AuthController {
     public ResponseEntity<User> register(@RequestBody UserDTO userDTO) {
         if (!Validation.isValidEmail(userDTO.getEmail()) || userDTO.getEmail() == null) {
             throw new InvalidFormatException("email");
-
         }
         if (!Validation.isValidName(userDTO.getName()) || userDTO.getEmail() == null) {
             throw new InvalidFormatException("name");
@@ -68,20 +56,11 @@ public class AuthController {
 
 
     @RequestMapping(value = "login", method = RequestMethod.POST)//
-    public ResponseEntity<Response<LoginObject>> login(@RequestBody UserDTO user) {
-
+    public ResponseEntity<String> login(@RequestBody UserDTO userDTO) {
         logger.info("in login");
-        System.out.println("in login");
 
-        LoginObject loginObject = authService.login(user);
+        return ResponseEntity.ok(authService.login(userDTO));
 
-        if (loginObject.getMsg() != null) //error happened
-            return ResponseEntity.badRequest().body(Response.failure(loginObject.getMsg()));
-        else {
-            System.out.println("Token:  ");
-            return ResponseEntity.status(HttpStatus.OK).body(Response.success(loginObject));
-
-        }
     }
 //
 //

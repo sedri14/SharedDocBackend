@@ -87,6 +87,10 @@ public class INode implements Serializable {
         return new INode(name, INodeType.DIR, LocalDateTime.now(), owner, new HashMap<>(), parent);
     }
 
+    public static INode createRootDir(User user) {
+        return createNewDirectory("root_" + user.getEmail(), null, user);
+    }
+
     public Long getId() {
         return id;
     }

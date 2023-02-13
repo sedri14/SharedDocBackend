@@ -18,23 +18,4 @@ public class SpringApp {
         SpringApplication.run(SpringApp.class, args);
     }
 
-    @Bean
-    public CommandLineRunner initData(FileSystemRepository fsRepository) {
-        return args -> {
-            if (!fsRepository.existsById(1L)) {
-                fsRepository.save(new INode("root", INodeType.DIR, LocalDateTime.now(), null, null, null));
-            }
-        };
-    }
-
-//    @Bean
-//    FilterRegistrationBean<TokenFilter> tokenFilterFilterRegistrationBean() {
-//        final FilterRegistrationBean<TokenFilter> filterRegistrationBean = new FilterRegistrationBean<>();
-//        filterRegistrationBean.setFilter(new TokenFilter());
-//        filterRegistrationBean.addUrlPatterns("/fs/*");
-//        filterRegistrationBean.addUrlPatterns("/doc/*");
-//        filterRegistrationBean.addUrlPatterns("/user/*");
-//
-//        return filterRegistrationBean;
-//    }
 }

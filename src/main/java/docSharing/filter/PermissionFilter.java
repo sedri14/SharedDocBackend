@@ -74,6 +74,7 @@ public class PermissionFilter implements Filter {
 //                } else filterChain.doFilter(req, res);
 //            } else filterChain.doFilter(req, res);
 //        } else filterChain.doFilter(req, res);
+        filterChain.doFilter(req, res);
     }
 
     private void returnBadResponse(HttpServletResponse res, String errorMessage) throws IOException {
