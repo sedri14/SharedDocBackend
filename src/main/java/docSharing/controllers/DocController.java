@@ -84,9 +84,6 @@ public class DocController {
         logger.info("start getDocument function");
         logger.info("validate docId param");
 
-        if (!authService.isValidToken(userId, token)) {
-            return ResponseEntity.badRequest().body(Response.failure(TokenError.INVALID_TOKEN.toString()));
-        }
         Validation.nullCheck(docId);
 
         Document document;

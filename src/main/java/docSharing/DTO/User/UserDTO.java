@@ -1,18 +1,14 @@
 package docSharing.DTO.User;
 
 public class UserDTO {
-    private String email, name, password;
 
-    public UserDTO() {}
+    public String email;
+    public String name;
+    public String password;
 
     public UserDTO(String email, String name, String password) {
         this.email = email;
         this.name = name;
-        this.password = password;
-    }
-
-    public UserDTO(String email, String password) {
-        this.email = email;
         this.password = password;
     }
 
@@ -38,14 +34,5 @@ public class UserDTO {
 
     public void setPassword(String password) {
         this.password = password;
-    }
-
-
-   @Override
-    public String toString() {
-        return "LoginUser{" +
-                "email='" + email + '\'' +
-                ", password='" + password + '\'' +
-                '}';
     }
 }

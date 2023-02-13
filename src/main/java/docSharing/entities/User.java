@@ -50,12 +50,8 @@ public class User implements Serializable {
         this.enabled = false;
     }
 
-    public static User createUserFactory(String name, String email, String password) {
-        return new User(name, email, password);
-    }
-
-    public static User createUserFactory(UserDTO other) {
-        return new User(other.getName(), other.getEmail(), other.getPassword());
+    public static User createNewUserFromUserDTO(UserDTO userDTO) {
+        return new User(userDTO.name, userDTO.email, userDTO.password);
     }
 
 

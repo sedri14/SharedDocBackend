@@ -5,6 +5,7 @@ import docSharing.DTO.User.UserDTO;
 import docSharing.Utils.Validation;
 import docSharing.entities.User;
 import docSharing.entities.VerificationToken;
+import docSharing.exceptions.InvalidFormatException;
 import docSharing.repository.UserRepository;
 import docSharing.response.LoginObject;
 import docSharing.response.RegisterObject;
@@ -43,52 +44,27 @@ public class AuthController {
     public AuthController() {
     }
 
-    /**
-     * discription
-     *
-     * @param user
-     * @param request
-     * @return
-     */
     @RequestMapping(value = "register", method = RequestMethod.POST)
-    public ResponseEntity<Response<UserDTO>> createUser(@RequestBody UserDTO user, HttpServletRequest request) {
-        if (!Validation.isValidEmail(user.getEmail()) || user.getEmail() == null) {
-            logger.error("In AuthenticationController.register: invalid email - int Level:200");
-            return ResponseEntity.badRequest().body(Response.failure("Invalid email address!"));
+    public ResponseEntity<User> register(@RequestBody UserDTO userDTO) {
+        if (!Validation.isValidEmail(userDTO.getEmail()) || userDTO.getEmail() == null) {
+            throw new InvalidFormatException("email");
 
         }
-        if (!Validation.isValidName(user.getName()) || user.getEmail() == null) {
-            logger.error("In AuthenticationController.register: invalid name - int Level:200");
-            return ResponseEntity.badRequest().body(Response.failure("Invalid name!"));
+        if (!Validation.isValidName(userDTO.getName()) || userDTO.getEmail() == null) {
+            throw new InvalidFormatException("name");
 
         }
-        if (!Validation.isValidPassword(user.getPassword()) || user.getPassword() == null) {
-            logger.error("In AuthenticationController.register: invalid password - int Level:200");
-            return ResponseEntity.badRequest().body(Response.failure("Invalid password!"));
+        if (!Validation.isValidPassword(userDTO.getPassword()) || userDTO.getPassword() == null) {
+            throw new InvalidFormatException("password");
         }
 
-        try {
-            RegisterObject registerUser = authService.createUser(user);
-            UserDTO createdUser = registerUser.getUser();
-            if (createdUser != null) {
-                String appUrl = request.getContextPath();
-                authService.publishRegistrationEvent(createdUser, request.getLocale(), appUrl);
-                System.out.println("inside AuthController");
-                return ResponseEntity.status(HttpStatus.OK).body(Response.success(createdUser));
-            } else
-                return ResponseEntity.badRequest().body(Response.failure("Email already exist"));
-
-        } catch (
-                SQLDataException e) {
-            return ResponseEntity.badRequest().body(Response.failure("Email already exist"));
-        }
-
+        return ResponseEntity.ok(authService.register(userDTO));
     }
-
-    @RequestMapping(value = "token", method = RequestMethod.PATCH)
-    public ResponseEntity<String> updateTokenEmailKey(@RequestBody UserDTO user, @RequestParam String newEmail) {
-        return ResponseEntity.status(HttpStatus.OK).body(gson.toJson(authService.updateTokenEmailKey(user, newEmail)));
-    }
+//
+//    @RequestMapping(value = "token", method = RequestMethod.PATCH)
+//    public ResponseEntity<String> updateTokenEmailKey(@RequestBody UserDTO user, @RequestParam String newEmail) {
+//        return ResponseEntity.status(HttpStatus.OK).body(gson.toJson(authService.updateTokenEmailKey(user, newEmail)));
+//    }
 
 
     @RequestMapping(value = "login", method = RequestMethod.POST)//
@@ -107,28 +83,28 @@ public class AuthController {
 
         }
     }
-
-
-    @GetMapping("/registrationConfirm")
-    public String confirmRegistration(WebRequest request, @RequestParam("token") String token) {
-
-        Locale locale = request.getLocale();
-
-        VerificationToken verificationToken = authService.getVerificationToken(token);
-        if (verificationToken == null) {
-            return "redirect:/badUser.html?lang=" + locale.getLanguage();
-        }
-
-        User user = verificationToken.getUser();
-        Calendar cal = Calendar.getInstance();
-        if ((verificationToken.getExpiryDate().getTime() - cal.getTime().getTime()) <= 0) {
-            return "redirect:/badUser.html?lang=" + locale.getLanguage();
-        }
-
-        userService.updateEnabled(user.getId(), true);
-        authService.deleteVerificationToken(token);
-        return "redirect:/login.html?lang=" + request.getLocale().getLanguage();
-    }
+//
+//
+//    @GetMapping("/registrationConfirm")
+//    public String confirmRegistration(WebRequest request, @RequestParam("token") String token) {
+//
+//        Locale locale = request.getLocale();
+//
+//        VerificationToken verificationToken = authService.getVerificationToken(token);
+//        if (verificationToken == null) {
+//            return "redirect:/badUser.html?lang=" + locale.getLanguage();
+//        }
+//
+//        User user = verificationToken.getUser();
+//        Calendar cal = Calendar.getInstance();
+//        if ((verificationToken.getExpiryDate().getTime() - cal.getTime().getTime()) <= 0) {
+//            return "redirect:/badUser.html?lang=" + locale.getLanguage();
+//        }
+//
+//        userService.updateEnabled(user.getId(), true);
+//        authService.deleteVerificationToken(token);
+//        return "redirect:/login.html?lang=" + request.getLocale().getLanguage();
+//    }
 
 
 }

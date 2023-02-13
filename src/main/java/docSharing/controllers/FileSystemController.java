@@ -7,7 +7,6 @@ import docSharing.entities.INode;
 import docSharing.entities.*;
 import docSharing.enums.UserRole;
 import docSharing.exceptions.MissingControllerParameterException;
-import docSharing.service.AuthService;
 import docSharing.service.FileSystemService;
 import docSharing.service.UserService;
 import org.apache.logging.log4j.LogManager;

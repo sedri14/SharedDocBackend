@@ -19,7 +19,7 @@ public class AppExceptionHandler extends ResponseEntityExceptionHandler {
         return ApiError.newResponseApiError(ex.getMessage(), HttpStatus.NOT_FOUND);
     }
 
-    @ExceptionHandler({IllegalOperationException.class, INodeNameExistsException.class, MissingControllerParameterException.class})
+    @ExceptionHandler({IllegalOperationException.class, INodeNameExistsException.class, MissingControllerParameterException.class, InvalidFormatException.class})
     public ResponseEntity<ApiError> handleBadRequest(RuntimeException ex) {
         return ApiError.newResponseApiError(ex.getMessage(), HttpStatus.BAD_REQUEST);
     }

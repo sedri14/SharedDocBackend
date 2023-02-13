@@ -38,15 +38,14 @@ public class UserController {
         if (!Validation.isValidName(user.getName())) {
             return ResponseEntity.badRequest().build();
         }
-//        validateToken(user, token);
         return ResponseEntity.status(HttpStatus.OK).body(userService.updateUserName(user.getEmail(), user.getName()));
     }
 
-    private void validateToken(Long userId, String token) throws IOException {
-        if (!authService.isValidToken(userId, token)) {
-            throw new AccessDeniedException(String.format("User with email address: %s is not logged in!", userId));
-        }
-    }
+//    private void validateToken(Long userId, String token) throws IOException {
+//        if (!authService.isValidToken(userId, token)) {
+//            throw new AccessDeniedException(String.format("User with email address: %s is not logged in!", userId));
+//        }
+//    }
 
 
 //    @RequestMapping(value = "/email", method = RequestMethod.PATCH)
