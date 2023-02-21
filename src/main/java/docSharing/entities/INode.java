@@ -33,12 +33,12 @@ public class INode implements Serializable {
     @JoinColumn(name="owner_id", referencedColumnName = "id")
     private User owner;
     @JsonIgnore
-    //@OneToMany(fetch = FetchType.EAGER, mappedBy = "parent" , cascade = CascadeType.REMOVE)
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @ElementCollection
     @CollectionTable(name = "inodes_to_children")
     @MapKeyJoinColumn(name = "inode_name")
     @Column(name = "inode_id")
-    protected Map<String,INode> children;
+    protected Map<String,INode> children;   //key contains the file extension.
 
     @JsonIgnore
     @ElementCollection

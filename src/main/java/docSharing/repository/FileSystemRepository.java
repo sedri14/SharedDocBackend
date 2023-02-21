@@ -12,15 +12,8 @@ import java.util.Set;
 @Repository
 public interface FileSystemRepository extends JpaRepository<INode, Long> {
 
-    //List<INode> findByParentId(Long parentId);
-
     @Transactional
-    Integer removeById(Long id);
-
-    //Set<INode> findByParentIdAndTypeEquals(Long parentId, INodeType type);
-
-    //INode findByName(String name);
-
+    INode removeById(Long id);
 
 }
 

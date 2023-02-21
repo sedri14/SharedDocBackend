@@ -4,15 +4,9 @@ import docSharing.DTO.Doc.UpdateDocContentRes;
 import docSharing.Utils.LogUtils;
 import docSharing.Utils.Validation;
 import docSharing.entities.Document;
-import docSharing.entities.INode;
-import docSharing.entities.User;
-import docSharing.enums.UserRole;
-import docSharing.exceptions.MissingControllerParameterException;
-import docSharing.response.PermissionResponse;
+
 import docSharing.response.Response;
-import docSharing.response.TokenError;
 import docSharing.service.*;
-import docSharing.DTO.Doc.ChangeRoleDTO;
 import docSharing.DTO.Doc.CurrentViewingUserDTO;
 import docSharing.DTO.Doc.ManipulatedTextDTO;
 import org.apache.logging.log4j.LogManager;
@@ -24,14 +18,7 @@ import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.web.bind.annotation.*;
-import static java.util.Objects.isNull;
-import static org.hibernate.internal.util.StringHelper.isBlank;
-
-
 import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-
 
 @RequestMapping("/doc")
 @CrossOrigin

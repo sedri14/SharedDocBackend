@@ -124,8 +124,8 @@ public class FileSystemController {
      *
      * @return number of inodes deleted
      */
-    @RequestMapping(value = "/delete", method = RequestMethod.DELETE)
-    public ResponseEntity<Integer> delete(@PathVariable Long inodeId) {
+    @RequestMapping(value = "/delete/{inodeId}", method = RequestMethod.DELETE)
+    public ResponseEntity<INode> delete(@PathVariable Long inodeId) {
         logger.info("start delete function");
         logger.debug("delete function parameters: id:{}", (inodeId));
 

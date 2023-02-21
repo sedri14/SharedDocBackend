@@ -82,8 +82,10 @@ public class FileSystemService {
             default:
                 throw new IllegalOperationException("Illegal Inode type");
         }
+        parent.getChildren().put(addInode.name, newInode);
+        fsRepository.save(parent);
 
-        return fsRepository.save(newInode);
+        return parent.getChildren().get(addInode.name);
     }
 
 
@@ -108,7 +110,6 @@ public class FileSystemService {
                     sourceType == INodeType.DIR ? "directory" : "file", sourceInode.getName()));
         }
 
-        //todo: check hiracally correct: check that target isn't a decendant of source
         if (!isHierarchicallyLegalMove(sourceInode, targetInode)) {
             throw new IllegalOperationException("Illegal move");
 
@@ -149,19 +150,23 @@ public class FileSystemService {
      * @param id - inode id
      * @return list of inodes removed
      */
-    public Integer removeById(Long id) {
-
-        //check root inode
-        //todo: check how to mark a specific node to be the root (each user has a different root of course)
-        if (id == 1L) {
-            throw new IllegalOperationException("can not remove root directory");
-        }
-
+    public INode removeById(Long id) {
+        INode inode;
         try {
-            fetchINodeById(id);
+            inode = fetchINodeById(id);
         } catch (INodeNotFoundException ex) {
             throw new IllegalOperationException("can not delete non existing inode");
         }
+
+        //protect root node
+        if (null == inode.getParent()) {
+            throw new IllegalOperationException("can not remove root directory");
+        }
+
+        //delete from parent map
+        INode parent = inode.getParent();
+        parent.getChildren().remove(inode.getName());
+        fsRepository.save(parent);
 
         return fsRepository.removeById(id);
     }
@@ -176,14 +181,19 @@ public class FileSystemService {
     public INode renameInode(Long id, String newName) {
         INode inode = fetchINodeById(id);
         Long parentId = inode.getParent().getId();
+        INode parent = inode.getParent();
         INodeType inodeType = inode.getType();
 
         if (inodeNameExistsInDir(parentId, inodeType, newName)) {
             throw new IllegalOperationException(String.format("%s name \"%s\" already exists in this directory", inodeType == INodeType.DIR ? "directory" : "file", newName));
         }
+        //reinsert child entry with new name to parent map
+        INode removedInode = parent.getChildren().remove(inode.getName());
+        parent.getChildren().put(newName, removedInode);
         inode.setName(newName);
+        fsRepository.save(parent);
 
-        return fsRepository.save(inode);
+        return parent.getChildren().get(newName);
     }
 
     /**
