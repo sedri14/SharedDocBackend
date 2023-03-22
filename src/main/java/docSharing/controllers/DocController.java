@@ -4,7 +4,6 @@ import docSharing.DTO.Doc.UpdateDocContentRes;
 import docSharing.Utils.LogUtils;
 import docSharing.Utils.Validation;
 import docSharing.entities.Document;
-
 import docSharing.response.Response;
 import docSharing.service.*;
 import docSharing.DTO.Doc.CurrentViewingUserDTO;
@@ -63,11 +62,10 @@ public class DocController {
     /**
      * @param docId  document Id
      * @param token  token of logged in user
-     * @param userId user id
      * @return document response
      */
     @RequestMapping(value = "/{docId}", method = RequestMethod.GET)
-    public ResponseEntity<Response<Document>> getDocument(@PathVariable Long docId, @RequestHeader String token, @RequestHeader Long userId) {
+    public ResponseEntity<Response<Document>> getDocument(@PathVariable Long docId, @RequestHeader String token) {
         logger.info("start getDocument function");
         logger.info("validate docId param");
 

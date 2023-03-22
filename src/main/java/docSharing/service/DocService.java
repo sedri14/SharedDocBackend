@@ -31,7 +31,7 @@ public class DocService {
 
         Runnable saveContentToDBRunnable = new Runnable() {
             public void run() {
-                saveAllChangesToDB(docContentByDocId);
+                //saveAllChangesToDB(docContentByDocId);
             }
         };
 
