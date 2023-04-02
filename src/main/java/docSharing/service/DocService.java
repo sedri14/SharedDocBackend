@@ -16,6 +16,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -31,7 +32,6 @@ public class DocService {
 
     public DocService() {
         logger.info("init Doc Service instance");
-        logger.info("get the document from the DB");
 
         Runnable saveContentToDBRunnable = new Runnable() {
             public void run() {
@@ -336,7 +336,7 @@ public class DocService {
         //get the doc crdt - a tree data structure in which the document content is stored.
         CRDT crdt = doc.getCrdt();
         Map<Integer, Boolean> strategy = crdt.getStrategy();
-        Random random = new Random();
+        ThreadLocalRandom random = ThreadLocalRandom.current();
 
         int depth = 0;
         int interval = 0;
@@ -423,19 +423,17 @@ public class DocService {
     }
 
     //this function performs: prefix(p, depth) + addVal;
-    private List<Identifier> addVal(List<Identifier> pPrefix, int val) {
-        List<Identifier> id = new ArrayList<>();
-        Collections.copy(id, pPrefix);
-        id.add(id.size() - 1, new Identifier(id.get(id.size() - 1).getDigit() +  val));
+    List<Identifier> addVal(List<Identifier> pPrefix, int val) {
+        List<Identifier> id = new ArrayList<>(pPrefix);
+        id.set(id.size() - 1, new Identifier(id.get(id.size() - 1).getDigit() +  val));
 
         return id;
     }
 
     //this function performs: prefix(q, depth) - subVal;
-    private List<Identifier> subVal(List<Identifier> qPrefix, int val) {
-        List<Identifier> id = new ArrayList<>();
-        Collections.copy(id, qPrefix);
-        id.add(id.size() - 1, new Identifier(id.get(id.size() - 1).getDigit() -  val));
+    List<Identifier> subVal(List<Identifier> qPrefix, int val) {
+        List<Identifier> id = new ArrayList<>(qPrefix);
+        id.set(id.size() - 1, new Identifier(id.get(id.size() - 1).getDigit() -  val));
 
         return id;
     }
