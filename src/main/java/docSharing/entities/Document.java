@@ -1,13 +1,11 @@
 package docSharing.entities;
 
-import com.fasterxml.jackson.annotation.JsonIncludeProperties;
+import docSharing.CRDT.CRDT;
 import docSharing.enums.INodeType;
-import docSharing.enums.UserRole;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 @Entity
@@ -23,6 +21,9 @@ public class Document extends INode {
 
     @OneToMany(mappedBy = "document", cascade = CascadeType.ALL)
     private Set<Log> log = new HashSet<>();
+
+    //A tree data structure that stores the document content
+    private CRDT crdt;
 
     Document() {
         super();
@@ -59,4 +60,7 @@ public class Document extends INode {
         this.content = content;
     }
 
+    public CRDT getCrdt() {
+        return crdt;
+    }
 }

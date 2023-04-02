@@ -1,5 +1,7 @@
 package docSharing.service;
 
+import docSharing.CRDT.Identifier;
+import docSharing.CRDT.CRDT;
 import docSharing.DTO.Doc.UpdateDocContentRes;
 import docSharing.entities.Document;
 import docSharing.repository.DocRepository;
@@ -18,6 +20,8 @@ import java.util.concurrent.TimeUnit;
 
 @Service
 public class DocService {
+
+    private static final int boundary = 10;
     @Autowired
     private DocRepository docRepository;
 
@@ -277,6 +281,163 @@ public class DocService {
      */
     public List<String> getCurrentViewingUserList(Long docId) {
         return viewingUsersByDocId.get(docId);
+    }
+
+//    int comparePosition(List<Identifier> p1, List<Identifier> p2) {
+//
+//        for (int i = 0; i < Math.min(p1.size(), p2.size()); i++) {
+//            int comp = Identifier.compare(p1.get(i), p2.get(i));
+//            if (comp != 0) {
+//                return comp;
+//            }
+//
+//            if (p1.size() < p2.size()) {
+//                return -1;
+//            } else if (p1.size() > p2.size()) {
+//                return 1;
+//            } else {
+//                return 0;   //program should never reach this line of code.
+//            }
+//        }
+//
+//        return 0; //TODO: delete this.
+//    }
+
+//    List<Identifier> generatePositionBetween(List<Identifier> beforePos, List<Identifier> afterPos, int site) {
+//        Identifier head1 = beforePos.get(0); //TODO: set deafult value in case first element does not exist.
+//        Identifier head2 = afterPos.get(0);
+//
+//        if (head1.getDigit() != head2.getDigit()) {
+//            //Case 1: head digits are different
+//            //convert positions to decimal
+//            List<Integer> dec1 = Decimal.fromPosition(beforePos);
+//            List<Integer> dec2 = Decimal.fromPosition(afterPos);
+//            List<Integer> delta = Decimal.substractGreaterThan(dec2, dec1);
+//
+//            //increment dec1 by some amout less than delta
+//            int increase = Decimal.increment(dec1, delta);
+//            return Decimal.toPosition(increase, beforePos, afterPos, site);
+//
+//        } else {
+//            if (head1.getSite() < head2.getSite()) {
+//                //Case 2: head digits are the same, sites are different
+//                return CRDTUtils.concatLists(head1, generatePositionBetween(beforePos.subList(1, beforePos.size()), new ArrayList<>(), site));
+//            } else if (head1.getSite() == head2.getSite()) {
+//                //Case 3: head digits are the same, sites are the same
+//                return CRDTUtils.concatLists(head1, generatePositionBetween(beforePos.subList(1, beforePos.size()), afterPos.subList(1, afterPos.size()), site));
+//            } else {
+//                throw new RuntimeException("invalid site ordering");
+//            }
+//        }
+//    }
+
+    //given two characters p and q with consecutive positions in a document, this function allocates a new position between them.
+    public List<Identifier> alloc(List<Identifier> p, List<Identifier> q, Document doc, int base) {
+        //get the doc crdt - a tree data structure in which the document content is stored.
+        CRDT crdt = doc.getCrdt();
+        Map<Integer, Boolean> strategy = crdt.getStrategy();
+        Random random = new Random();
+
+        int depth = 0;
+        int interval = 0;
+
+        /**
+         (1). Find available places in the crdt tree to insert a new character.
+         calculating interval - the number of available places to insert a new character.
+         calculate depth - the depth into which the new character is going to be.
+         **/
+        while (interval < 1) {
+            depth++;
+            interval = calculateInterval(p, q, depth, base);
+        }
+        //in case that the interval is smaller than the set boundary, limit the avilable places.
+        int step = Math.min(CRDT.BOUNDARY, interval);
+
+        if (!strategy.containsKey(depth)) {
+            boolean rand = random.nextBoolean();
+            strategy.put(depth, rand);
+        }
+
+        List<Identifier> id;
+        if (strategy.get(depth)) {      //boundary+
+            int addVal = random.nextInt(0, step) + 1;
+            id = addVal(prefix(p, depth), addVal);
+        } else {                        //boundary-
+            int subVal = random.nextInt(0, step) + 1;
+            id = subVal(prefix(q,depth), subVal);
+        }
+
+        return id;
+    }
+
+    //given a list of identifiers id and a depth in tree, this function returns the prefix of the id, calculated
+    //from tree root up to depth.
+    public List<Identifier> prefix(List<Identifier> id, int depth) {
+        List<Identifier> idCopy = new ArrayList<>();
+        for (int cpt = 0; cpt < depth; cpt++) {
+            if (cpt < id.size()) {
+                idCopy.add(id.get(cpt));
+            } else {
+                idCopy.add(new Identifier(0));
+            }
+        }
+
+        return idCopy;
+    }
+
+    //this function calculates the number of possible available places between two identifiers
+    //(the delta between two identifiers)
+    //performs the calculation: prefix(q, depth) - prefix(p, depth) - 1;
+    //in the following way: subtract the last identifier value of q from the last identifier value of p and return an integer result.
+    //in case that q has 0 as its last identifier value, q will be transformed to its equivalent value in terms of p in the specific depth.
+    //e.g. depth = 2 (base = 2^6),  q = [10,0], p = [9,60]. In this case, q will be transformed to [9, 65] and the substraction
+    //will be performed as described above.
+    public int calculateInterval(List<Identifier> p, List<Identifier> q, int depth, int base) {
+
+        //TODO: remember: it's ok that the result will be < 1.
+        //prefix function returns p_prefix and q_prefix in the same length (depth).
+        List<Identifier> pPrefix = prefix(p, depth);
+        List<Identifier> qPrefix = prefix(q, depth);
+
+//        if (p >= q) {
+//            throw exception. illegal identifiers
+//        }
+
+        int qLastDig = qPrefix.get(depth - 1).getDigit();
+        int pLastDig = pPrefix.get(depth - 1).getDigit();
+
+        if (qLastDig > pLastDig) {
+            return qLastDig - pLastDig - 1;
+        }
+
+        if (qLastDig < pLastDig) { //e.g [10,0] - [9,60], depth = 2
+            List<Identifier> qTransformed = new ArrayList<>();
+            Collections.copy(qTransformed, pPrefix);
+            //transform qPrefix to be in terms of p.
+            //the number of children of a treenode in depth i with base x is: 2^(x + i - 1)
+            qTransformed.add(depth - 1, new Identifier(qLastDig + (int) Math.pow(2.0, base + depth - 1) + 1));
+            return calculateInterval(pPrefix, qTransformed, depth, base);
+        } else {
+            return 0; //TODO: is it legal qLastDig = pLastDig ?
+        }
+    }
+
+    //this function performs: prefix(p, depth) + addVal;
+    private List<Identifier> addVal(List<Identifier> pPrefix, int val) {
+        List<Identifier> id = new ArrayList<>();
+        Collections.copy(id, pPrefix);
+        id.add(id.size() - 1, new Identifier(id.get(id.size() - 1).getDigit() +  val));
+
+        return id;
+    }
+
+    //this function performs: prefix(q, depth) - subVal;
+    private List<Identifier> subVal(List<Identifier> qPrefix, int val) {
+        List<Identifier> id = new ArrayList<>();
+        Collections.copy(id, qPrefix);
+        id.add(id.size() - 1, new Identifier(id.get(id.size() - 1).getDigit() -  val));
+
+        return id;
     }
 
 }
