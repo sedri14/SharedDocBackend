@@ -8,7 +8,6 @@ import java.util.Map;
 
 public class CRDT {
 
-    //public static final double BASE = Math.pow(2,5);
     public static final double BASE = 5;       //tree root has 2^5 children
     public static final int DOC_BEGIN = 0;
 

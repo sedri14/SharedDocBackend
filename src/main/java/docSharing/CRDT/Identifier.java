@@ -26,7 +26,17 @@ public class Identifier {
         return digit;
     }
 
-    //    //compare identifiers by digit. In case of equality, compare by site id.
+    @Override
+    public String toString() {
+        return String.valueOf(digit);
+    }
+
+    public static int compare(Identifier i1, Identifier i2) {
+        return Integer.compare(i1.digit, i2.digit);
+    }
+}
+
+//    //compare identifiers by digit. In case of equality, compare by site id.
 //    public static int compare(Identifier i1, Identifier i2) {
 //        if (i1.digit < i2.digit) {
 //            return -1;
@@ -42,4 +52,4 @@ public class Identifier {
 //            }
 //        }
 //    }
-}
+
