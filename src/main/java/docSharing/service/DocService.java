@@ -1,7 +1,9 @@
 package docSharing.service;
 
+import docSharing.CRDT.Char;
 import docSharing.CRDT.Identifier;
 import docSharing.CRDT.CRDT;
+import docSharing.CRDT.TreeNode;
 import docSharing.DTO.Doc.UpdateDocContentRes;
 import docSharing.entities.Document;
 import docSharing.repository.DocRepository;
@@ -50,109 +52,109 @@ public class DocService {
      * @param manipulatedTextDTO the updated text object
      * @return updated document object
      */
-    public UpdateDocContentRes UpdateDocContent(Long docId, ManipulatedTextDTO manipulatedTextDTO) {
-
-        logger.info("start sendUpdatedText function");
-
-        if (!docContentByDocId.containsKey(docId)) {
-            logger.info("you should get the document first");
-            throw new RuntimeException("you should get the document first");
-        }
-
-        logger.info("the client want to update" + manipulatedTextDTO);
-
-        switch (manipulatedTextDTO.getAction()) {
-            case APPEND:
-                addTextToDoc(docId, manipulatedTextDTO);
-                break;
-            case DELETE:
-                deleteTextFromDoc(docId, manipulatedTextDTO);
-                break;
-            case DELETE_RANGE:
-                deleteRangeTextFromDoc(docId, manipulatedTextDTO);
-                break;
-            case APPEND_RANGE:
-                addRangeTextToDoc(docId, manipulatedTextDTO);
-                break;
-        }
-        UpdateDocContentRes updateDocContentRes = new UpdateDocContentRes(
-                manipulatedTextDTO.getUserId()
-                , docContentByDocId.get(docId)
-                , manipulatedTextDTO.getStartPosition()
-                , manipulatedTextDTO.getEndPosition()
-                , manipulatedTextDTO.getAction());
-
-        logger.info("all subscribed users gets" + updateDocContentRes);
-
-        return updateDocContentRes;
-
-    }
-
-
-    /**
-     * @param docId document id
-     * @param text  the updated text object
-     */
-    private static void addTextToDoc(Long docId, ManipulatedTextDTO text) {
-
-        logger.info("start addTextToDoc function");
-        String docText = docContentByDocId.get(docId);
-        String updatedDocText = docText.substring(0, text.getStartPosition()) + text.getContent() + docText.substring(text.getStartPosition());
-
-        docContentByDocId.put(docId, updatedDocText);
-
-    }
-
-
-    /**
-     * @param docId document id
-     * @param text  the updated text object
-     */
-    private static void deleteTextFromDoc(Long docId, ManipulatedTextDTO text) {
-
-        logger.info("start deleteTextFromDoc");
-
-        String docText = docContentByDocId.get(docId);
-        String updatedDocText = docText.substring(0, text.getStartPosition()) + docText.substring(text.getStartPosition() + 1);
-        String deletedChar = docText.substring(text.getStartPosition(), text.getStartPosition() + 1);
-
-        text.setContent(deletedChar);
-
-        docContentByDocId.put(docId, updatedDocText);
-    }
-
-
-    /**
-     * @param docId document id
-     * @param text  the updated text object
-     */
-    private static void addRangeTextToDoc(Long docId, ManipulatedTextDTO text) {
-
-        logger.info("start addRangeTextToDoc");
-        String docText = docContentByDocId.get(docId);
-        String updatedDocText = docText.substring(0, text.getStartPosition() + 1) + text.getContent() + docText.substring(text.getEndPosition() + 1);
-
-
-        docContentByDocId.put(docId, updatedDocText);
-    }
-
-
-    /**
-     * @param docId document id
-     * @param text  the updated text object
-     */
-    private static void deleteRangeTextFromDoc(Long docId, ManipulatedTextDTO text) {
-
-        logger.info("start deleteRangeTextFromDoc function");
-
-        String docText = docContentByDocId.get(docId);
-        String updatedDocText = docText.substring(0, text.getStartPosition() + 1) + docText.substring(text.getEndPosition() + 1);
-        String deletedChars = docText.substring(text.getStartPosition() + 1, text.getEndPosition() + 1);
-
-        text.setContent(deletedChars);
-
-        docContentByDocId.put(docId, updatedDocText);
-    }
+//    public UpdateDocContentRes UpdateDocContent(Long docId, ManipulatedTextDTO manipulatedTextDTO) {
+//
+//        logger.info("start sendUpdatedText function");
+//
+//        if (!docContentByDocId.containsKey(docId)) {
+//            logger.info("you should get the document first");
+//            throw new RuntimeException("you should get the document first");
+//        }
+//
+//        logger.info("the client want to update" + manipulatedTextDTO);
+//
+//        switch (manipulatedTextDTO.getAction()) {
+//            case APPEND:
+//                addTextToDoc(docId, manipulatedTextDTO);
+//                break;
+//            case DELETE:
+//                deleteTextFromDoc(docId, manipulatedTextDTO);
+//                break;
+//            case DELETE_RANGE:
+//                deleteRangeTextFromDoc(docId, manipulatedTextDTO);
+//                break;
+//            case APPEND_RANGE:
+//                addRangeTextToDoc(docId, manipulatedTextDTO);
+//                break;
+//        }
+//        UpdateDocContentRes updateDocContentRes = new UpdateDocContentRes(
+//                manipulatedTextDTO.getUserId()
+//                , docContentByDocId.get(docId)
+//                , manipulatedTextDTO.getStartPosition()
+//                , manipulatedTextDTO.getEndPosition()
+//                , manipulatedTextDTO.getAction());
+//
+//        logger.info("all subscribed users gets" + updateDocContentRes);
+//
+//        return updateDocContentRes;
+//
+//    }
+//
+//
+//    /**
+//     * @param docId document id
+//     * @param text  the updated text object
+//     */
+//    private static void addTextToDoc(Long docId, ManipulatedTextDTO text) {
+//
+//        logger.info("start addTextToDoc function");
+//        String docText = docContentByDocId.get(docId);
+//        String updatedDocText = docText.substring(0, text.getStartPosition()) + text.getContent() + docText.substring(text.getStartPosition());
+//
+//        docContentByDocId.put(docId, updatedDocText);
+//
+//    }
+//
+//
+//    /**
+//     * @param docId document id
+//     * @param text  the updated text object
+//     */
+//    private static void deleteTextFromDoc(Long docId, ManipulatedTextDTO text) {
+//
+//        logger.info("start deleteTextFromDoc");
+//
+//        String docText = docContentByDocId.get(docId);
+//        String updatedDocText = docText.substring(0, text.getStartPosition()) + docText.substring(text.getStartPosition() + 1);
+//        String deletedChar = docText.substring(text.getStartPosition(), text.getStartPosition() + 1);
+//
+//        text.setContent(deletedChar);
+//
+//        docContentByDocId.put(docId, updatedDocText);
+//    }
+//
+//
+//    /**
+//     * @param docId document id
+//     * @param text  the updated text object
+//     */
+//    private static void addRangeTextToDoc(Long docId, ManipulatedTextDTO text) {
+//
+//        logger.info("start addRangeTextToDoc");
+//        String docText = docContentByDocId.get(docId);
+//        String updatedDocText = docText.substring(0, text.getStartPosition() + 1) + text.getContent() + docText.substring(text.getEndPosition() + 1);
+//
+//
+//        docContentByDocId.put(docId, updatedDocText);
+//    }
+//
+//
+//    /**
+//     * @param docId document id
+//     * @param text  the updated text object
+//     */
+//    private static void deleteRangeTextFromDoc(Long docId, ManipulatedTextDTO text) {
+//
+//        logger.info("start deleteRangeTextFromDoc function");
+//
+//        String docText = docContentByDocId.get(docId);
+//        String updatedDocText = docText.substring(0, text.getStartPosition() + 1) + docText.substring(text.getEndPosition() + 1);
+//        String deletedChars = docText.substring(text.getStartPosition() + 1, text.getEndPosition() + 1);
+//
+//        text.setContent(deletedChars);
+//
+//        docContentByDocId.put(docId, updatedDocText);
+//    }
 
 
     /**
@@ -330,6 +332,36 @@ public class DocService {
 //            }
 //        }
 //    }
+
+    //this function adds a new character to the document tree
+    public void addText(List<Identifier> p, List<Identifier> q, Document doc, char ch) {
+        CRDT crdt = doc.getCrdt();
+        List<Identifier> newPos = alloc(p, q, doc.getCrdt().getStrategy(), (int) CRDT.BASE);
+        addCharToDocTree(crdt.getRoot(), newPos, ch);
+    }
+
+    //this function traverse the doc tree (starts at root) in the newPos path and insert a new
+    //tree node with the new given char.
+    //if there is a need to allocate a new depth to the tree, function will do it.
+    //TODO: check that nodes are allocated and if needed allocate new arrays in the relevant size.
+    private void addCharToDocTree(TreeNode root, List<Identifier> newPos, char ch) {
+        int depth = 0;   //in case a new depth is allocated.
+        TreeNode curNode = root;
+        for (int i = 0; i < newPos.size(); i++) {
+            int curDigit = newPos.get(i).getDigit();
+            curNode = curNode.getChildren().get(curDigit);
+            depth++;
+        }
+
+        //ch should be put in the curNode.
+        curNode.setChar(Char.createNewChar(ch, newPos));
+    }
+
+    public String CrdtToString(CRDT root) {
+        //convert the crdt doc tree to a simple string, using pre-order traversal algorithm.
+
+        return "";
+    }
 
     //given two characters p and q with consecutive positions in a document, this function allocates a new position between them.
     public List<Identifier> alloc(List<Identifier> p, List<Identifier> q, Map<Integer, Boolean> strategy, int base) {

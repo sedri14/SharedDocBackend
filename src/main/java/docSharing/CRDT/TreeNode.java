@@ -40,4 +40,12 @@ public class TreeNode {
         return TreeNode.createNewTreeNode(dummyChar, null);
 
     }
+
+    public List<TreeNode> getChildren() {
+        return children;
+    }
+
+    public void setChar(Char c) {
+        this.c = c;
+    }
 }

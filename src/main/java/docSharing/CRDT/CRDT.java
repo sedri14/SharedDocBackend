@@ -1,7 +1,5 @@
 package docSharing.CRDT;
 
-import docSharing.CRDT.TreeNode;
-
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -17,11 +15,11 @@ public class CRDT {
 
     private Map<Integer, Boolean> strategy;
 
-    private TreeNode head;
+    private TreeNode root;
 
     public CRDT() {
-        head = TreeNode.createNewTreeNode(null, Arrays.asList(new TreeNode[(int)Math.pow(2,BASE)]));
-        iniBeginAndEndOfDocument(head);
+        root = TreeNode.createNewTreeNode(null, Arrays.asList(new TreeNode[(int)Math.pow(2,BASE)]));
+        iniBeginAndEndOfDocument(root);
         strategy = new HashMap<>();
     }
 
@@ -36,6 +34,10 @@ public class CRDT {
 
     public Map<Integer, Boolean> getStrategy() {
         return strategy;
+    }
+
+    public TreeNode getRoot() {
+        return root;
     }
 }
 
