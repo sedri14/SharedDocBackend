@@ -42,21 +42,21 @@ public class DocController {
      * @param manipulatedTextDTO the change in the text
      * @return the changed content to all subscribed users
      */
-    @MessageMapping("/update/{docId}")
-    @SendTo("/topic/updates/{docId}")
-    public UpdateDocContentRes sendUpdatedText(@DestinationVariable Long docId, ManipulatedTextDTO manipulatedTextDTO) {
-
-        logger.info("start sendUpdatedText function");
-        logger.info("validate docId param");
-        Validation.nullCheck(docId);
-        logger.info("validate manipulatedTextDTO param");
-        Validation.nullCheck(manipulatedTextDTO);
-
-        UpdateDocContentRes updateDocContentRes = docService.UpdateDocContent(docId, manipulatedTextDTO);
-        logUtils.addToLog(docId, manipulatedTextDTO);
-
-        return updateDocContentRes;
-    }
+//    @MessageMapping("/update/{docId}")
+//    @SendTo("/topic/updates/{docId}")
+//    public UpdateDocContentRes sendUpdatedText(@DestinationVariable Long docId, ManipulatedTextDTO manipulatedTextDTO) {
+//
+//        logger.info("start sendUpdatedText function");
+//        logger.info("validate docId param");
+//        Validation.nullCheck(docId);
+//        logger.info("validate manipulatedTextDTO param");
+//        Validation.nullCheck(manipulatedTextDTO);
+//
+//        UpdateDocContentRes updateDocContentRes = docService.UpdateDocContent(docId, manipulatedTextDTO);
+//        logUtils.addToLog(docId, manipulatedTextDTO);
+//
+//        return updateDocContentRes;
+//    }
 
 
     /**

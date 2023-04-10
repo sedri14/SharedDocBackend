@@ -340,27 +340,53 @@ public class DocService {
         addCharToDocTree(crdt.getRoot(), newPos, ch);
     }
 
-    //this function traverse the doc tree (starts at root) in the newPos path and insert a new
+    //this function traverse the doc tree (starts at root) in the newPos path and inserts a new
     //tree node with the new given char.
-    //if there is a need to allocate a new depth to the tree, function will do it.
+    //the function allocates a new depth to the thee if needed.
     //TODO: check that nodes are allocated and if needed allocate new arrays in the relevant size.
+
     private void addCharToDocTree(TreeNode root, List<Identifier> newPos, char ch) {
         int depth = 0;   //in case a new depth is allocated.
         TreeNode curNode = root;
         for (int i = 0; i < newPos.size(); i++) {
             int curDigit = newPos.get(i).getDigit();
+            //allocate a new depth (new array of size: 2^(base + depth)
+            if (null == curNode.getChildren()) {
+                curNode.initializeChildrenList(depth); //set all children null
+            }
+            //allocate a treenode instead of null
+            if (null == curNode.getChildren().get(curDigit)) {
+                curNode.getChildren().set(curDigit, TreeNode.createEmptyTreeNode());
+            }
             curNode = curNode.getChildren().get(curDigit);
             depth++;
         }
 
-        //ch should be put in the curNode.
+        //set the node's character
         curNode.setChar(Char.createNewChar(ch, newPos));
     }
 
-    public String CrdtToString(CRDT root) {
-        //convert the crdt doc tree to a simple string, using pre-order traversal algorithm.
+    //convert the crdt doc tree to a simple string, using pre-order traversal algorithm.
+    public String preorderTraversal(CRDT crdt) {
+        StringBuilder sb = new StringBuilder();
+        rec(crdt.getRoot(), sb);
 
-        return "";
+        return String.valueOf(sb);
+    }
+
+    public void rec(TreeNode root, StringBuilder sb) {
+        if (null == root) {
+            return;
+        }
+
+        sb.append(root.getChar().getValue());
+        if (null != root.getChildren()) {
+            for (int i = 0; i < root.getChildren().size(); i++) {
+                if (null != root.getChildren().get(i)) {
+                    rec(root.getChildren().get(i), sb);
+                }
+            }
+        }
     }
 
     //given two characters p and q with consecutive positions in a document, this function allocates a new position between them.
@@ -392,7 +418,7 @@ public class DocService {
             id = addVal(prefix(p, depth), addVal);
         } else {                        //boundary-
             int subVal = random.nextInt(0, step) + 1;
-            id = subVal(prefix(p,depth), prefix(q,depth), subVal, depth, base);
+            id = subVal(prefix(p, depth), prefix(q, depth), subVal, depth, base);
         }
 
         return id;
@@ -462,7 +488,7 @@ public class DocService {
     //this function performs: prefix(p, depth) + addVal;
     List<Identifier> addVal(List<Identifier> pPrefix, int val) {
         List<Identifier> id = new ArrayList<>(pPrefix);
-        id.set(id.size() - 1, new Identifier(id.get(id.size() - 1).getDigit() +  val));
+        id.set(id.size() - 1, new Identifier(id.get(id.size() - 1).getDigit() + val));
 
         return id;
     }
@@ -472,14 +498,14 @@ public class DocService {
         List<Identifier> id;
         List<Identifier> qEquive;
         //in case that the last value is 0
-        if(q.get(q.size() - 1).getDigit() == 0) {
+        if (q.get(q.size() - 1).getDigit() == 0) {
             qEquive = getEquivalentPosition(p, q, depth, base);
             id = new ArrayList<>(qEquive);
         } else {
             id = new ArrayList<>(q);
         }
 
-        id.set(id.size() - 1, new Identifier(id.get(id.size() - 1).getDigit() -  val));
+        id.set(id.size() - 1, new Identifier(id.get(id.size() - 1).getDigit() - val));
 
         return id;
     }

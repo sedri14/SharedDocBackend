@@ -17,4 +17,13 @@ public class Char {
     public static Char createNewChar(Character value, List<Identifier> position) {
         return new Char(value, position);
     }
+
+    public Character getValue() {
+        return value;
+    }
+
+    @Override
+    public String toString() {
+        return "val:" + value + " " + position;
+    }
 }

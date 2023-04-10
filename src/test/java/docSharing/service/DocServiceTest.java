@@ -1,7 +1,9 @@
 package docSharing.service;
 
 import docSharing.CRDT.CRDT;
+import docSharing.CRDT.Char;
 import docSharing.CRDT.Identifier;
+import docSharing.CRDT.TreeNode;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.BeforeEach;
@@ -164,6 +166,24 @@ public class DocServiceTest {
         assertNotNull(newPos);
         assertTrue(comparePositions(p, newPos) < 0);
         assertTrue(comparePositions(newPos, q) < 0);
+    }
+
+    @Test
+    @DisplayName("print a doc tree with the word $Sandwich$")
+    void preorderTraversal_givenDocTree_printSandwich() {
+        CRDT crdt = new CRDT();
+        crdt.getRoot().getChildren().set(9,TreeNode.createNewTreeNode(Char.createNewChar('S',createIdentifiersList(9)),null));
+        crdt.getRoot().getChildren().get(9).initializeChildrenList(1);
+        crdt.getRoot().getChildren().get(9).getChildren().set(32, TreeNode.createNewTreeNode(Char.createNewChar('a',createIdentifiersList(9,32)),null));
+        crdt.getRoot().getChildren().get(9).getChildren().set(51, TreeNode.createNewTreeNode(Char.createNewChar('n',createIdentifiersList(9,51)),null));
+        crdt.getRoot().getChildren().get(9).getChildren().set(60, TreeNode.createNewTreeNode(Char.createNewChar('d',createIdentifiersList(9,60)),null));
+        crdt.getRoot().getChildren().set(10,TreeNode.createNewTreeNode(Char.createNewChar('w',createIdentifiersList(10)),null));
+        crdt.getRoot().getChildren().set(23,TreeNode.createNewTreeNode(Char.createNewChar('i',createIdentifiersList(23)),null));
+        crdt.getRoot().getChildren().get(23).initializeChildrenList(1);
+        crdt.getRoot().getChildren().get(23).getChildren().set(22, TreeNode.createNewTreeNode(Char.createNewChar('c',createIdentifiersList(23,22)),null));
+        crdt.getRoot().getChildren().get(23).getChildren().set(55, TreeNode.createNewTreeNode(Char.createNewChar('h',createIdentifiersList(23,55)),null));
+
+        assertEquals("$<Sandwich>", docService.preorderTraversal(crdt));
     }
 
 

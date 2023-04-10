@@ -4,6 +4,7 @@ import org.antlr.runtime.tree.Tree;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class TreeNode {
@@ -17,29 +18,15 @@ public class TreeNode {
         this.children = children;
     }
 
-    public static TreeNode createNewTreeNode(Char c) {
-        return new TreeNode(c, null);
+    public static TreeNode createEmptyTreeNode() {
+        return new TreeNode(null, null);
     }
 
     public static TreeNode createNewTreeNode(Char c, List<TreeNode> children) {
         return new TreeNode(c, children);
     }
 
-    //TODO: combine 2 functions - reuse code
-    public static TreeNode createDocBeginNode() {
-        List<Identifier> position = Arrays.asList(new Identifier(CRDT.DOC_BEGIN));
-        Char dummyChar = Char.createNewChar(null, position);
 
-        return TreeNode.createNewTreeNode(dummyChar, null);
-    }
-
-    public static TreeNode createDocEndNode() {
-        List<Identifier> position = Arrays.asList(new Identifier(CRDT.DOC_END));
-        Char dummyChar = Char.createNewChar(null, position);
-
-        return TreeNode.createNewTreeNode(dummyChar, null);
-
-    }
 
     public List<TreeNode> getChildren() {
         return children;
@@ -47,5 +34,18 @@ public class TreeNode {
 
     public void setChar(Char c) {
         this.c = c;
+    }
+
+    public Char getChar() {
+        return c;
+    }
+
+    public void initializeChildrenList(int depth) {
+        this.children = new ArrayList<>(Collections.nCopies((int)Math.pow(2,CRDT.BASE + depth), null));
+    }
+
+    @Override
+    public String toString() {
+        return c.toString();
     }
 }
