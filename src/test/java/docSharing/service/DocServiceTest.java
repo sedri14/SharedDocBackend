@@ -4,6 +4,7 @@ import docSharing.CRDT.CRDT;
 import docSharing.CRDT.Char;
 import docSharing.CRDT.Identifier;
 import docSharing.CRDT.TreeNode;
+import docSharing.entities.Document;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.BeforeEach;
@@ -78,6 +79,15 @@ public class DocServiceTest {
     }
 
     @Test
+    @DisplayName("[10] - [9] = 8")
+    void calculateInterval_givenTwoIdentifiers_SameDepth1Base5_NoSpots() {
+        List<Identifier> p = createIdentifiersList(9);
+        List<Identifier> q = createIdentifiersList(10);
+
+        assertEquals(0, docService.calculateInterval(p, q, 1, 5));
+    }
+
+    @Test
     @DisplayName("[9,60] - [9,51] = 8")
     void calculateInterval_givenTwoIdentifiers_SameDepth2Base5_getNumOfAvailableSpots() {
         List<Identifier> p = createIdentifiersList(9, 51);
@@ -134,7 +144,7 @@ public class DocServiceTest {
     void alloc_givenTwoPositions_generateNewPositionInBetween_Test1() {
         List<Identifier> p = createIdentifiersList(0);
         List<Identifier> q = createIdentifiersList(9);
-        List<Identifier> newPos = docService.alloc(p, q, strategy, (int) CRDT.BASE);
+        List<Identifier> newPos = docService.alloc(p, q, strategy);
         printPositionsInOrder(p, newPos, q);
 
         assertNotNull(newPos);
@@ -147,7 +157,7 @@ public class DocServiceTest {
     void alloc_givenTwoPositions_generateNewPositionInBetween_Test2() {
         List<Identifier> p = createIdentifiersList(9,51);
         List<Identifier> q = createIdentifiersList(9,60);
-        List<Identifier> newPos = docService.alloc(p, q, strategy, (int) CRDT.BASE);
+        List<Identifier> newPos = docService.alloc(p, q, strategy);
         printPositionsInOrder(p, newPos, q);
 
         assertNotNull(newPos);
@@ -160,7 +170,33 @@ public class DocServiceTest {
     void alloc_givenTwoPositions_generateNewPositionInBetween_Test3() {
         List<Identifier> p = createIdentifiersList(9,60);
         List<Identifier> q = createIdentifiersList(10);
-        List<Identifier> newPos = docService.alloc(p, q, strategy, (int) CRDT.BASE);
+        List<Identifier> newPos = docService.alloc(p, q, strategy);
+        printPositionsInOrder(p, newPos, q);
+
+        assertNotNull(newPos);
+        assertTrue(comparePositions(p, newPos) < 0);
+        assertTrue(comparePositions(newPos, q) < 0);
+    }
+
+    @Test
+    @DisplayName("test alloc function: with p=[9], q=[10] ")
+    void alloc_givenTwoPositions_generateNewPositionInBetween_NewDepthIdentifier() {
+        List<Identifier> p = createIdentifiersList(9);
+        List<Identifier> q = createIdentifiersList(10);
+        List<Identifier> newPos = docService.alloc(p, q, strategy);
+        printPositionsInOrder(p, newPos, q);
+
+        assertNotNull(newPos);
+        assertTrue(comparePositions(p, newPos) < 0);
+        assertTrue(comparePositions(newPos, q) < 0);
+    }
+
+    @Test
+    @DisplayName("test alloc function: with p=[9,63], q=[10] ")
+    void alloc_givenTwoPositions_generateNewPositionInBetween_NewDepthIdentifierDepth2() {
+        List<Identifier> p = createIdentifiersList(9,63);
+        List<Identifier> q = createIdentifiersList(10);
+        List<Identifier> newPos = docService.alloc(p, q, strategy);
         printPositionsInOrder(p, newPos, q);
 
         assertNotNull(newPos);
@@ -171,6 +207,21 @@ public class DocServiceTest {
     @Test
     @DisplayName("print a doc tree with the word $Sandwich$")
     void preorderTraversal_givenDocTree_printSandwich() {
+        CRDT crdtSandwitch = createSampleDocTreeSandwich();
+
+        assertEquals("$<Sandwich>", docService.preorderTraversal(crdtSandwitch));
+    }
+
+    @Test
+    @DisplayName("add a new character 'E' between indices 2 and 3 in: Sandwich")
+    void addCharBetween_givenCrdtSandwich_updateToSanEdwich() {
+        CRDT crdt = createSampleDocTreeSandwich();
+        docService.addCharBetween(createIdentifiersList(9,51), createIdentifiersList(9,60),crdt,'E');
+        assertEquals("$<SanEdwich>", docService.preorderTraversal(crdt));
+    }
+
+    //Utils
+    private CRDT createSampleDocTreeSandwich() {
         CRDT crdt = new CRDT();
         crdt.getRoot().getChildren().set(9,TreeNode.createNewTreeNode(Char.createNewChar('S',createIdentifiersList(9)),null));
         crdt.getRoot().getChildren().get(9).initializeChildrenList(1);
@@ -183,11 +234,9 @@ public class DocServiceTest {
         crdt.getRoot().getChildren().get(23).getChildren().set(22, TreeNode.createNewTreeNode(Char.createNewChar('c',createIdentifiersList(23,22)),null));
         crdt.getRoot().getChildren().get(23).getChildren().set(55, TreeNode.createNewTreeNode(Char.createNewChar('h',createIdentifiersList(23,55)),null));
 
-        assertEquals("$<Sandwich>", docService.preorderTraversal(crdt));
+        return crdt;
     }
 
-
-    //Utils
     private List<Identifier> createIdentifiersList(int... numbers) {
         List<Identifier> res = new ArrayList<>(numbers.length);
         for (int n : numbers) {

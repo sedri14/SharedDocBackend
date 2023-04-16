@@ -46,7 +46,6 @@ public class DocService {
 
     }
 
-
     /**
      * @param docId              document id
      * @param manipulatedTextDTO the updated text object
@@ -334,10 +333,9 @@ public class DocService {
 //    }
 
     //this function adds a new character to the document tree
-    public void addText(List<Identifier> p, List<Identifier> q, Document doc, char ch) {
-        CRDT crdt = doc.getCrdt();
-        List<Identifier> newPos = alloc(p, q, doc.getCrdt().getStrategy(), (int) CRDT.BASE);
-        addCharToDocTree(crdt.getRoot(), newPos, ch);
+    public void addCharBetween(List<Identifier> p, List<Identifier> q, CRDT crdt, char ch) {
+        List<Identifier> newPos = alloc(p, q, crdt.getStrategy());
+        addCharToDocTree(crdt, newPos, ch);
     }
 
     //this function traverse the doc tree (starts at root) in the newPos path and inserts a new
@@ -345,9 +343,9 @@ public class DocService {
     //the function allocates a new depth to the thee if needed.
     //TODO: check that nodes are allocated and if needed allocate new arrays in the relevant size.
 
-    private void addCharToDocTree(TreeNode root, List<Identifier> newPos, char ch) {
-        int depth = 0;   //in case a new depth is allocated.
-        TreeNode curNode = root;
+    private void addCharToDocTree(CRDT crdt, List<Identifier> newPos, char ch) {
+        int depth = 0;   //need this in case a new depth is allocated.
+        TreeNode curNode = crdt.getRoot();
         for (int i = 0; i < newPos.size(); i++) {
             int curDigit = newPos.get(i).getDigit();
             //allocate a new depth (new array of size: 2^(base + depth)
@@ -390,21 +388,21 @@ public class DocService {
     }
 
     //given two characters p and q with consecutive positions in a document, this function allocates a new position between them.
-    public List<Identifier> alloc(List<Identifier> p, List<Identifier> q, Map<Integer, Boolean> strategy, int base) {
+    public List<Identifier> alloc(List<Identifier> p, List<Identifier> q, Map<Integer, Boolean> strategy) {
         int depth = 0;
         int interval = 0;
         ThreadLocalRandom random = ThreadLocalRandom.current();
 
         /**
-         (1). Find available places in the crdt tree to insert a new character.
-         calculating interval - the number of available places to insert a new character.
-         calculate depth - the depth into which the new character is going to be.
+         (1). Find the number of available spots in the crdt tree to insert a new character.
+         calculating interval - the number of available spots to insert a new character.
+         calculate depth - the depth into which the new character is going to be inserted.
          **/
         while (interval < 1) {
             depth++;
-            interval = calculateInterval(p, q, depth, base);
+            interval = calculateInterval(p, q, depth, CRDT.BASE);
         }
-        //in case that the interval is smaller than the set boundary, limit the available places.
+        //in case that the interval is smaller than the set boundary, limit the available spots.
         int step = Math.min(CRDT.BOUNDARY, interval);
 
         if (!strategy.containsKey(depth)) {
@@ -418,7 +416,7 @@ public class DocService {
             id = addVal(prefix(p, depth), addVal);
         } else {                        //boundary-
             int subVal = random.nextInt(0, step) + 1;
-            id = subVal(prefix(p, depth), prefix(q, depth), subVal, depth, base);
+            id = subVal(prefix(p, depth), prefix(q, depth), subVal, depth, CRDT.BASE);
         }
 
         return id;
@@ -448,7 +446,6 @@ public class DocService {
     //will be performed as described above.
     public int calculateInterval(List<Identifier> p, List<Identifier> q, int depth, int base) {
 
-        //TODO: remember: it's ok that the result will be < 1.
         //prefix function returns p_prefix and q_prefix in the same length (depth).
         List<Identifier> pPrefix = prefix(p, depth);
         List<Identifier> qPrefix = prefix(q, depth);
