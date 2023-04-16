@@ -338,13 +338,13 @@ public class DocService {
         addCharToDocTree(crdt, newPos, ch);
     }
 
-    //this function traverse the doc tree (starts at root) in the newPos path and inserts a new
+    //This function traverses the doc tree (starts at root) in the newPos values path and inserts a new
     //tree node with the new given char.
-    //the function allocates a new depth to the thee if needed.
+    //the function allocates a new depth to the tree if needed.
     //TODO: check that nodes are allocated and if needed allocate new arrays in the relevant size.
 
     private void addCharToDocTree(CRDT crdt, List<Identifier> newPos, char ch) {
-        int depth = 0;   //need this in case a new depth is allocated.
+        int depth = 0;   //in case a new depth is allocated.
         TreeNode curNode = crdt.getRoot();
         for (int i = 0; i < newPos.size(); i++) {
             int curDigit = newPos.get(i).getDigit();
@@ -369,7 +369,7 @@ public class DocService {
         StringBuilder sb = new StringBuilder();
         rec(crdt.getRoot(), sb);
 
-        return String.valueOf(sb);
+        return sb.substring(2, sb.length() - 1);    //remove root, begin and end characters
     }
 
     public void rec(TreeNode root, StringBuilder sb) {

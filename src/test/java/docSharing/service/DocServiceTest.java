@@ -209,16 +209,49 @@ public class DocServiceTest {
     void preorderTraversal_givenDocTree_printSandwich() {
         CRDT crdtSandwitch = createSampleDocTreeSandwich();
 
-        assertEquals("$<Sandwich>", docService.preorderTraversal(crdtSandwitch));
+        assertEquals("Sandwich", docService.preorderTraversal(crdtSandwitch));
     }
 
     @Test
-    @DisplayName("add a new character 'E' between indices 2 and 3 in: Sandwich")
+    @DisplayName("add a new character 'E' to beginning of Sandwich to get: ESandwich")
+    void addCharBetween_givenCrdtSandwich_addToBeginning_updateToESandwich() {
+        CRDT crdt = createSampleDocTreeSandwich();
+        docService.addCharBetween(createIdentifiersList(1), createIdentifiersList(9),crdt,'E');
+        assertEquals("ESandwich", docService.preorderTraversal(crdt));
+    }
+
+    @Test
+    @DisplayName("add a new character 'E' between indices 0 and 1 in: Sandwich to get: SEandwich")
+    void addCharBetween_givenCrdtSandwich_updateToSEandwich() {
+        CRDT crdt = createSampleDocTreeSandwich();
+        docService.addCharBetween(createIdentifiersList(9), createIdentifiersList(9,32),crdt,'E');
+        assertEquals("SEandwich", docService.preorderTraversal(crdt));
+    }
+
+    @Test
+    @DisplayName("add a new character 'E' between indices 2 and 3 in: Sandwich to get: SanEdwich")
     void addCharBetween_givenCrdtSandwich_updateToSanEdwich() {
         CRDT crdt = createSampleDocTreeSandwich();
         docService.addCharBetween(createIdentifiersList(9,51), createIdentifiersList(9,60),crdt,'E');
-        assertEquals("$<SanEdwich>", docService.preorderTraversal(crdt));
+        assertEquals("SanEdwich", docService.preorderTraversal(crdt));
     }
+
+    @Test
+    @DisplayName("add a new character 'E' between indices 6 and 7 in: Sandwich to get: SandwicEh")
+    void addCharBetween_givenCrdtSandwich_updateToSandwicEh() {
+        CRDT crdt = createSampleDocTreeSandwich();
+        docService.addCharBetween(createIdentifiersList(23,22), createIdentifiersList(23,55),crdt,'E');
+        assertEquals("SandwicEh", docService.preorderTraversal(crdt));
+    }
+
+    @Test
+    @DisplayName("add a new character 'E' to end of Sandwich to get: SandwichE")
+    void addCharBetween_givenCrdtSandwich_addToEnd_updateToSandwichE() {
+        CRDT crdt = createSampleDocTreeSandwich();
+        docService.addCharBetween(createIdentifiersList(23,55), createIdentifiersList(24),crdt,'E');
+        assertEquals("SandwichE", docService.preorderTraversal(crdt));
+    }
+
 
     //Utils
     private CRDT createSampleDocTreeSandwich() {
