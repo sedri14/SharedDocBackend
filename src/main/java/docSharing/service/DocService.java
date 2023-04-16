@@ -387,33 +387,55 @@ public class DocService {
         }
     }
 
-    //given two characters p and q with consecutive positions in a document, this function allocates a new position between them.
+    /**
+     *  Given two characters p and q with consecutive positions in a document, this function allocates a new position between them.
+     * @param p - position
+     * @param q - position
+     * @param strategy - a map that keeps the chosen strategies
+     * @return A new position (Identifiers list) between p and q
+     */
+
     public List<Identifier> alloc(List<Identifier> p, List<Identifier> q, Map<Integer, Boolean> strategy) {
-        int depth = 0;
-        int interval = 0;
-        ThreadLocalRandom random = ThreadLocalRandom.current();
+        int depth = 0 , interval = 0, iteration = 0;
+        int maxIterations = Math.max(p.size(), q.size());
+        boolean isNewDepth = false;
 
         /**
          (1). Find the number of available spots in the crdt tree to insert a new character.
-         calculating interval - the number of available spots to insert a new character.
-         calculate depth - the depth into which the new character is going to be inserted.
+         calculate interval - the number of available spots between p and q (to insert a new character).
+         depth - the depth into which the new character is going to be inserted.
          **/
-        while (interval < 1) {
-            depth++;
+        while (interval < 1 && iteration <= maxIterations) {
+            depth++; iteration++;
             interval = calculateInterval(p, q, depth, CRDT.BASE);
         }
-        //in case that the interval is smaller than the set boundary, limit the available spots.
+
+        //edge case: allocate identifier in a new depth (in case that interval stays 0)
+        if (interval == 0) {
+            interval = (int)Math.pow(2, CRDT.BASE + depth - 1) - 1;
+            isNewDepth = true;
+        }
+        //limits the interval
         int step = Math.min(CRDT.BOUNDARY, interval);
 
+        /**
+         (2). Allocation strategy: boundary+ or boundary-.
+         **/
+        ThreadLocalRandom random = ThreadLocalRandom.current();
         if (!strategy.containsKey(depth)) {
             boolean rand = random.nextBoolean();
             strategy.put(depth, rand);
         }
 
+        /**
+         (3). New identifier construction.
+         Get a random value using the step variable calculated earlier, and depends on the chosen strategy,
+         adds/subtracts this value from p/q (respectively) at the specific depth.
+        **/
         List<Identifier> id;
         if (strategy.get(depth)) {      //boundary+
             int addVal = random.nextInt(0, step) + 1;
-            id = addVal(prefix(p, depth), addVal);
+            id = addVal(prefix(p, depth), addVal, isNewDepth);
         } else {                        //boundary-
             int subVal = random.nextInt(0, step) + 1;
             id = subVal(prefix(p, depth), prefix(q, depth), subVal, depth, CRDT.BASE);
@@ -483,7 +505,10 @@ public class DocService {
     }
 
     //this function performs: prefix(p, depth) + addVal;
-    List<Identifier> addVal(List<Identifier> pPrefix, int val) {
+    List<Identifier> addVal(List<Identifier> pPrefix, int val, boolean isNewDepth) {
+        if (isNewDepth) {
+            pPrefix.add(new Identifier(0));
+        }
         List<Identifier> id = new ArrayList<>(pPrefix);
         id.set(id.size() - 1, new Identifier(id.get(id.size() - 1).getDigit() + val));
 

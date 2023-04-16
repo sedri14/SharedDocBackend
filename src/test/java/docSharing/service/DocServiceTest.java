@@ -46,7 +46,7 @@ public class DocServiceTest {
         List<Identifier> expected = createIdentifiersList(9, 62);
         int valToAdd = 2;
 
-        assertIterableEquals(expected, docService.addVal(p, valToAdd));
+        assertIterableEquals(expected, docService.addVal(p, valToAdd, false));
     }
 
     @Test
@@ -180,7 +180,7 @@ public class DocServiceTest {
 
     @Test
     @DisplayName("test alloc function: with p=[9], q=[10] ")
-    void alloc_givenTwoPositions_generateNewPositionInBetween_NewDepthIdentifier() {
+    void alloc_givenTwoPositions_generateNewPositionInBetween_IdentifierAtNewDepth2() {
         List<Identifier> p = createIdentifiersList(9);
         List<Identifier> q = createIdentifiersList(10);
         List<Identifier> newPos = docService.alloc(p, q, strategy);
@@ -193,7 +193,7 @@ public class DocServiceTest {
 
     @Test
     @DisplayName("test alloc function: with p=[9,63], q=[10] ")
-    void alloc_givenTwoPositions_generateNewPositionInBetween_NewDepthIdentifierDepth2() {
+    void alloc_givenTwoPositions_generateNewPositionInBetween_IdentifierAtNewDepth3() {
         List<Identifier> p = createIdentifiersList(9,63);
         List<Identifier> q = createIdentifiersList(10);
         List<Identifier> newPos = docService.alloc(p, q, strategy);
