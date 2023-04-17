@@ -1,13 +1,20 @@
 package docSharing.CRDT;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import javax.persistence.*;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 //This class represents the crdt doc tree data structure.
+@Entity
 public class CRDT {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Long id;
     public static final int BASE = 5;       //tree root has 2^5 children
     public static final int DOC_BEGIN = 0;
 
@@ -15,12 +22,16 @@ public class CRDT {
 
     public static final int BOUNDARY = 10;
 
+    @JsonIgnore
+    @ElementCollection
+    @CollectionTable(name = "strategy_by_depth")
     private Map<Integer, Boolean> strategy;
 
+    @OneToOne
     private TreeNode root;
 
     public CRDT() {
-        root = TreeNode.createNewTreeNode(Char.createNewChar('$',null), Arrays.asList(new TreeNode[(int)Math.pow(2,BASE)]));
+        root = TreeNode.createNewTreeNode(PositionedChar.createNewChar('$',null), Arrays.asList(new TreeNode[(int)Math.pow(2,BASE)]));
         initDocumentBoundaries(root);
         strategy = new HashMap<>();
     }
@@ -32,12 +43,12 @@ public class CRDT {
     private void initDocumentBoundaries(TreeNode root) {
         //init start
         List<Identifier> startPos = Arrays.asList(new Identifier(CRDT.DOC_BEGIN));
-        Char startChar = Char.createNewChar('<', startPos);
+        PositionedChar startChar = PositionedChar.createNewChar('<', startPos);
         root.children.set(DOC_BEGIN, TreeNode.createNewTreeNode(startChar, null));
 
         //init end
         List<Identifier> endPos = Arrays.asList(new Identifier(CRDT.DOC_END));
-        Char endChar = Char.createNewChar('>', endPos);
+        PositionedChar endChar = PositionedChar.createNewChar('>', endPos);
         root.children.set(DOC_END, TreeNode.createNewTreeNode(endChar, null));
     }
 

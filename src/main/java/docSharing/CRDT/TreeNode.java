@@ -1,19 +1,27 @@
 package docSharing.CRDT;
-
-import org.antlr.runtime.tree.Tree;
-
+import javax.persistence.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+@Entity
 public class TreeNode {
 
-    Char c;
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Long id;
 
+    @OneToOne
+    PositionedChar c;
+
+    @OneToMany
     List<TreeNode> children;
 
-    private TreeNode(Char c, List<TreeNode> children) {
+    TreeNode() {
+
+    }
+
+    private TreeNode(PositionedChar c, List<TreeNode> children) {
         this.c = c;
         this.children = children;
     }
@@ -22,7 +30,7 @@ public class TreeNode {
         return new TreeNode(null, null);
     }
 
-    public static TreeNode createNewTreeNode(Char c, List<TreeNode> children) {
+    public static TreeNode createNewTreeNode(PositionedChar c, List<TreeNode> children) {
         return new TreeNode(c, children);
     }
 
@@ -32,11 +40,11 @@ public class TreeNode {
         return children;
     }
 
-    public void setChar(Char c) {
+    public void setChar(PositionedChar c) {
         this.c = c;
     }
 
-    public Char getChar() {
+    public PositionedChar getChar() {
         return c;
     }
 

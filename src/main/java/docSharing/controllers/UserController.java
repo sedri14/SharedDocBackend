@@ -41,24 +41,6 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).body(userService.updateUserName(user.getEmail(), user.getName()));
     }
 
-//    private void validateToken(Long userId, String token) throws IOException {
-//        if (!authService.isValidToken(userId, token)) {
-//            throw new AccessDeniedException(String.format("User with email address: %s is not logged in!", userId));
-//        }
-//    }
-
-
-//    @RequestMapping(value = "/email", method = RequestMethod.PATCH)
-//    public ResponseEntity<User> updateUserEmail(@RequestBody UserDTO user, @RequestHeader String token)  {
-//        if (!Validation.isValidEmail(user.getEmail())) {return ResponseEntity.badRequest().build();}
-//        try {
-//            validateToken(user.getEmail(), token);
-//        } catch (IOException e) {
-//            ResponseEntity.badRequest();
-//        }
-//        return ResponseEntity.status(HttpStatus.OK).body(userService.updateUserEmail(user.id, user.getEmail()));
-//    }
-
     @RequestMapping(value = "/password", method = RequestMethod.PATCH)
     public ResponseEntity<User> updateUserPassword(@RequestBody User user, @RequestParam String password, @RequestHeader String token) {
         if (!Validation.isValidPassword(password)) {

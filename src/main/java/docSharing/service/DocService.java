@@ -1,6 +1,6 @@
 package docSharing.service;
 
-import docSharing.CRDT.Char;
+import docSharing.CRDT.PositionedChar;
 import docSharing.CRDT.Identifier;
 import docSharing.CRDT.CRDT;
 import docSharing.CRDT.TreeNode;
@@ -192,7 +192,7 @@ public class DocService {
         }
 
         //set the node's character
-        curNode.setChar(Char.createNewChar(ch, newPos));
+        curNode.setChar(PositionedChar.createNewChar(ch, newPos));
     }
 
     //convert the crdt doc tree to a simple string, using pre-order traversal algorithm.

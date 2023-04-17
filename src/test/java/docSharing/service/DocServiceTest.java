@@ -1,12 +1,9 @@
 package docSharing.service;
 
 import docSharing.CRDT.CRDT;
-import docSharing.CRDT.Char;
+import docSharing.CRDT.PositionedChar;
 import docSharing.CRDT.Identifier;
 import docSharing.CRDT.TreeNode;
-import docSharing.entities.Document;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -14,7 +11,6 @@ import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.junit.jupiter.api.DisplayName;
 
-import javax.persistence.Id;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -256,16 +252,16 @@ public class DocServiceTest {
     //Utils
     private CRDT createSampleDocTreeSandwich() {
         CRDT crdt = new CRDT();
-        crdt.getRoot().getChildren().set(9,TreeNode.createNewTreeNode(Char.createNewChar('S',createIdentifiersList(9)),null));
+        crdt.getRoot().getChildren().set(9,TreeNode.createNewTreeNode(PositionedChar.createNewChar('S',createIdentifiersList(9)),null));
         crdt.getRoot().getChildren().get(9).initializeChildrenList(1);
-        crdt.getRoot().getChildren().get(9).getChildren().set(32, TreeNode.createNewTreeNode(Char.createNewChar('a',createIdentifiersList(9,32)),null));
-        crdt.getRoot().getChildren().get(9).getChildren().set(51, TreeNode.createNewTreeNode(Char.createNewChar('n',createIdentifiersList(9,51)),null));
-        crdt.getRoot().getChildren().get(9).getChildren().set(60, TreeNode.createNewTreeNode(Char.createNewChar('d',createIdentifiersList(9,60)),null));
-        crdt.getRoot().getChildren().set(10,TreeNode.createNewTreeNode(Char.createNewChar('w',createIdentifiersList(10)),null));
-        crdt.getRoot().getChildren().set(23,TreeNode.createNewTreeNode(Char.createNewChar('i',createIdentifiersList(23)),null));
+        crdt.getRoot().getChildren().get(9).getChildren().set(32, TreeNode.createNewTreeNode(PositionedChar.createNewChar('a',createIdentifiersList(9,32)),null));
+        crdt.getRoot().getChildren().get(9).getChildren().set(51, TreeNode.createNewTreeNode(PositionedChar.createNewChar('n',createIdentifiersList(9,51)),null));
+        crdt.getRoot().getChildren().get(9).getChildren().set(60, TreeNode.createNewTreeNode(PositionedChar.createNewChar('d',createIdentifiersList(9,60)),null));
+        crdt.getRoot().getChildren().set(10,TreeNode.createNewTreeNode(PositionedChar.createNewChar('w',createIdentifiersList(10)),null));
+        crdt.getRoot().getChildren().set(23,TreeNode.createNewTreeNode(PositionedChar.createNewChar('i',createIdentifiersList(23)),null));
         crdt.getRoot().getChildren().get(23).initializeChildrenList(1);
-        crdt.getRoot().getChildren().get(23).getChildren().set(22, TreeNode.createNewTreeNode(Char.createNewChar('c',createIdentifiersList(23,22)),null));
-        crdt.getRoot().getChildren().get(23).getChildren().set(55, TreeNode.createNewTreeNode(Char.createNewChar('h',createIdentifiersList(23,55)),null));
+        crdt.getRoot().getChildren().get(23).getChildren().set(22, TreeNode.createNewTreeNode(PositionedChar.createNewChar('c',createIdentifiersList(23,22)),null));
+        crdt.getRoot().getChildren().get(23).getChildren().set(55, TreeNode.createNewTreeNode(PositionedChar.createNewChar('h',createIdentifiersList(23,55)),null));
 
         return crdt;
     }

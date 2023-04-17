@@ -6,7 +6,6 @@ import docSharing.DTO.User.UserDTO;
 
 import javax.persistence.*;
 import java.io.Serializable;
-import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -33,9 +32,6 @@ public class User implements Serializable {
     @OneToMany(cascade = CascadeType.ALL)
     private Set<INode> sharedWithMe;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    private Set<Log> log = new HashSet<>();
-
     User() {
 
     }
@@ -49,11 +45,6 @@ public class User implements Serializable {
     public static User createNewUserFromUserDTO(UserDTO userDTO) {
         return new User(userDTO.name, userDTO.email, userDTO.password);
     }
-
-
-//    public void setId(Long id) {
-//        this.id = id;
-//    }
 
     public Long getId() {
         return id;

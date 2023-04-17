@@ -1,4 +1,4 @@
-package docSharing.DTO.Doc;
+package docSharing.DTO;
 
 import docSharing.enums.UserRole;
 

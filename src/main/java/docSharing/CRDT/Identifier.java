@@ -1,7 +1,21 @@
 package docSharing.CRDT;
 
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+
+@Entity
 public class Identifier {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Long id;
     private int digit;
+
+    Identifier() {
+
+    }
 
     public Identifier(int digit) {
         this.digit = digit;

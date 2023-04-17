@@ -1,6 +1,6 @@
 package docSharing.controllers;
 
-import docSharing.DTO.Doc.ChangeRoleDTO;
+import docSharing.DTO.ChangeRoleDTO;
 import docSharing.DTO.FS.INodeDTO;
 import docSharing.DTO.FS.MoveINodeDTO;
 import docSharing.entities.INode;

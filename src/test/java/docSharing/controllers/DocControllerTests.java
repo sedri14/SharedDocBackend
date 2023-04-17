@@ -12,7 +12,7 @@
 //import docSharing.response.PermissionResponse;
 //import docSharing.response.Response;
 //import docSharing.service.DocService;
-//import docSharing.DTO.Doc.ChangeRoleDTO;
+//import docSharing.DTO.ChangeRoleDTO;
 //import docSharing.DTO.Doc.ManipulatedTextDTO;
 //import docSharing.DTO.Doc.CurrentViewingUserDTO;
 //import docSharing.DTO.Doc.UpdateTypeDTO;

@@ -19,10 +19,8 @@ public class Document extends INode {
     @Column(name = "content")
     private String content;
 
-    @OneToMany(mappedBy = "document", cascade = CascadeType.ALL)
-    private Set<Log> log = new HashSet<>();
-
     //A tree data structure that stores the document content
+    @OneToOne
     private CRDT crdt;
 
     Document() {
