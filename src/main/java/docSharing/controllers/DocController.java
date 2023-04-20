@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -36,13 +37,14 @@ public class DocController {
 
     @MessageMapping("/update/{docId}")
     @SendTo("/topic/updates/{docId}")
-    public void sendUpdatedText(@DestinationVariable Long docId) {
+    public String sendUpdatedText(@DestinationVariable Long docId, String message) {
         logger.info("start sendUpdatedText function");
         if (isNull(docId)) {
             throw new MissingControllerParameterException("document is not available");
         }
-
+        logger.info("doc servive call...");
         //docService.addCharBetween(p,q,crdt,ch); //TODO: video about socket parameters.
+        return message;
     }
 
 

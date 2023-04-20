@@ -13,7 +13,7 @@ public class PositionedChar {
     @OneToMany
     List<Identifier> position;
 
-
+    //Site id here
     private PositionedChar(Character value, List<Identifier> position) {
         this.position = position;
         this.value = value.toString();
