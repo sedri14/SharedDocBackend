@@ -1,6 +1,6 @@
 package docSharing.response;
 
-import docSharing.entities.UserRole;
+import docSharing.enums.UserRole;
 
 public class PermissionResponse {
 

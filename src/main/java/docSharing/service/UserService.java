@@ -1,6 +1,6 @@
 package docSharing.service;
 
-import docSharing.controller.AuthController;
+import docSharing.controllers.AuthController;
 import docSharing.entities.User;
 import docSharing.repository.UserRepository;
 import org.apache.logging.log4j.LogManager;
@@ -8,7 +8,6 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.EntityNotFoundException;
 import java.util.List;
 import java.util.Optional;
 
@@ -83,13 +82,6 @@ public class UserService {
         }
 
         return userRepository.findById(id).get();
-    }
-
-    public Optional<User> updateEnabled(Long id, Boolean enabled) {
-        int lines = userRepository.updateUserEnabledById(id, enabled);
-        logger.debug("lines updated: " + lines);
-
-        return getUpdatedUser(id, lines);
     }
 
     private Optional<User> getUpdatedUser(Long id, int lines) {

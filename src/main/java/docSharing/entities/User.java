@@ -6,7 +6,6 @@ import docSharing.DTO.User.UserDTO;
 
 import javax.persistence.*;
 import java.io.Serializable;
-import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -23,18 +22,15 @@ public class User implements Serializable {
     @Column(name = "password", nullable = false)
     private String password;
 
-    @Column(name = "enabled")
-    private boolean enabled;
+    @OneToOne(cascade = CascadeType.ALL)
+    private INode rootDirectory;
 
     @JsonIgnore
     @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL)
     private Set<Document> myDocs;   //my owned docs
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    private Set<Permission> permissions = new HashSet<>(); //docs I have permission (viewer/editor).
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    private Set<Log> log = new HashSet<>();
+    @OneToMany(cascade = CascadeType.ALL)
+    private Set<INode> sharedWithMe;
 
     User() {
 
@@ -44,21 +40,11 @@ public class User implements Serializable {
         this.name = name;
         this.email = email;
         this.password = password;
-        this.enabled = false;
     }
 
-    public static User createUserFactory(String name, String email, String password) {
-        return new User(name, email, password);
+    public static User createNewUserFromUserDTO(UserDTO userDTO) {
+        return new User(userDTO.name, userDTO.email, userDTO.password);
     }
-
-    public static User createUserFactory(UserDTO other) {
-        return new User(other.getName(), other.getEmail(), other.getPassword());
-    }
-
-
-//    public void setId(Long id) {
-//        this.id = id;
-//    }
 
     public Long getId() {
         return id;
@@ -88,20 +74,15 @@ public class User implements Serializable {
         this.password = password;
     }
 
-    public boolean isEnabled() {
-        return enabled;
+    public INode getRootDirectory() {
+        return rootDirectory;
     }
 
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
+    public void setRootDirectory(INode rootDirectory) {
+        this.rootDirectory = rootDirectory;
     }
 
-    //    public void setMyDocs(List<Path> myDocs) {
-//        this.myDocs = myDocs;
-//    }
-
-
-    //change the hashcode and the equal to newer one.
+    //Todo:change the hashcode and the equal to newer one.
 
     @Override
     public String toString() {
