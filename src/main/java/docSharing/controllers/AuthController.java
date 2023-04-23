@@ -36,16 +36,7 @@ public class AuthController {
 
     @RequestMapping(value = "register", method = RequestMethod.POST)
     public ResponseEntity<User> register(@RequestBody UserDTO userDTO) {
-        if (!Validation.isValidEmail(userDTO.getEmail()) || userDTO.getEmail() == null) {
-            throw new InvalidFormatException("email");
-        }
-        if (!Validation.isValidName(userDTO.getName()) || userDTO.getEmail() == null) {
-            throw new InvalidFormatException("name");
-
-        }
-        if (!Validation.isValidPassword(userDTO.getPassword()) || userDTO.getPassword() == null) {
-            throw new InvalidFormatException("password");
-        }
+        //parameters validation
 
         return ResponseEntity.ok(authService.register(userDTO));
     }

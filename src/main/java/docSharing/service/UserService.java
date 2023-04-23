@@ -1,6 +1,7 @@
 package docSharing.service;
 
 import docSharing.controllers.AuthController;
+import docSharing.entities.INode;
 import docSharing.entities.User;
 import docSharing.repository.UserRepository;
 import org.apache.logging.log4j.LogManager;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 
 @Service
@@ -19,7 +21,7 @@ public class UserService {
     private UserRepository userRepository;
 
     // logger
-    private static Logger logger = LogManager.getLogger(AuthController.class.getName());
+    private static Logger logger = LogManager.getLogger(UserService.class.getName());
 
     public UserService() {
     }
@@ -96,5 +98,13 @@ public class UserService {
 
     public List<User> findAll() {
         return userRepository.findAll();
+    }
+
+    public void addINodeToSharedWithMe(User user, INode inode) {
+        logger.info("sharing inode {} with user {}", inode.getId(), user.getEmail());
+        if (!user.getSharedWithMe().contains(inode)) {
+            user.getSharedWithMe().add(inode);
+            userRepository.save(user);
+        }
     }
 }

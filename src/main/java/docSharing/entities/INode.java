@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIncludeProperties;
 import docSharing.enums.INodeType;
 import docSharing.enums.UserRole;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -33,7 +35,7 @@ public class INode implements Serializable {
     @JoinColumn(name="owner_id", referencedColumnName = "id")
     private User owner;
     @JsonIgnore
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @ElementCollection
     @CollectionTable(name = "inodes_to_children")
     @MapKeyJoinColumn(name = "inode_name")
@@ -160,11 +162,7 @@ public class INode implements Serializable {
 
         if (!Objects.equals(id, iNode.id)) return false;
         if (!Objects.equals(name, iNode.name)) return false;
-        if (type != iNode.type) return false;
-        if (!Objects.equals(creationDate, iNode.creationDate)) return false;
-        if (!Objects.equals(owner, iNode.owner)) return false;
-        if (!Objects.equals(children, iNode.children)) return false;
-        return Objects.equals(parent, iNode.parent);
+        return type == iNode.type;
     }
 
     @Override
@@ -172,10 +170,6 @@ public class INode implements Serializable {
         int result = id != null ? id.hashCode() : 0;
         result = 31 * result + (name != null ? name.hashCode() : 0);
         result = 31 * result + (type != null ? type.hashCode() : 0);
-        result = 31 * result + (creationDate != null ? creationDate.hashCode() : 0);
-        result = 31 * result + (owner != null ? owner.hashCode() : 0);
-        result = 31 * result + (children != null ? children.hashCode() : 0);
-        result = 31 * result + (parent != null ? parent.hashCode() : 0);
         return result;
     }
 }

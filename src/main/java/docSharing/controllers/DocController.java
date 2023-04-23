@@ -1,5 +1,6 @@
 package docSharing.controllers;
 
+import docSharing.DTO.User.UserDTO;
 import docSharing.Utils.Validation;
 import docSharing.entities.Document;
 import docSharing.exceptions.MissingControllerParameterException;
@@ -70,26 +71,15 @@ public class DocController {
         return ResponseEntity.status(HttpStatus.OK).body(Response.success(document));
     }
 
+    @MessageMapping("/join/{docId}")
+    @SendTo("/topic/usersJoin/{docId}")
+    public String sendNewUserJoinMessage(@DestinationVariable Long docId, UserDTO userDto) {
 
-//    /**
-//     * @param docId document Id
-//     * @param user  Current Viewing User userName
-//     * @return the list of all the current viewing user to the document
-//     */
-//    @MessageMapping("/join/{docId}")
-//    @SendTo("/topic/usersJoin/{docId}")
-//    public List<String> sendNewUserJoinMessage(@DestinationVariable Long docId, CurrentViewingUserDTO user) {
-//
-//        logger.info("start sendNewUserJoinMessage function");
-//
-//
-//        logger.info("validate docId param");
-//        Validation.nullCheck(docId);
-//        logger.info("validate User param");
-//        Validation.nullCheck(user);
-//
-//        return docService.addUserToViewingUsers(docId, user.userName);
-//    }
+        logger.info("User {} connected to doc: {}", userDto.email, docId);
+        return userDto.email;
+        //it actually should return all the socket connected users.
+        //return docService.addUserToViewingUsers(docId, userDto.email);
+    }
 //
 //
 //    /**
