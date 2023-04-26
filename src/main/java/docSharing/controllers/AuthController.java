@@ -1,11 +1,9 @@
 package docSharing.controllers;
 
 import com.google.gson.Gson;
-import docSharing.DTO.User.Token;
+import docSharing.DTO.User.LogInUserResponse;
 import docSharing.DTO.User.UserDTO;
-import docSharing.Utils.Validation;
 import docSharing.entities.User;
-import docSharing.exceptions.InvalidFormatException;
 import docSharing.repository.UserRepository;
 import docSharing.service.AuthService;
 import docSharing.service.UserService;
@@ -48,7 +46,7 @@ public class AuthController {
 
 
     @RequestMapping(value = "login", method = RequestMethod.POST)//
-    public ResponseEntity<Token> login(@RequestBody UserDTO userDTO) {
+    public ResponseEntity<LogInUserResponse> login(@RequestBody UserDTO userDTO) {
         logger.info("in login");
 
         return ResponseEntity.ok(authService.login(userDTO));

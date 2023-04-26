@@ -27,7 +27,7 @@ public class DocService {
     private DocRepository docRepository;
 
     static Map<Long, String> docContentByDocId = new HashMap<>();
-    static Map<Long, List<String>> viewingUsersByDocId = new HashMap<>();
+    static Map<Long, List<String>> connectedUsersByDocId = new HashMap<>();
     private static final Logger logger = LogManager.getLogger(DocService.class.getName());
 
     public DocService() {
@@ -104,47 +104,33 @@ public class DocService {
     }
 
 
-    /**
-     * @param docId    document id
-     * @param userName userName of the user who start viewing the document
-     * @return all the current viewing users name
-     */
-    public List<String> addUserToViewingUsers(Long docId, String userName) {
-
-        logger.info("start addUser To ViewingUsers function");
-
-        if (viewingUsersByDocId.containsKey(docId)) {
-            viewingUsersByDocId.get(docId).add(userName);
+    public List<String> addUserToDocConnectedUsers(Long docId, String userEmail) {
+        logger.info("{} is ADDED to connected users of doc {}", userEmail, docId);
+        if (connectedUsersByDocId.containsKey(docId)) {
+            if (!connectedUsersByDocId.get(docId).contains(userEmail)) {
+                connectedUsersByDocId.get(docId).add(userEmail);
+            }
         } else {
             List<String> list = new ArrayList<>();
-            list.add(userName);
-            viewingUsersByDocId.put(docId, list);
+            list.add(userEmail);
+            connectedUsersByDocId.put(docId, list);
         }
+        logger.info("Someone joined - Online users: {}", connectedUsersByDocId.get(docId));
 
-        logger.info("all viewing users are " + viewingUsersByDocId.get(docId));
-
-        return viewingUsersByDocId.get(docId);
-
+        return connectedUsersByDocId.get(docId);
     }
 
-
-    /**
-     * @param docId    document id
-     * @param userName userName of the user who stopped viewing the document
-     * @return all the current viewing users name
-     */
-    public List<String> removeUserFromViewingUsers(Long docId, String userName) {
-
-        logger.info("start removeUserFromViewingUsers function");
-
-        if (viewingUsersByDocId.containsKey(docId)) {
-            viewingUsersByDocId.get(docId).remove(userName);
+    public List<String> removeUserFromDocConnectedUsers(Long docId, String userEmail) {
+        logger.info("{} is REMOVED from connected users of doc {}", userEmail, docId);
+        if (connectedUsersByDocId.containsKey(docId)) {
+            connectedUsersByDocId.get(docId).remove(userEmail);
+            if (connectedUsersByDocId.get(docId).isEmpty()) {
+                connectedUsersByDocId.remove(docId);
+            }
         }
+        logger.info("Someone left - Online users: {}", connectedUsersByDocId.get(docId));
 
-        logger.info("all current viewing users are");
-
-        return viewingUsersByDocId.get(docId);
-
+        return connectedUsersByDocId.get(docId);
     }
 
     /**
@@ -219,15 +205,16 @@ public class DocService {
     }
 
     /**
-     *  Given two characters p and q with consecutive positions in a document, this function allocates a new position between them.
-     * @param p - position
-     * @param q - position
+     * Given two characters p and q with consecutive positions in a document, this function allocates a new position between them.
+     *
+     * @param p        - position
+     * @param q        - position
      * @param strategy - a map that keeps the chosen strategies
      * @return A new position (Identifiers list) between p and q
      */
 
     public List<Identifier> alloc(List<Identifier> p, List<Identifier> q, Map<Integer, Boolean> strategy) {
-        int depth = 0 , interval = 0, iteration = 0;
+        int depth = 0, interval = 0, iteration = 0;
         int maxIterations = Math.max(p.size(), q.size());
         boolean isNewDepth = false;
 
@@ -237,13 +224,14 @@ public class DocService {
          depth - the depth into which the new character is going to be inserted.
          **/
         while (interval < 1 && iteration <= maxIterations) {
-            depth++; iteration++;
+            depth++;
+            iteration++;
             interval = calculateInterval(p, q, depth, CRDT.BASE);
         }
 
         //edge case: allocate identifier in a new depth (in case that interval stays 0)
         if (interval == 0) {
-            interval = (int)Math.pow(2, CRDT.BASE + depth - 1) - 1;
+            interval = (int) Math.pow(2, CRDT.BASE + depth - 1) - 1;
             isNewDepth = true;
         }
         //limits the interval
@@ -262,7 +250,7 @@ public class DocService {
          (3). New identifier construction.
          Get a random value using the step variable calculated earlier, and depends on the chosen strategy,
          adds/subtracts this value from p/q (respectively) at the specific depth.
-        **/
+         **/
         List<Identifier> id;
         if (strategy.get(depth)) {      //boundary+
             int addVal = random.nextInt(0, step) + 1;

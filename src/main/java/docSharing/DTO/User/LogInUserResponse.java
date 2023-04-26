@@ -1,11 +1,19 @@
 package docSharing.DTO.User;
 
-public class Token {
+public class LogInUserResponse {
 
     String token;
 
-    public Token(String token) {
+    String email;
+
+
+    public LogInUserResponse(String token, String email) {
         this.token = token;
+        this.email = email;
+    }
+
+    public String getEmail() {
+        return email;
     }
 
     public String getToken() {
