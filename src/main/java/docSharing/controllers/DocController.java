@@ -1,15 +1,14 @@
 package docSharing.controllers;
 
+import docSharing.CRDT.PositionedChar;
 import docSharing.DTO.User.UserDTO;
-import docSharing.Utils.Validation;
 import docSharing.entities.Document;
 import docSharing.exceptions.MissingControllerParameterException;
-import docSharing.response.Response;
+import docSharing.response.DocumentResponse;
 import docSharing.service.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -48,26 +47,13 @@ public class DocController {
     }
 
 
-    /**
-     * @param docId  document Id
-     * @param token  token of logged in user
-     * @return document response
-     */
     @RequestMapping(value = "/{docId}", method = RequestMethod.GET)
-    public ResponseEntity<Response<Document>> getDocument(@PathVariable Long docId, @RequestHeader String token) {
-        logger.info("start getDocument function");
-        logger.info("validate docId param");
+    public ResponseEntity<DocumentResponse> getDocument(@PathVariable Long docId) {
+        logger.info("get document {}", docId);
+        Document document = docService.fetchDocumentById(docId);
+        List<PositionedChar> documentAsRawText = docService.getDocumentWithRawText(document.getCrdt());
 
-        Validation.nullCheck(docId);
-
-        Document document;
-        try {
-            document = docService.getDocument(docId);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Response.failure(e.getMessage()));
-        }
-
-        return ResponseEntity.status(HttpStatus.OK).body(Response.success(document));
+        return ResponseEntity.ok(new DocumentResponse(document.getId(), document.getName(), document.getCreationDate(), document.getLastEdited(), documentAsRawText));
     }
 
     @MessageMapping("/join/{docId}")

@@ -5,6 +5,7 @@ import docSharing.CRDT.Identifier;
 import docSharing.CRDT.CRDT;
 import docSharing.CRDT.TreeNode;
 import docSharing.entities.Document;
+import docSharing.exceptions.INodeNotFoundException;
 import docSharing.repository.DocRepository;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -44,6 +45,10 @@ public class DocService {
 
     }
 
+    public Document fetchDocumentById(Long id) {
+        return docRepository.findById(id).orElseThrow(() -> new INodeNotFoundException("Document not found with id " + id));
+    }
+
     /**
      * @param map documents content by docId hashMap.
      */
@@ -69,38 +74,21 @@ public class DocService {
             //this should be changed.
         }
         Document doc = docRepository.findById(docId).get();
-        doc.setContent(documentContent);
+        //doc.setContent(documentContent);
 
         docRepository.save(doc);
         logger.info("document is saved");
 
     }
 
+    public List<PositionedChar> getDocumentWithRawText(CRDT crdt) {
+        //code below to save the document to db?
+//        if (!docContentByDocId.containsKey(docId)) {
+//            docContentByDocId.put(docId, content);
+//        }
 
-    /**
-     * @param documentId document id
-     * @return the document content from the repository
-     */
-    public Document getDocument(Long documentId) {
-
-        logger.info("start of getDocument function");
-        boolean docIsPresent = docRepository.findById(documentId).isPresent();
-
-        if (!docIsPresent) {
-            logger.error("there is no document with this id");
-            throw new IllegalArgumentException("there is no document with this id");
-        }
-
-        Document doc = docRepository.findById(documentId).get();
-        String content = doc.getContent();
-
-        if (!docContentByDocId.containsKey(documentId)) {
-            docContentByDocId.put(documentId, content);
-        }
-
-        logger.info("the content in the hashmap is" + docContentByDocId.get(documentId));
-
-        return doc;
+        //go over crdt tree and extract the values with their position array, add to the result list.
+        return preorderTraversal(crdt);
     }
 
 
@@ -149,6 +137,29 @@ public class DocService {
 
     }
 
+    //convert the crdt doc tree to a list of PositionedChar object, using pre-order traversal algorithm.
+    public List<PositionedChar> preorderTraversal(CRDT crdt) {
+        List<PositionedChar> positionedChars = new ArrayList<>();
+        rec(crdt.getRoot(), positionedChars);
+
+        return positionedChars.subList(2, positionedChars.size() - 1);    //remove root, begin and end characters
+    }
+
+    public void rec(TreeNode root, List<PositionedChar> positionedChars) {
+        if (null == root) {
+            return;
+        }
+
+        positionedChars.add(root.getChar());
+        if (null != root.getChildren()) {
+            for (int i = 0; i < root.getChildren().size(); i++) {
+                if (null != root.getChildren().get(i)) {
+                    rec(root.getChildren().get(i), positionedChars);
+                }
+            }
+        }
+    }
+
     //this function adds a new character to the document tree
     public void addCharBetween(List<Identifier> p, List<Identifier> q, CRDT crdt, char ch) {
         List<Identifier> newPos = alloc(p, q, crdt.getStrategy());
@@ -179,29 +190,6 @@ public class DocService {
 
         //set the node's character
         curNode.setChar(PositionedChar.createNewChar(ch, newPos));
-    }
-
-    //convert the crdt doc tree to a simple string, using pre-order traversal algorithm.
-    public String preorderTraversal(CRDT crdt) {
-        StringBuilder sb = new StringBuilder();
-        rec(crdt.getRoot(), sb);
-
-        return sb.substring(2, sb.length() - 1);    //remove root, begin and end characters
-    }
-
-    public void rec(TreeNode root, StringBuilder sb) {
-        if (null == root) {
-            return;
-        }
-
-        sb.append(root.getChar().getValue());
-        if (null != root.getChildren()) {
-            for (int i = 0; i < root.getChildren().size(); i++) {
-                if (null != root.getChildren().get(i)) {
-                    rec(root.getChildren().get(i), sb);
-                }
-            }
-        }
     }
 
     /**

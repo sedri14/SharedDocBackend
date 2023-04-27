@@ -204,8 +204,9 @@ public class DocServiceTest {
     @DisplayName("print a doc tree with the word $Sandwich$")
     void preorderTraversal_givenDocTree_printSandwich() {
         CRDT crdtSandwitch = createSampleDocTreeSandwich();
+        System.out.println(docService.getDocumentWithRawText(crdtSandwitch));
 
-        assertEquals("Sandwich", docService.preorderTraversal(crdtSandwitch));
+        assertEquals("Sandwich", preorderTraversal(crdtSandwitch));
     }
 
     @Test
@@ -213,7 +214,9 @@ public class DocServiceTest {
     void addCharBetween_givenCrdtSandwich_addToBeginning_updateToESandwich() {
         CRDT crdt = createSampleDocTreeSandwich();
         docService.addCharBetween(createIdentifiersList(1), createIdentifiersList(9),crdt,'E');
-        assertEquals("ESandwich", docService.preorderTraversal(crdt));
+        System.out.println(docService.getDocumentWithRawText(crdt));
+
+        assertEquals("ESandwich", preorderTraversal(crdt));
     }
 
     @Test
@@ -221,7 +224,9 @@ public class DocServiceTest {
     void addCharBetween_givenCrdtSandwich_updateToSEandwich() {
         CRDT crdt = createSampleDocTreeSandwich();
         docService.addCharBetween(createIdentifiersList(9), createIdentifiersList(9,32),crdt,'E');
-        assertEquals("SEandwich", docService.preorderTraversal(crdt));
+        System.out.println(docService.getDocumentWithRawText(crdt));
+
+        assertEquals("SEandwich", preorderTraversal(crdt));
     }
 
     @Test
@@ -229,7 +234,9 @@ public class DocServiceTest {
     void addCharBetween_givenCrdtSandwich_updateToSanEdwich() {
         CRDT crdt = createSampleDocTreeSandwich();
         docService.addCharBetween(createIdentifiersList(9,51), createIdentifiersList(9,60),crdt,'E');
-        assertEquals("SanEdwich", docService.preorderTraversal(crdt));
+        System.out.println(docService.getDocumentWithRawText(crdt));
+
+        assertEquals("SanEdwich", preorderTraversal(crdt));
     }
 
     @Test
@@ -237,7 +244,9 @@ public class DocServiceTest {
     void addCharBetween_givenCrdtSandwich_updateToSandwicEh() {
         CRDT crdt = createSampleDocTreeSandwich();
         docService.addCharBetween(createIdentifiersList(23,22), createIdentifiersList(23,55),crdt,'E');
-        assertEquals("SandwicEh", docService.preorderTraversal(crdt));
+        System.out.println(docService.getDocumentWithRawText(crdt));
+
+        assertEquals("SandwicEh", preorderTraversal(crdt));
     }
 
     @Test
@@ -245,7 +254,9 @@ public class DocServiceTest {
     void addCharBetween_givenCrdtSandwich_addToEnd_updateToSandwichE() {
         CRDT crdt = createSampleDocTreeSandwich();
         docService.addCharBetween(createIdentifiersList(23,55), createIdentifiersList(24),crdt,'E');
-        assertEquals("SandwichE", docService.preorderTraversal(crdt));
+        System.out.println(docService.getDocumentWithRawText(crdt));
+
+        assertEquals("SandwichE", preorderTraversal(crdt));
     }
 
 
@@ -296,6 +307,29 @@ public class DocServiceTest {
     //print identifiers in format: p < w < q
     private void printPositionsInOrder(List<Identifier> p, List<Identifier> w, List<Identifier> q) {
         System.out.println(p + " < " + w + " < " + q);
+    }
+
+    //convert the crdt doc tree to a simple string, using pre-order traversal algorithm.
+    public String preorderTraversal(CRDT crdt) {
+        StringBuilder sb = new StringBuilder();
+        rec(crdt.getRoot(), sb);
+
+        return sb.substring(2, sb.length() - 1);    //remove root, begin and end characters
+    }
+
+    public void rec(TreeNode root, StringBuilder sb) {
+        if (null == root) {
+            return;
+        }
+
+        sb.append(root.getChar().getValue());
+        if (null != root.getChildren()) {
+            for (int i = 0; i < root.getChildren().size(); i++) {
+                if (null != root.getChildren().get(i)) {
+                    rec(root.getChildren().get(i), sb);
+                }
+            }
+        }
     }
 
 }

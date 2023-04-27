@@ -33,6 +33,6 @@ public class PositionedChar {
 
     @Override
     public String toString() {
-        return "val:" + value + " " + position;
+        return "val:" + value + " pos: " + position + "\n";
     }
 }
