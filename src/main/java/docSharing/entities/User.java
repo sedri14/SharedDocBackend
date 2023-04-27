@@ -6,6 +6,7 @@ import docSharing.DTO.User.UserDTO;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -29,7 +30,7 @@ public class User implements Serializable {
     @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL)
     private Set<Document> myDocs;   //my owned docs
 
-    @OneToMany(cascade = CascadeType.ALL)
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<INode> sharedWithMe;
 
     User() {
@@ -91,5 +92,9 @@ public class User implements Serializable {
 
     public Set<Document> getMyDocs() {
         return myDocs;
+    }
+
+    public Set<INode> getSharedWithMe() {
+        return sharedWithMe;
     }
 }

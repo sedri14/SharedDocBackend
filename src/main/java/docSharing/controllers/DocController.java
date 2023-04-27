@@ -1,5 +1,6 @@
 package docSharing.controllers;
 
+import docSharing.DTO.User.UserDTO;
 import docSharing.Utils.Validation;
 import docSharing.entities.Document;
 import docSharing.exceptions.MissingControllerParameterException;
@@ -12,7 +13,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -70,47 +70,20 @@ public class DocController {
         return ResponseEntity.status(HttpStatus.OK).body(Response.success(document));
     }
 
+    @MessageMapping("/join/{docId}")
+    @SendTo("/topic/usersJoin/{docId}")
+    public List<String> addUserToConnectedUsers(@DestinationVariable Long docId, UserDTO userDto) {
+        logger.info("User {} is now connected to doc: {}", userDto.email, docId);
 
-//    /**
-//     * @param docId document Id
-//     * @param user  Current Viewing User userName
-//     * @return the list of all the current viewing user to the document
-//     */
-//    @MessageMapping("/join/{docId}")
-//    @SendTo("/topic/usersJoin/{docId}")
-//    public List<String> sendNewUserJoinMessage(@DestinationVariable Long docId, CurrentViewingUserDTO user) {
-//
-//        logger.info("start sendNewUserJoinMessage function");
-//
-//
-//        logger.info("validate docId param");
-//        Validation.nullCheck(docId);
-//        logger.info("validate User param");
-//        Validation.nullCheck(user);
-//
-//        return docService.addUserToViewingUsers(docId, user.userName);
-//    }
-//
-//
-//    /**
-//     * @param docId document Id
-//     * @param user  Current Viewing User userName
-//     * @return the list of all the current viewing user to the document
-//     */
-//    @MessageMapping("/userDisconnect/{docId}")
-//    @SendTo("/topic/userDisconnect/{docId}")
-//    public List<String> removeUserFromViewingUsers(@DestinationVariable Long docId, CurrentViewingUserDTO user) {
-//
-//        logger.info("start sendNewUserJoinMessage function");
-//        logger.info("validate docId param");
-//        Validation.nullCheck(docId);
-//        logger.info("validate User param");
-//        Validation.nullCheck(user);
-//        Validation.nullCheck(user.userName);
-//
-//        return docService.removeUserFromViewingUsers(docId, user.userName);
-//
-//    }
+        return docService.addUserToDocConnectedUsers(docId, userDto.email);
+    }
+
+    @MessageMapping("/disconnect/{docId}")
+    @SendTo("/topic/usersDisconnect/{docId}")
+    public List<String> removeUserFromConnectedUsers(@DestinationVariable Long docId, UserDTO userDto) {
+        logger.info("User {} disconnected from doc: {}", userDto.email, docId);
+        return docService.removeUserFromDocConnectedUsers(docId, userDto.email);
+    }
 
 
 }

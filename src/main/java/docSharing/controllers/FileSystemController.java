@@ -85,17 +85,26 @@ public class FileSystemController {
         return ResponseEntity.ok(fsService.renameInode(inodeDTO.parentId, inodeDTO.name));
     }
 
-    /**
-     * Returns all inodes that are direct descendants of an inode
-     *
-     * @return a list of inodes
-     */
     @RequestMapping(value = "/level/{inodeId}", method = RequestMethod.GET)
     public ResponseEntity<List<INode>> getChildren(@PathVariable Long inodeId) {
         logger.info("start getChildren function");
         logger.debug("getChildren function parameters: id:%{}", inodeId);
 
         return ResponseEntity.ok(fsService.getAllChildrenInodes(inodeId));
+    }
+
+    @RequestMapping(value = "/root", method = RequestMethod.GET)
+    public ResponseEntity<List<INode>> getRoot(@RequestAttribute User user) {
+        logger.info("start getRoot function");
+
+        return ResponseEntity.ok(fsService.getRootDirectory(user));
+    }
+
+    @RequestMapping(value = "/shared-with-me", method = RequestMethod.GET)
+    public ResponseEntity<List<INode>> getSharedWithMe(@RequestAttribute User user) {
+        logger.info("start getSharedWithMe function");
+
+        return ResponseEntity.ok(fsService.getSharedWithMe(user));
     }
 
     /**
@@ -153,7 +162,8 @@ public class FileSystemController {
 
         INode inode = fsService.fetchINodeById(inodeId);
         User user = userService.findByEmail(changeRoleDTO.email);
-        UserRole userRole = (true == changeRoleDTO.isDeleteRole) ? UserRole.NON : changeRoleDTO.userRole;
+        UserRole userRole = (changeRoleDTO.isDeleteRole) ? UserRole.NON : changeRoleDTO.userRole;
+        userService.addINodeToSharedWithMe(user, inode);
 
         return ResponseEntity.ok(fsService.changeUserRole(inode, user, userRole));
     }

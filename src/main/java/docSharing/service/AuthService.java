@@ -1,7 +1,7 @@
 package docSharing.service;
 
 import com.google.gson.Gson;
-import docSharing.DTO.User.Token;
+import docSharing.DTO.User.LogInUserResponse;
 import docSharing.DTO.User.UserDTO;
 import docSharing.entities.INode;
 import docSharing.entities.User;
@@ -55,7 +55,7 @@ public class AuthService {
     }
 
 
-    public Token login(UserDTO userDTO) {
+    public LogInUserResponse login(UserDTO userDTO) {
         logger.info("in login");
 
         User user = userRepository.findByEmail(userDTO.getEmail());
@@ -66,7 +66,7 @@ public class AuthService {
         userByToken.put(token, user);
         logger.info(token);
 
-        return new Token(token);
+        return new LogInUserResponse(token, userDTO.email);
     }
 
     public User getCachedUser(String token) {

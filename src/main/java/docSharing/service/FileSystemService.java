@@ -14,6 +14,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -307,5 +308,15 @@ public class FileSystemService {
         fsRepository.save(inode);
 
         return userRole;
+    }
+
+    public List<INode> getRootDirectory(User user) {
+        return user.getRootDirectory().getChildren().values().stream().collect(Collectors.toList());
+    }
+
+    public List<INode> getSharedWithMe(User user) {
+        Set<INode> sharedWithMe = user.getSharedWithMe();
+        logger.info("GOT SHARED");
+        return sharedWithMe.stream().collect(Collectors.toList());
     }
 }
