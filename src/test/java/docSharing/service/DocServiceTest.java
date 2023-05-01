@@ -253,10 +253,42 @@ public class DocServiceTest {
     @DisplayName("add a new character 'E' to end of Sandwich to get: SandwichE")
     void addCharBetween_givenCrdtSandwich_addToEnd_updateToSandwichE() {
         CRDT crdt = createSampleDocTreeSandwich();
-        docService.addCharBetween(createIdentifiersList(23,55), createIdentifiersList(24),crdt,'E');
+        docService.addCharBetween(createIdentifiersList(23,55), null,crdt,'E');
         System.out.println(docService.getDocumentWithRawText(crdt));
 
         assertEquals("SandwichE", preorderTraversal(crdt));
+    }
+
+    @Test
+    @DisplayName("[9,63,127] + 1 = [9,63,127,1]")
+    void incrementByOne_givenPosition_addOneToPosition_test1() {
+        List<Identifier> p = createIdentifiersList(9, 63, 127);
+
+        assertEquals(createIdentifiersList(9,63,127,1), CRDT.PositionCalculatorUtil.incrementByOne(p));
+    }
+
+    @Test
+    @DisplayName("[9] + 1 = [10]")
+    void incrementByOne_givenPosition_addOneToPosition_test2() {
+        List<Identifier> p = createIdentifiersList(9);
+
+        assertEquals(createIdentifiersList(10), CRDT.PositionCalculatorUtil.incrementByOne(p));
+    }
+
+    @Test
+    @DisplayName("[30] + 1 = [30,1]")
+    void incrementByOne_givenPosition_addOneToPosition_Depth1() {
+        List<Identifier> p = createIdentifiersList(30);
+
+        assertEquals(createIdentifiersList(30,1), CRDT.PositionCalculatorUtil.incrementByOne(p));
+    }
+
+    @Test
+    @DisplayName("[30,63] + 1 = [30,63,1]")
+    void incrementByOne_givenPosition_addOneToPosition_Depth2ujyhyh() {
+        List<Identifier> p = createIdentifiersList(30,63);
+
+        assertEquals(createIdentifiersList(30,63,1), CRDT.PositionCalculatorUtil.incrementByOne(p));
     }
 
 

@@ -82,11 +82,6 @@ public class DocService {
     }
 
     public List<PositionedChar> getDocumentWithRawText(CRDT crdt) {
-        //code below to save the document to db?
-//        if (!docContentByDocId.containsKey(docId)) {
-//            docContentByDocId.put(docId, content);
-//        }
-
         //go over crdt tree and extract the values with their position array, add to the result list.
         return preorderTraversal(crdt);
     }
@@ -161,8 +156,24 @@ public class DocService {
     }
 
     //this function adds a new character to the document tree
+
     public void addCharBetween(List<Identifier> p, List<Identifier> q, CRDT crdt, char ch) {
-        List<Identifier> newPos = alloc(p, q, crdt.getStrategy());
+        List<Identifier> newPos = null;
+        if (null == p && null == q) {
+            //throw exception "insertion problem of char {}".
+        }
+        //insert to the beginning of the document
+        if (null == p) {
+            //generate a fake p for the calculation
+            //List<Identifier> p = CRDT.PositionCalculatorUtil.decrementByOne(q);
+        }
+        //insert to the end of the document
+        else if (null == q) {
+            newPos = CRDT.PositionCalculatorUtil.incrementByOne(p);
+        } else {
+            newPos = alloc(p, q, crdt.getStrategy());
+        }
+
         addCharToDocTree(crdt, newPos, ch);
     }
 
@@ -312,6 +323,7 @@ public class DocService {
     }
 
     //this function performs: prefix(p, depth) + addVal;
+    //todo: move the addVal function to the CalculatorUtility
     List<Identifier> addVal(List<Identifier> pPrefix, int val, boolean isNewDepth) {
         if (isNewDepth) {
             pPrefix.add(new Identifier(0));
@@ -323,6 +335,7 @@ public class DocService {
     }
 
     //this function performs: prefix(q, depth) - subVal;
+    //todo: move the subVal function to the CalculatorUtility
     List<Identifier> subVal(List<Identifier> p, List<Identifier> q, int val, int depth, int base) {
         List<Identifier> id;
         List<Identifier> qEquive;
