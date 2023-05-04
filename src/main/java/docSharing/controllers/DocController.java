@@ -1,5 +1,6 @@
 package docSharing.controllers;
 
+import docSharing.CRDT.Identifier;
 import docSharing.CRDT.PositionedChar;
 import docSharing.DTO.User.UserDTO;
 import docSharing.entities.Document;
@@ -10,10 +11,15 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+
+import javax.annotation.Nullable;
+
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.ArrayList;
 import java.util.List;
 
 import static java.util.Objects.isNull;
@@ -36,14 +42,23 @@ public class DocController {
 
     @MessageMapping("/update/{docId}")
     @SendTo("/topic/updates/{docId}")
-    public String sendUpdatedText(@DestinationVariable Long docId, String message) {
-        logger.info("start sendUpdatedText function");
-        if (isNull(docId)) {
-            throw new MissingControllerParameterException("document is not available");
+    public List<PositionedChar> sendUpdatedText(@DestinationVariable Long docId, @Nullable List<Integer> p, @Nullable List<Integer> q, char ch) {
+        logger.info("char <<{}>> has been added to doc {}", ch, docId);
+        Document document = docService.fetchDocumentById(docId);
+
+        List<Identifier> pIden = new ArrayList<>(p.size());
+        List<Identifier> qIden = new ArrayList<>(q.size());
+
+        for (Integer num : p) {
+            pIden.add(new Identifier(num));
         }
-        logger.info("doc servive call...");
-        //docService.addCharBetween(p,q,crdt,ch); //TODO: video about socket parameters.
-        return message;
+        for (Integer num : q) {
+            qIden.add(new Identifier(num));
+        }
+
+        docService.addCharBetween(pIden, qIden, document, ch);
+
+        return docService.getDocumentWithRawText(document.getCrdt());
     }
 
 

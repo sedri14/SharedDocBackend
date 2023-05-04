@@ -5,7 +5,6 @@ import docSharing.enums.INodeType;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
-import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -19,6 +18,8 @@ public class Document extends INode {
     //A tree data structure that stores the document content
     @OneToOne
     private CRDT crdt;
+
+    private long logicalSize;
 
     Document() {
         super();
@@ -36,8 +37,8 @@ public class Document extends INode {
     }
 
     public static Document createNewEmptyDocument(String name, INode parent, User owner) {
-        CRDT emptyDocTreeCRDT = new CRDT();
-        return new Document(name, INodeType.FILE, LocalDateTime.now(), null, parent, owner, emptyDocTreeCRDT, LocalDateTime.now());
+        CRDT emptyDocTree = new CRDT();
+        return new Document(name, INodeType.FILE, LocalDateTime.now(), null, parent, owner, emptyDocTree, LocalDateTime.now());
     }
 
     public LocalDateTime getLastEdited() {
@@ -50,5 +51,13 @@ public class Document extends INode {
 
     public CRDT getCrdt() {
         return crdt;
+    }
+
+    public void incSize() {
+        this.logicalSize++;
+    }
+
+    public long getLogicalSize() {
+        return logicalSize;
     }
 }

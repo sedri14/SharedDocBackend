@@ -157,24 +157,37 @@ public class DocService {
 
     //this function adds a new character to the document tree
 
-    public void addCharBetween(List<Identifier> p, List<Identifier> q, CRDT crdt, char ch) {
+    public void addCharBetween(List<Identifier> p, List<Identifier> q, Document document, char ch) {
+        CRDT crdt = document.getCrdt();
         List<Identifier> newPos = null;
         if (null == p && null == q) {
-            //throw exception "insertion problem of char {}".
+            //todo: throw exception "insertion problem of char {}".}
         }
-        //insert to the beginning of the document
-        if (null == p) {
-            //generate a fake p for the calculation
+        if (isBOF(p) && isEOF(q)) {
+            newPos = alloc(p, q, crdt.getStrategy());
+        } else if (isBOF(p)) {
+            //insert to the beginning of the document
+            //todo: handle adding a char in the beginning of file.
             //List<Identifier> p = CRDT.PositionCalculatorUtil.decrementByOne(q);
-        }
-        //insert to the end of the document
-        else if (null == q) {
+        } else if (isEOF(q)) {
+            //insert to the end of the document
             newPos = CRDT.PositionCalculatorUtil.incrementByOne(p);
         } else {
+            //insert between two characters
             newPos = alloc(p, q, crdt.getStrategy());
         }
 
         addCharToDocTree(crdt, newPos, ch);
+        document.incSize();
+        docRepository.save(document);
+    }
+
+    private boolean isBOF(List<Identifier> p) {
+        return p.size() == 1 && p.get(0).getDigit() == CRDT.BOF;
+    }
+
+    private boolean isEOF(List<Identifier> q) {
+        return q.size() == 1 && q.get(0).getDigit() == CRDT.EOF;
     }
 
     //This function traverses the doc tree (starts at root) in the newPos values path and inserts a new

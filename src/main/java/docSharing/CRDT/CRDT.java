@@ -13,9 +13,9 @@ public class CRDT {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     public static final int BASE = 5;       //tree root has 2^5 children
-    public static final int DOC_BEGIN = 0;
+    public static final int BOF = 0;
 
-    public static final int DOC_END = (int) Math.pow(2, BASE) - 1;
+    public static final int EOF = (int) Math.pow(2, BASE) - 1;
 
     public static final int BOUNDARY = 10;
 
@@ -29,7 +29,7 @@ public class CRDT {
 
     public CRDT() {
         root = TreeNode.createNewTreeNode(PositionedChar.createNewChar('$', null), Arrays.asList(new TreeNode[(int) Math.pow(2, BASE)]));
-        initDocumentBoundaries(root);
+        initDocumentBOFandEOF(root);
         strategy = new HashMap<>();
     }
 
@@ -37,16 +37,16 @@ public class CRDT {
     //these two special nodes holds the characters '<' and '>' respectively.
     //they are both in depth 1 of the crdt tree
     //and their positions are: [0] and [2^BASE - 1] respectively.
-    private void initDocumentBoundaries(TreeNode root) {
+    private void initDocumentBOFandEOF(TreeNode root) {
         //init start
-        List<Identifier> startPos = Arrays.asList(new Identifier(CRDT.DOC_BEGIN));
+        List<Identifier> startPos = Arrays.asList(new Identifier(CRDT.BOF));
         PositionedChar startChar = PositionedChar.createNewChar('<', startPos);
-        root.children.set(DOC_BEGIN, TreeNode.createNewTreeNode(startChar, null));
+        root.children.set(BOF, TreeNode.createNewTreeNode(startChar, null));
 
         //init end
-        List<Identifier> endPos = Arrays.asList(new Identifier(CRDT.DOC_END));
+        List<Identifier> endPos = Arrays.asList(new Identifier(CRDT.EOF));
         PositionedChar endChar = PositionedChar.createNewChar('>', endPos);
-        root.children.set(DOC_END, TreeNode.createNewTreeNode(endChar, null));
+        root.children.set(EOF, TreeNode.createNewTreeNode(endChar, null));
     }
 
     public Map<Integer, Boolean> getStrategy() {
