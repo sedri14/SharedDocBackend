@@ -1,5 +1,6 @@
 package docSharing.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import docSharing.CRDT.CRDT;
 import docSharing.enums.INodeType;
 
@@ -16,7 +17,9 @@ public class Document extends INode {
     private LocalDateTime lastEdited;
 
     //A tree data structure that stores the document content
-    @OneToOne
+
+    @JsonIgnore
+    @OneToOne(cascade = CascadeType.PERSIST)
     private CRDT crdt;
 
     private long logicalSize;

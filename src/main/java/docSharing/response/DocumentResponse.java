@@ -1,44 +1,25 @@
 package docSharing.response;
 
 import docSharing.CRDT.PositionedChar;
+import docSharing.entities.Document;
+import docSharing.entities.INode;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
-public class DocumentResponse {
-
-    Long id;
-
-    String name;
-
-    LocalDateTime creationDate;
+public class DocumentResponse extends INodeResponse {
 
     LocalDateTime lastEdited;
-
     List<PositionedChar> rawText;
 
-    DocumentResponse() {
-
-    }
-
-    public DocumentResponse(Long id, String name, LocalDateTime creationDate, LocalDateTime lastEdited, List<PositionedChar> rawText) {
-        this.id = id;
-        this.name = name;
-        this.creationDate = creationDate;
+    public DocumentResponse(Long id, String name, String type, LocalDateTime creationDate, LocalDateTime lastEdited, List<PositionedChar> rawText) {
+        super(id, name, type, creationDate);
         this.lastEdited = lastEdited;
         this.rawText = rawText;
     }
 
-    public Long getId() {
-        return id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public LocalDateTime getCreationDate() {
-        return creationDate;
+    public static DocumentResponse fromDocument(Document doc, List<PositionedChar> rawText) {
+        return new DocumentResponse(doc.getId(), doc.getName(), doc.getType().toString(), doc.getCreationDate(), doc.getLastEdited(), rawText);
     }
 
     public LocalDateTime getLastEdited() {

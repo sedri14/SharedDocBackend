@@ -1,12 +1,17 @@
 package docSharing.controllers;
 
+import docSharing.CRDT.PositionedChar;
 import docSharing.DTO.ChangeRoleDTO;
 import docSharing.DTO.FS.INodeDTO;
 import docSharing.DTO.FS.MoveINodeDTO;
 import docSharing.entities.INode;
 import docSharing.entities.*;
+import docSharing.enums.INodeType;
 import docSharing.enums.UserRole;
 import docSharing.exceptions.MissingControllerParameterException;
+import docSharing.response.DocumentResponse;
+import docSharing.response.INodeResponse;
+import docSharing.service.DocService;
 import docSharing.service.FileSystemService;
 import docSharing.service.UserService;
 import org.apache.logging.log4j.LogManager;
@@ -28,6 +33,9 @@ public class FileSystemController {
     @Autowired
     UserService userService;
 
+    @Autowired
+    DocService docService;
+
     private static Logger logger = LogManager.getLogger(FileSystemController.class.getName());
 
     /**
@@ -41,7 +49,7 @@ public class FileSystemController {
      * @return a new inode
      */
     @RequestMapping(value = "/add", method = RequestMethod.POST)
-    public ResponseEntity<INode> addInode(@RequestBody INodeDTO inodeDTO, @RequestAttribute User user) {
+    public ResponseEntity<INodeResponse> addInode(@RequestBody INodeDTO inodeDTO, @RequestAttribute User user) {
         logger.info("adding a new inode to by user {}", user.getEmail());
         logger.debug("addInode function parameters: name:{}, type:{}, parentId:{}",  inodeDTO.name, inodeDTO.type, inodeDTO.parentId);
         if (isNull(inodeDTO)) {
@@ -58,7 +66,13 @@ public class FileSystemController {
         }
         INode inode = fsService.addInode(inodeDTO, user);
 
-        return ResponseEntity.ok(inode);
+        if (inode.getType() == INodeType.FILE) {
+            Document document = (Document)inode;
+            List<PositionedChar> rawText = docService.getDocumentWithRawText(document.getCrdt());
+            //todo: return a responseDocument object with the document details + BOF and EOF positions (they are already in the rawText).
+            return ResponseEntity.ok(DocumentResponse.fromDocument(document, rawText));
+        }
+        return ResponseEntity.ok(INodeResponse.fromINode(inode));
     }
 
     /**

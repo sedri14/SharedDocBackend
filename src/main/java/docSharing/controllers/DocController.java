@@ -66,9 +66,9 @@ public class DocController {
     public ResponseEntity<DocumentResponse> getDocument(@PathVariable Long docId) {
         logger.info("get document {}", docId);
         Document document = docService.fetchDocumentById(docId);
-        List<PositionedChar> documentAsRawText = docService.getDocumentWithRawText(document.getCrdt());
+        List<PositionedChar> rawText = docService.getDocumentWithRawText(document.getCrdt());
 
-        return ResponseEntity.ok(new DocumentResponse(document.getId(), document.getName(), document.getCreationDate(), document.getLastEdited(), documentAsRawText));
+        return ResponseEntity.ok(DocumentResponse.fromDocument(document, rawText));
     }
 
     @MessageMapping("/join/{docId}")

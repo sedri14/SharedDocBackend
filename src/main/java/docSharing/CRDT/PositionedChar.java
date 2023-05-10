@@ -10,7 +10,8 @@ public class PositionedChar {
     private Long id;
     @Column(length = 1)
     private String value;
-    @OneToMany
+    @OneToMany(cascade = CascadeType.PERSIST)
+    @ElementCollection
     List<Identifier> position;
 
     //Site id here

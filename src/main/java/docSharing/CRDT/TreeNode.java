@@ -11,10 +11,10 @@ public class TreeNode {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @OneToOne
+    @OneToOne(cascade = CascadeType.PERSIST)
     PositionedChar c;
 
-    @OneToMany
+    @OneToMany(cascade = CascadeType.ALL)
     List<TreeNode> children;
 
     TreeNode() {

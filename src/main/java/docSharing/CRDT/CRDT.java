@@ -12,11 +12,9 @@ public class CRDT {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    public static final int BASE = 5;       //tree root has 2^5 children
+    public static final int BASE = 5;
     public static final int BOF = 0;
-
     public static final int EOF = (int) Math.pow(2, BASE) - 1;
-
     public static final int BOUNDARY = 10;
 
     @JsonIgnore
@@ -24,7 +22,7 @@ public class CRDT {
     @CollectionTable(name = "strategy_by_depth")
     private Map<Integer, Boolean> strategy;
 
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL)
     private TreeNode root;
 
     public CRDT() {
