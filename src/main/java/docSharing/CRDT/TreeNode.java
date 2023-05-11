@@ -11,10 +11,12 @@ public class TreeNode {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
+    //todo: a possible change: TreeNode is just a position, inside this position there can be couple of letters,
+    //todo: differentiated by site id. so each treenode should have a List of Tuples: siteid, char
     @OneToOne(cascade = CascadeType.PERSIST)
     PositionedChar c;
 
-    @OneToMany(cascade = CascadeType.ALL)
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     List<TreeNode> children;
 
     TreeNode() {

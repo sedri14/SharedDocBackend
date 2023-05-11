@@ -16,7 +16,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.junit.jupiter.api.DisplayName;
 
-import javax.print.Doc;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -240,7 +239,7 @@ public class DocServiceTest {
     @DisplayName("print a doc tree with the word $Sandwich$")
     void preorderTraversal_givenDocTree_printSandwich() {
         CRDT crdtSandwitch = createSampleDocTreeSandwich();
-        System.out.println(docService.getDocumentWithRawText(crdtSandwitch));
+        System.out.println(docService.getRawText(crdtSandwitch));
 
         assertEquals("Sandwich", preorderTraversal(crdtSandwitch));
     }
@@ -259,7 +258,7 @@ public class DocServiceTest {
     void addCharBetween_givenCrdtSandwich_updateToSEandwich() {
         when(docRepository.save(any(Document.class))).thenReturn(document);
         docService.addCharBetween(createIdentifiersList(9), createIdentifiersList(9,32),document,'E');
-        System.out.println(docService.getDocumentWithRawText(document.getCrdt()));
+        System.out.println(docService.getRawText(document.getCrdt()));
 
         assertEquals("SEandwich", preorderTraversal(document.getCrdt()));
     }
@@ -269,7 +268,7 @@ public class DocServiceTest {
     void addCharBetween_givenCrdtSandwich_updateToSanEdwich() {
         when(docRepository.save(any(Document.class))).thenReturn(document);
         docService.addCharBetween(createIdentifiersList(9,51), createIdentifiersList(9,60),document,'E');
-        System.out.println(docService.getDocumentWithRawText(document.getCrdt()));
+        System.out.println(docService.getRawText(document.getCrdt()));
 
         assertEquals("SanEdwich", preorderTraversal(document.getCrdt()));
     }
@@ -279,7 +278,7 @@ public class DocServiceTest {
     void addCharBetween_givenCrdtSandwich_updateToSandwicEh() {
         when(docRepository.save(any(Document.class))).thenReturn(document);
         docService.addCharBetween(createIdentifiersList(23,22), createIdentifiersList(23,55),document,'E');
-        System.out.println(docService.getDocumentWithRawText(document.getCrdt()));
+        System.out.println(docService.getRawText(document.getCrdt()));
 
         assertEquals("SandwicEh", preorderTraversal(document.getCrdt()));
     }
@@ -289,7 +288,7 @@ public class DocServiceTest {
     void addCharBetween_givenCrdtSandwich_addToEnd_updateToSandwichE() {
         when(docRepository.save(any(Document.class))).thenReturn(document);
         docService.addCharBetween(createIdentifiersList(23,55), createIdentifiersList(31),document,'E');
-        System.out.println(docService.getDocumentWithRawText(document.getCrdt()));
+        System.out.println(docService.getRawText(document.getCrdt()));
 
         assertEquals("SandwichE", preorderTraversal(document.getCrdt()));
     }
@@ -299,7 +298,7 @@ public class DocServiceTest {
     void addCharBetween_givenEmptyDocument_addFirstCharacter() {
         when(docRepository.save(any(Document.class))).thenReturn(emptyDoc);
         docService.addCharBetween(createIdentifiersList(0), createIdentifiersList(31),emptyDoc,'B');
-        System.out.println(docService.getDocumentWithRawText(emptyDoc.getCrdt()));
+        System.out.println(docService.getRawText(emptyDoc.getCrdt()));
 
         assertEquals("B", preorderTraversal(emptyDoc.getCrdt()));
     }

@@ -11,7 +11,7 @@ public class INodeResponse implements Serializable {
     String name;
     String type;
     LocalDateTime creationDate;
-    public INodeResponse(Long id, String name, String type, LocalDateTime creationDate) {
+    protected INodeResponse(Long id, String name, String type, LocalDateTime creationDate) {
         this.id = id;
         this.name = name;
         this.type = type;

@@ -81,7 +81,7 @@ public class DocService {
 
     }
 
-    public List<PositionedChar> getDocumentWithRawText(CRDT crdt) {
+    public List<PositionedChar> getRawText(CRDT crdt) {
         //go over crdt tree and extract the values with their position array, add to the result list.
         return preorderTraversal(crdt);
     }
@@ -133,11 +133,12 @@ public class DocService {
     }
 
     //convert the crdt doc tree to a list of PositionedChar object, using pre-order traversal algorithm.
+    //document content is returned with the BOF ('<') and EOF ('>') characters.
     public List<PositionedChar> preorderTraversal(CRDT crdt) {
         List<PositionedChar> positionedChars = new ArrayList<>();
         rec(crdt.getRoot(), positionedChars);
 
-        return positionedChars.subList(2, positionedChars.size() - 1);    //remove root, begin and end characters
+        return positionedChars.subList(1, positionedChars.size());    //remove root
     }
 
     public void rec(TreeNode root, List<PositionedChar> positionedChars) {

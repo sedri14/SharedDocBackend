@@ -18,11 +18,11 @@ public class CRDT {
     public static final int BOUNDARY = 10;
 
     @JsonIgnore
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "strategy_by_depth")
     private Map<Integer, Boolean> strategy;
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private TreeNode root;
 
     public CRDT() {

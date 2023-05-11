@@ -68,7 +68,7 @@ public class FileSystemController {
 
         if (inode.getType() == INodeType.FILE) {
             Document document = (Document)inode;
-            List<PositionedChar> rawText = docService.getDocumentWithRawText(document.getCrdt());
+            List<PositionedChar> rawText = docService.getRawText(document.getCrdt());
             //todo: return a responseDocument object with the document details + BOF and EOF positions (they are already in the rawText).
             return ResponseEntity.ok(DocumentResponse.fromDocument(document, rawText));
         }

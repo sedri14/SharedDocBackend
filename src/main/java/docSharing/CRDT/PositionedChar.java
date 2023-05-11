@@ -1,9 +1,10 @@
 package docSharing.CRDT;
 import javax.persistence.*;
+import java.io.Serializable;
 import java.util.List;
 
 @Entity
-public class PositionedChar {
+public class PositionedChar implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -16,6 +17,7 @@ public class PositionedChar {
 
     //Site id here
     private PositionedChar(Character value, List<Identifier> position) {
+
         this.position = position;
         this.value = value.toString();
     }
@@ -30,6 +32,10 @@ public class PositionedChar {
 
     public Character getValue() {
         return value.charAt(0);
+    }
+
+    public List<Identifier> getPosition() {
+        return position;
     }
 
     @Override
