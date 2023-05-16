@@ -179,8 +179,9 @@ public class DocService {
         }
 
         addCharToDocTree(crdt, newPos, ch);
+        //todo: change lastEdited localdatetime
         document.incSize();
-        docRepository.save(document);
+        docRepository.save(document); //todo: check if flush is needed
     }
 
     private boolean isBOF(List<Identifier> p) {

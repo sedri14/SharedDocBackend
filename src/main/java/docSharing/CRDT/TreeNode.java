@@ -17,6 +17,7 @@ public class TreeNode {
     PositionedChar c;
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OrderColumn
     List<TreeNode> children;
 
     TreeNode() {
