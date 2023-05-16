@@ -1,12 +1,17 @@
 package docSharing.controllers;
 
+import docSharing.CRDT.PositionedChar;
 import docSharing.DTO.ChangeRoleDTO;
 import docSharing.DTO.FS.INodeDTO;
 import docSharing.DTO.FS.MoveINodeDTO;
 import docSharing.entities.INode;
 import docSharing.entities.*;
+import docSharing.enums.INodeType;
 import docSharing.enums.UserRole;
 import docSharing.exceptions.MissingControllerParameterException;
+import docSharing.response.DocumentResponse;
+import docSharing.response.INodeResponse;
+import docSharing.service.DocService;
 import docSharing.service.FileSystemService;
 import docSharing.service.UserService;
 import org.apache.logging.log4j.LogManager;
@@ -28,6 +33,9 @@ public class FileSystemController {
     @Autowired
     UserService userService;
 
+    @Autowired
+    DocService docService;
+
     private static Logger logger = LogManager.getLogger(FileSystemController.class.getName());
 
     /**
@@ -41,8 +49,8 @@ public class FileSystemController {
      * @return a new inode
      */
     @RequestMapping(value = "/add", method = RequestMethod.POST)
-    public ResponseEntity<INode> addInode(@RequestBody INodeDTO inodeDTO, @RequestAttribute User user) {
-        logger.info("start addInode function");
+    public ResponseEntity<INodeResponse> addInode(@RequestBody INodeDTO inodeDTO, @RequestAttribute User user) {
+        logger.info("adding a new inode to by user {}", user.getEmail());
         logger.debug("addInode function parameters: name:{}, type:{}, parentId:{}",  inodeDTO.name, inodeDTO.type, inodeDTO.parentId);
         if (isNull(inodeDTO)) {
             throw new MissingControllerParameterException("http request body");
@@ -58,7 +66,13 @@ public class FileSystemController {
         }
         INode inode = fsService.addInode(inodeDTO, user);
 
-        return ResponseEntity.ok(inode);
+        if (inode.getType() == INodeType.FILE) {
+            Document document = (Document)inode;
+            List<PositionedChar> rawText = docService.getRawText(document.getCrdt());
+            //todo: return a responseDocument object with the document details + BOF and EOF positions (they are already in the rawText).
+            return ResponseEntity.ok(DocumentResponse.fromDocument(document, rawText));
+        }
+        return ResponseEntity.ok(INodeResponse.fromINode(inode));
     }
 
     /**
@@ -167,51 +181,4 @@ public class FileSystemController {
 
         return ResponseEntity.ok(fsService.changeUserRole(inode, user, userRole));
     }
-
-
-//    /**
-//     * @param fileWithDataDTO contains: parentInodeId - id of parent node
-//     *                        userId - id of owner user
-//     *                        file
-//     * @param token token
-//     * @param userId userid
-//     * @return a new document identical to the uploaded file
-//     */
-//    @RequestMapping(value = "/uploadFile", method = RequestMethod.POST)
-//    public ResponseEntity<Response<INode>> uploadFile(@ModelAttribute FileWithDataDTO fileWithDataDTO, @RequestHeader String token, @RequestHeader Long userId) {
-//        logger.info("start uploadFile function");
-//
-//        if (!authService.isValidToken(userId, token)) {
-//            return ResponseEntity.badRequest().body(Response.failure(TokenError.INVALID_TOKEN.toString()));
-//        }
-//        logger.debug("uploadFile function parameters: userId:{}, parentId:{}, filename:{}", fileWithDataDTO.getUserId(), fileWithDataDTO.getParentInodeId(), fileWithDataDTO.getFile().getOriginalFilename());
-//        Validation.nullCheck(fileWithDataDTO);
-//        Validation.nullCheck(fileWithDataDTO.getParentInodeId());
-//        Validation.nullCheck(fileWithDataDTO.getUserId());
-//        Validation.nullCheck(fileWithDataDTO.getFile());
-//
-//        Long parentId = fileWithDataDTO.getParentInodeId();
-//        MultipartFile file = fileWithDataDTO.getFile();
-//
-//        String fileExtension = FilenameUtils.getExtension(file.getOriginalFilename());
-//        if (!fileExtension.equals("txt")) {
-//            logger.error("file type is not supported");
-//            return ResponseEntity.badRequest().body(Response.failure("file type is not supported"));
-//        }
-//
-//        logger.info("find the owner");
-//        User owner = userService.getById(fileWithDataDTO.getUserId());
-//
-//        Document importedDoc;
-//        try {
-//            logger.info("");
-//            importedDoc = fsService.uploadFile(file, parentId, owner);
-//            permissionService.setPermission(new Permission(owner, importedDoc, UserRole.EDITOR));
-//        } catch (IllegalArgumentException e) {
-//            return ResponseEntity.badRequest().body(Response.failure(e.getMessage()));
-//        }
-//
-//        return ResponseEntity.status(HttpStatus.OK).body(Response.success(importedDoc));
-//
-//    }
 }

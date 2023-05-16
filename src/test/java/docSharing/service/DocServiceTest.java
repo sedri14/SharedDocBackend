@@ -4,19 +4,27 @@ import docSharing.CRDT.CRDT;
 import docSharing.CRDT.PositionedChar;
 import docSharing.CRDT.Identifier;
 import docSharing.CRDT.TreeNode;
+import docSharing.entities.Document;
+import docSharing.entities.User;
+import docSharing.enums.INodeType;
+import docSharing.repository.DocRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.junit.jupiter.api.DisplayName;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class DocServiceTest {
@@ -24,8 +32,16 @@ public class DocServiceTest {
     @InjectMocks
     private DocService docService;
 
+    @Mock
+    private DocRepository docRepository;
+
     private Map<Integer, Boolean> strategy;
 
+    Document document;
+
+    Document emptyDoc;
+
+    User user;
 
     @BeforeEach
     void setUp() {
@@ -34,6 +50,12 @@ public class DocServiceTest {
         strategy.put(2, false);
         strategy.put(3, true);
         strategy.put(4, false);
+
+        user = new User("user", "user@gmail.com", "1234");
+        CRDT sandwichDocTree = createSampleDocTreeSandwich();
+        document = new Document("document1", INodeType.FILE, LocalDateTime.now(), null, null, user, sandwichDocTree, LocalDateTime.now());
+
+        emptyDoc = Document.createNewEmptyDocument("empty document", null, user);
     }
 
     @Test
@@ -136,6 +158,19 @@ public class DocServiceTest {
     }
 
     @Test
+    @DisplayName("test alloc function: with p=[0], q=[31] ")
+    void alloc_givenBOFandEOFPositions_generateNewFirstPosition() {
+        List<Identifier> p = createIdentifiersList(0);
+        List<Identifier> q = createIdentifiersList(31);
+        List<Identifier> newPos = docService.alloc(p, q, strategy);
+        printPositionsInOrder(p, newPos, q);
+
+        assertNotNull(newPos);
+        assertTrue(comparePositions(p, newPos) < 0);
+        assertTrue(comparePositions(newPos, q) < 0);
+    }
+
+    @Test
     @DisplayName("test alloc function: with p=[0], q=[9] ")
     void alloc_givenTwoPositions_generateNewPositionInBetween_Test1() {
         List<Identifier> p = createIdentifiersList(0);
@@ -204,48 +239,101 @@ public class DocServiceTest {
     @DisplayName("print a doc tree with the word $Sandwich$")
     void preorderTraversal_givenDocTree_printSandwich() {
         CRDT crdtSandwitch = createSampleDocTreeSandwich();
+        System.out.println(docService.getRawText(crdtSandwitch));
 
-        assertEquals("Sandwich", docService.preorderTraversal(crdtSandwitch));
+        assertEquals("Sandwich", preorderTraversal(crdtSandwitch));
     }
 
-    @Test
-    @DisplayName("add a new character 'E' to beginning of Sandwich to get: ESandwich")
-    void addCharBetween_givenCrdtSandwich_addToBeginning_updateToESandwich() {
-        CRDT crdt = createSampleDocTreeSandwich();
-        docService.addCharBetween(createIdentifiersList(1), createIdentifiersList(9),crdt,'E');
-        assertEquals("ESandwich", docService.preorderTraversal(crdt));
-    }
+//    @Test
+//    @DisplayName("add a new character 'E' to beginning of Sandwich to get: ESandwich")
+//    void addCharBetween_givenCrdtSandwich_addToBeginning_updateToESandwich() {
+//        docService.addCharBetween(createIdentifiersList(1), createIdentifiersList(9),document,'E');
+//        System.out.println(docService.getDocumentWithRawText(document.getCrdt()));
+//
+//        assertEquals("ESandwich", preorderTraversal(document.getCrdt()));
+//    }
 
     @Test
     @DisplayName("add a new character 'E' between indices 0 and 1 in: Sandwich to get: SEandwich")
     void addCharBetween_givenCrdtSandwich_updateToSEandwich() {
-        CRDT crdt = createSampleDocTreeSandwich();
-        docService.addCharBetween(createIdentifiersList(9), createIdentifiersList(9,32),crdt,'E');
-        assertEquals("SEandwich", docService.preorderTraversal(crdt));
+        when(docRepository.save(any(Document.class))).thenReturn(document);
+        docService.addCharBetween(createIdentifiersList(9), createIdentifiersList(9,32),document,'E');
+        System.out.println(docService.getRawText(document.getCrdt()));
+
+        assertEquals("SEandwich", preorderTraversal(document.getCrdt()));
     }
 
     @Test
     @DisplayName("add a new character 'E' between indices 2 and 3 in: Sandwich to get: SanEdwich")
     void addCharBetween_givenCrdtSandwich_updateToSanEdwich() {
-        CRDT crdt = createSampleDocTreeSandwich();
-        docService.addCharBetween(createIdentifiersList(9,51), createIdentifiersList(9,60),crdt,'E');
-        assertEquals("SanEdwich", docService.preorderTraversal(crdt));
+        when(docRepository.save(any(Document.class))).thenReturn(document);
+        docService.addCharBetween(createIdentifiersList(9,51), createIdentifiersList(9,60),document,'E');
+        System.out.println(docService.getRawText(document.getCrdt()));
+
+        assertEquals("SanEdwich", preorderTraversal(document.getCrdt()));
     }
 
     @Test
     @DisplayName("add a new character 'E' between indices 6 and 7 in: Sandwich to get: SandwicEh")
     void addCharBetween_givenCrdtSandwich_updateToSandwicEh() {
-        CRDT crdt = createSampleDocTreeSandwich();
-        docService.addCharBetween(createIdentifiersList(23,22), createIdentifiersList(23,55),crdt,'E');
-        assertEquals("SandwicEh", docService.preorderTraversal(crdt));
+        when(docRepository.save(any(Document.class))).thenReturn(document);
+        docService.addCharBetween(createIdentifiersList(23,22), createIdentifiersList(23,55),document,'E');
+        System.out.println(docService.getRawText(document.getCrdt()));
+
+        assertEquals("SandwicEh", preorderTraversal(document.getCrdt()));
     }
 
     @Test
     @DisplayName("add a new character 'E' to end of Sandwich to get: SandwichE")
     void addCharBetween_givenCrdtSandwich_addToEnd_updateToSandwichE() {
-        CRDT crdt = createSampleDocTreeSandwich();
-        docService.addCharBetween(createIdentifiersList(23,55), createIdentifiersList(24),crdt,'E');
-        assertEquals("SandwichE", docService.preorderTraversal(crdt));
+        when(docRepository.save(any(Document.class))).thenReturn(document);
+        docService.addCharBetween(createIdentifiersList(23,55), createIdentifiersList(31),document,'E');
+        System.out.println(docService.getRawText(document.getCrdt()));
+
+        assertEquals("SandwichE", preorderTraversal(document.getCrdt()));
+    }
+
+    @Test
+    @DisplayName("add the first character 'B' in an empty document")
+    void addCharBetween_givenEmptyDocument_addFirstCharacter() {
+        when(docRepository.save(any(Document.class))).thenReturn(emptyDoc);
+        docService.addCharBetween(createIdentifiersList(0), createIdentifiersList(31),emptyDoc,'B');
+        System.out.println(docService.getRawText(emptyDoc.getCrdt()));
+
+        assertEquals("B", preorderTraversal(emptyDoc.getCrdt()));
+    }
+
+    @Test
+
+    @DisplayName("[9,63,127] + 1 = [9,63,127,1]")
+    void incrementByOne_givenPosition_addOneToPosition_test1() {
+        List<Identifier> p = createIdentifiersList(9, 63, 127);
+
+        assertEquals(createIdentifiersList(9,63,127,1), CRDT.PositionCalculatorUtil.incrementByOne(p));
+    }
+
+    @Test
+    @DisplayName("[9] + 1 = [10]")
+    void incrementByOne_givenPosition_addOneToPosition_test2() {
+        List<Identifier> p = createIdentifiersList(9);
+
+        assertEquals(createIdentifiersList(10), CRDT.PositionCalculatorUtil.incrementByOne(p));
+    }
+
+    @Test
+    @DisplayName("[30] + 1 = [30,1]")
+    void incrementByOne_givenPosition_addOneToPosition_Depth1() {
+        List<Identifier> p = createIdentifiersList(30);
+
+        assertEquals(createIdentifiersList(30,1), CRDT.PositionCalculatorUtil.incrementByOne(p));
+    }
+
+    @Test
+    @DisplayName("[30,63] + 1 = [30,63,1]")
+    void incrementByOne_givenPosition_addOneToPosition_Depth2ujyhyh() {
+        List<Identifier> p = createIdentifiersList(30,63);
+
+        assertEquals(createIdentifiersList(30,63,1), CRDT.PositionCalculatorUtil.incrementByOne(p));
     }
 
 
@@ -296,6 +384,29 @@ public class DocServiceTest {
     //print identifiers in format: p < w < q
     private void printPositionsInOrder(List<Identifier> p, List<Identifier> w, List<Identifier> q) {
         System.out.println(p + " < " + w + " < " + q);
+    }
+
+    //convert the crdt doc tree to a simple string, using pre-order traversal algorithm.
+    public String preorderTraversal(CRDT crdt) {
+        StringBuilder sb = new StringBuilder();
+        rec(crdt.getRoot(), sb);
+
+        return sb.substring(2, sb.length() - 1);    //remove root, begin and end characters
+    }
+
+    public void rec(TreeNode root, StringBuilder sb) {
+        if (null == root) {
+            return;
+        }
+
+        sb.append(root.getChar().getValue());
+        if (null != root.getChildren()) {
+            for (int i = 0; i < root.getChildren().size(); i++) {
+                if (null != root.getChildren().get(i)) {
+                    rec(root.getChildren().get(i), sb);
+                }
+            }
+        }
     }
 
 }

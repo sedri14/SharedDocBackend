@@ -5,6 +5,7 @@ import docSharing.CRDT.Identifier;
 import docSharing.CRDT.CRDT;
 import docSharing.CRDT.TreeNode;
 import docSharing.entities.Document;
+import docSharing.exceptions.INodeNotFoundException;
 import docSharing.repository.DocRepository;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -44,6 +45,10 @@ public class DocService {
 
     }
 
+    public Document fetchDocumentById(Long id) {
+        return docRepository.findById(id).orElseThrow(() -> new INodeNotFoundException("Document not found with id " + id));
+    }
+
     /**
      * @param map documents content by docId hashMap.
      */
@@ -69,38 +74,16 @@ public class DocService {
             //this should be changed.
         }
         Document doc = docRepository.findById(docId).get();
-        doc.setContent(documentContent);
+        //doc.setContent(documentContent);
 
         docRepository.save(doc);
         logger.info("document is saved");
 
     }
 
-
-    /**
-     * @param documentId document id
-     * @return the document content from the repository
-     */
-    public Document getDocument(Long documentId) {
-
-        logger.info("start of getDocument function");
-        boolean docIsPresent = docRepository.findById(documentId).isPresent();
-
-        if (!docIsPresent) {
-            logger.error("there is no document with this id");
-            throw new IllegalArgumentException("there is no document with this id");
-        }
-
-        Document doc = docRepository.findById(documentId).get();
-        String content = doc.getContent();
-
-        if (!docContentByDocId.containsKey(documentId)) {
-            docContentByDocId.put(documentId, content);
-        }
-
-        logger.info("the content in the hashmap is" + docContentByDocId.get(documentId));
-
-        return doc;
+    public List<PositionedChar> getRawText(CRDT crdt) {
+        //go over crdt tree and extract the values with their position array, add to the result list.
+        return preorderTraversal(crdt);
     }
 
 
@@ -149,10 +132,64 @@ public class DocService {
 
     }
 
+    //convert the crdt doc tree to a list of PositionedChar object, using pre-order traversal algorithm.
+    //document content is returned with the BOF ('<') and EOF ('>') characters.
+    public List<PositionedChar> preorderTraversal(CRDT crdt) {
+        List<PositionedChar> positionedChars = new ArrayList<>();
+        rec(crdt.getRoot(), positionedChars);
+
+        return positionedChars.subList(1, positionedChars.size());    //remove root
+    }
+
+    public void rec(TreeNode root, List<PositionedChar> positionedChars) {
+        if (null == root) {
+            return;
+        }
+
+        positionedChars.add(root.getChar());
+        if (null != root.getChildren()) {
+            for (int i = 0; i < root.getChildren().size(); i++) {
+                if (null != root.getChildren().get(i)) {
+                    rec(root.getChildren().get(i), positionedChars);
+                }
+            }
+        }
+    }
+
     //this function adds a new character to the document tree
-    public void addCharBetween(List<Identifier> p, List<Identifier> q, CRDT crdt, char ch) {
-        List<Identifier> newPos = alloc(p, q, crdt.getStrategy());
+
+    public void addCharBetween(List<Identifier> p, List<Identifier> q, Document document, char ch) {
+        CRDT crdt = document.getCrdt();
+        List<Identifier> newPos = null;
+        if (null == p && null == q) {
+            //todo: throw exception "insertion problem of char {}".}
+        }
+        if (isBOF(p) && isEOF(q)) {
+            newPos = alloc(p, q, crdt.getStrategy());
+        } else if (isBOF(p)) {
+            //insert to the beginning of the document
+            //todo: handle adding a char in the beginning of file.
+            //List<Identifier> p = CRDT.PositionCalculatorUtil.decrementByOne(q);
+        } else if (isEOF(q)) {
+            //insert to the end of the document
+            newPos = CRDT.PositionCalculatorUtil.incrementByOne(p);
+        } else {
+            //insert between two characters
+            newPos = alloc(p, q, crdt.getStrategy());
+        }
+
         addCharToDocTree(crdt, newPos, ch);
+        //todo: change lastEdited localdatetime
+        document.incSize();
+        docRepository.save(document); //todo: check if flush is needed
+    }
+
+    private boolean isBOF(List<Identifier> p) {
+        return p.size() == 1 && p.get(0).getDigit() == CRDT.BOF;
+    }
+
+    private boolean isEOF(List<Identifier> q) {
+        return q.size() == 1 && q.get(0).getDigit() == CRDT.EOF;
     }
 
     //This function traverses the doc tree (starts at root) in the newPos values path and inserts a new
@@ -179,29 +216,6 @@ public class DocService {
 
         //set the node's character
         curNode.setChar(PositionedChar.createNewChar(ch, newPos));
-    }
-
-    //convert the crdt doc tree to a simple string, using pre-order traversal algorithm.
-    public String preorderTraversal(CRDT crdt) {
-        StringBuilder sb = new StringBuilder();
-        rec(crdt.getRoot(), sb);
-
-        return sb.substring(2, sb.length() - 1);    //remove root, begin and end characters
-    }
-
-    public void rec(TreeNode root, StringBuilder sb) {
-        if (null == root) {
-            return;
-        }
-
-        sb.append(root.getChar().getValue());
-        if (null != root.getChildren()) {
-            for (int i = 0; i < root.getChildren().size(); i++) {
-                if (null != root.getChildren().get(i)) {
-                    rec(root.getChildren().get(i), sb);
-                }
-            }
-        }
     }
 
     /**
@@ -324,6 +338,7 @@ public class DocService {
     }
 
     //this function performs: prefix(p, depth) + addVal;
+    //todo: move the addVal function to the CalculatorUtility
     List<Identifier> addVal(List<Identifier> pPrefix, int val, boolean isNewDepth) {
         if (isNewDepth) {
             pPrefix.add(new Identifier(0));
@@ -335,6 +350,7 @@ public class DocService {
     }
 
     //this function performs: prefix(q, depth) - subVal;
+    //todo: move the subVal function to the CalculatorUtility
     List<Identifier> subVal(List<Identifier> p, List<Identifier> q, int val, int depth, int base) {
         List<Identifier> id;
         List<Identifier> qEquive;

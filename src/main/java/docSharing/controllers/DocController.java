@@ -1,23 +1,26 @@
 package docSharing.controllers;
 
+import docSharing.CRDT.Identifier;
+import docSharing.CRDT.PositionedChar;
+import docSharing.DTO.UpdateTextDTO;
 import docSharing.DTO.User.UserDTO;
-import docSharing.Utils.Validation;
 import docSharing.entities.Document;
-import docSharing.exceptions.MissingControllerParameterException;
-import docSharing.response.Response;
+import docSharing.response.DocumentResponse;
 import docSharing.service.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+
+import javax.annotation.Nullable;
+
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.web.bind.annotation.*;
-import java.util.List;
 
-import static java.util.Objects.isNull;
+import java.util.ArrayList;
+import java.util.List;
 
 @RequestMapping("/doc")
 @CrossOrigin
@@ -37,37 +40,32 @@ public class DocController {
 
     @MessageMapping("/update/{docId}")
     @SendTo("/topic/updates/{docId}")
-    public String sendUpdatedText(@DestinationVariable Long docId, String message) {
-        logger.info("start sendUpdatedText function");
-        if (isNull(docId)) {
-            throw new MissingControllerParameterException("document is not available");
+    public List<PositionedChar> sendUpdatedText(@DestinationVariable Long docId, @RequestBody UpdateTextDTO updateTextDTO) {
+        logger.info("char <<{}>> is been added to doc {}", updateTextDTO.ch, docId);
+        Document document = docService.fetchDocumentById(docId);
+
+        List<Identifier> pIden = new ArrayList<>(updateTextDTO.p.size());
+        List<Identifier> qIden = new ArrayList<>(updateTextDTO.q.size());
+
+        for (Integer num : updateTextDTO.p) {
+            pIden.add(new Identifier(num));
         }
-        logger.info("doc servive call...");
-        //docService.addCharBetween(p,q,crdt,ch); //TODO: video about socket parameters.
-        return message;
+        for (Integer num : updateTextDTO.q) {
+            qIden.add(new Identifier(num));
+        }
+        docService.addCharBetween(pIden, qIden, document, updateTextDTO.ch);
+
+        return docService.getRawText(document.getCrdt());
     }
 
 
-    /**
-     * @param docId  document Id
-     * @param token  token of logged in user
-     * @return document response
-     */
     @RequestMapping(value = "/{docId}", method = RequestMethod.GET)
-    public ResponseEntity<Response<Document>> getDocument(@PathVariable Long docId, @RequestHeader String token) {
-        logger.info("start getDocument function");
-        logger.info("validate docId param");
+    public ResponseEntity<DocumentResponse> getDocument(@PathVariable Long docId) {
+        logger.info("get document {}", docId);
+        Document document = docService.fetchDocumentById(docId);
+        List<PositionedChar> rawText = docService.getRawText(document.getCrdt());
 
-        Validation.nullCheck(docId);
-
-        Document document;
-        try {
-            document = docService.getDocument(docId);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Response.failure(e.getMessage()));
-        }
-
-        return ResponseEntity.status(HttpStatus.OK).body(Response.success(document));
+        return ResponseEntity.ok(DocumentResponse.fromDocument(document, rawText));
     }
 
     @MessageMapping("/join/{docId}")

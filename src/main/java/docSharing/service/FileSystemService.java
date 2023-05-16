@@ -84,6 +84,7 @@ public class FileSystemService {
                 throw new IllegalOperationException("Illegal Inode type");
         }
         parent.getChildren().put(addInode.name, newInode);
+
         fsRepository.save(parent);
 
         return parent.getChildren().get(addInode.name);
