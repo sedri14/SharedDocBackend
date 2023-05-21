@@ -1,13 +1,17 @@
 package docSharing.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import docSharing.CRDT.CRDT;
+import docSharing.CRDT.Char;
 import docSharing.enums.INodeType;
+import lombok.Getter;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
+@Getter
 @Entity
 @Table(name = "Document")
 public class Document extends INode {
@@ -16,11 +20,10 @@ public class Document extends INode {
     @Column(name = "last_edited")
     private LocalDateTime lastEdited;
 
-    //A tree data structure that stores the document content
-
+    //Logoot CRDT
     @JsonIgnore
     @OneToOne(cascade = CascadeType.PERSIST)
-    private CRDT crdt;
+    private List<Char> content;
 
     private long logicalSize;
 
@@ -29,38 +32,28 @@ public class Document extends INode {
     }
 
 
-    public Document(String name, INodeType type, LocalDateTime creationDate, Set<INode> children, INode parent, User owner, CRDT crdt, LocalDateTime lastEdited) {
+    public Document(String name, INodeType type, LocalDateTime creationDate, Set<INode> children, INode parent, User owner, List<Char> content, LocalDateTime lastEdited) {
         super(name, type, creationDate, owner, null, parent);
-        this.crdt = crdt;
+        this.content = content;
         this.lastEdited = lastEdited;
     }
 
-    public static Document createNewImportedDocument(String nameWithExtension, INode parent, CRDT crdt, User owner) {
-        return new Document(nameWithExtension, INodeType.FILE, LocalDateTime.now(), null, parent, owner, crdt, LocalDateTime.now());
-    }
+//    public static Document createNewImportedDocument(String nameWithExtension, INode parent, CRDT crdt, User owner) {
+//        return new Document(nameWithExtension, INodeType.FILE, LocalDateTime.now(), null, parent, owner, crdt, LocalDateTime.now());
+//    }
 
     public static Document createNewEmptyDocument(String name, INode parent, User owner) {
-        CRDT emptyDocTree = new CRDT();
-        return new Document(name, INodeType.FILE, LocalDateTime.now(), null, parent, owner, emptyDocTree, LocalDateTime.now());
-    }
-
-    public LocalDateTime getLastEdited() {
-        return lastEdited;
+        List<Char> emptyContent = new ArrayList<>();
+        return new Document(name, INodeType.FILE, LocalDateTime.now(), null, parent, owner, emptyContent, LocalDateTime.now());
     }
 
     public void setLastEdited(LocalDateTime lastEdited) {
         this.lastEdited = lastEdited;
     }
 
-    public CRDT getCrdt() {
-        return crdt;
-    }
-
     public void incSize() {
         this.logicalSize++;
     }
 
-    public long getLogicalSize() {
-        return logicalSize;
-    }
+
 }

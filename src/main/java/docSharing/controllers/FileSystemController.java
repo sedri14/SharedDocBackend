@@ -1,6 +1,5 @@
 package docSharing.controllers;
 
-import docSharing.CRDT.PositionedChar;
 import docSharing.DTO.ChangeRoleDTO;
 import docSharing.DTO.FS.INodeDTO;
 import docSharing.DTO.FS.MoveINodeDTO;
@@ -19,6 +18,8 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.ArrayList;
 import java.util.List;
 import static java.util.Objects.isNull;
 import static org.hibernate.internal.util.StringHelper.isBlank;
@@ -45,16 +46,12 @@ public class FileSystemController {
      *                    parentId - id of parent inode
      *                    name - inode name
      *                    type - type of inode (DIR/FILE)
-     * @param user
      * @return a new inode
      */
     @RequestMapping(value = "/add", method = RequestMethod.POST)
     public ResponseEntity<INodeResponse> addInode(@RequestBody INodeDTO inodeDTO, @RequestAttribute User user) {
         logger.info("adding a new inode to by user {}", user.getEmail());
         logger.debug("addInode function parameters: name:{}, type:{}, parentId:{}",  inodeDTO.name, inodeDTO.type, inodeDTO.parentId);
-        if (isNull(inodeDTO)) {
-            throw new MissingControllerParameterException("http request body");
-        }
         if (isBlank(inodeDTO.name)) {
             throw new MissingControllerParameterException("name");
         }
@@ -68,9 +65,7 @@ public class FileSystemController {
 
         if (inode.getType() == INodeType.FILE) {
             Document document = (Document)inode;
-            List<PositionedChar> rawText = docService.getRawText(document.getCrdt());
-            //todo: return a responseDocument object with the document details + BOF and EOF positions (they are already in the rawText).
-            return ResponseEntity.ok(DocumentResponse.fromDocument(document, rawText));
+            return ResponseEntity.ok(DocumentResponse.fromDocument(document, new ArrayList<>()));
         }
         return ResponseEntity.ok(INodeResponse.fromINode(inode));
     }
@@ -86,9 +81,6 @@ public class FileSystemController {
     public ResponseEntity<INode> rename(@RequestBody INodeDTO inodeDTO) {
         logger.info("start rename inode function");
         logger.debug("rename function parameters: name:{}, id:{}", inodeDTO.name, inodeDTO.parentId);
-        if (isNull(inodeDTO)) {
-            throw new MissingControllerParameterException("http request body");
-        }
         if (isBlank(inodeDTO.name)) {
             throw new MissingControllerParameterException("name");
         }
