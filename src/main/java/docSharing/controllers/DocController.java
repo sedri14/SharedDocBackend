@@ -1,7 +1,6 @@
 package docSharing.controllers;
 
-import docSharing.CRDT.Identifier;
-import docSharing.CRDT.PositionedChar;
+import docSharing.CRDT.Char;
 import docSharing.DTO.UpdateTextDTO;
 import docSharing.DTO.User.UserDTO;
 import docSharing.entities.Document;
@@ -11,15 +10,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-
-import javax.annotation.Nullable;
-
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.ArrayList;
 import java.util.List;
 
 @RequestMapping("/doc")
@@ -40,22 +34,12 @@ public class DocController {
 
     @MessageMapping("/update/{docId}")
     @SendTo("/topic/updates/{docId}")
-    public List<PositionedChar> sendUpdatedText(@DestinationVariable Long docId, @RequestBody UpdateTextDTO updateTextDTO) {
+    public List<Char> sendUpdatedText(@DestinationVariable Long docId, @RequestBody UpdateTextDTO updateTextDTO) {
         logger.info("char <<{}>> is been added to doc {}", updateTextDTO.ch, docId);
         Document document = docService.fetchDocumentById(docId);
+        docService.addCharBetween(updateTextDTO.p, updateTextDTO.q, document, updateTextDTO.ch, updateTextDTO.siteId);
 
-        List<Identifier> pIden = new ArrayList<>(updateTextDTO.p.size());
-        List<Identifier> qIden = new ArrayList<>(updateTextDTO.q.size());
-
-        for (Integer num : updateTextDTO.p) {
-            pIden.add(new Identifier(num));
-        }
-        for (Integer num : updateTextDTO.q) {
-            qIden.add(new Identifier(num));
-        }
-        docService.addCharBetween(pIden, qIden, document, updateTextDTO.ch);
-
-        return docService.getRawText(document.getCrdt());
+        return docService.getRawText(document.getContent());
     }
 
 
@@ -63,7 +47,7 @@ public class DocController {
     public ResponseEntity<DocumentResponse> getDocument(@PathVariable Long docId) {
         logger.info("get document {}", docId);
         Document document = docService.fetchDocumentById(docId);
-        List<PositionedChar> rawText = docService.getRawText(document.getCrdt());
+        List<Char> rawText = docService.getRawText(document.getContent());
 
         return ResponseEntity.ok(DocumentResponse.fromDocument(document, rawText));
     }
@@ -82,6 +66,4 @@ public class DocController {
         logger.info("User {} disconnected from doc: {}", userDto.email, docId);
         return docService.removeUserFromDocConnectedUsers(docId, userDto.email);
     }
-
-
 }
