@@ -1,6 +1,9 @@
 
 # Shared Doc Backend (Google doc)
 
+## Project Architecture
+![architecture](./docs/SharedDocArchitecture.png)
+
 A Shared doc application that includes features:
 
 #### Registration
