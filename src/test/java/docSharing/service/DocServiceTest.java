@@ -5,8 +5,11 @@ import docSharing.entities.Document;
 import docSharing.entities.User;
 import docSharing.enums.INodeType;
 import docSharing.repository.DocRepository;
+import org.checkerframework.checker.units.qual.C;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestTemplate;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -27,9 +30,9 @@ public class DocServiceTest {
     @Mock
     private DocRepository docRepository;
 
-    public static final int WHALE = 0;
+    public static final int ELEPHANT = 0;
 
-    public static final int BUFFALO = 1;
+    public static final int CHEETAH = 1;
 
     Document document;
 
@@ -45,14 +48,57 @@ public class DocServiceTest {
     }
 
     @Test
-    public void alloc_generatingANewPositionBetween_DifferentDigits() {
-        List<Identifier> before = createIdentifiers(3, WHALE, 1, BUFFALO);
-        List<Identifier> after = createIdentifiers(3, WHALE, 2, BUFFALO);
+    @DisplayName("Alloc a new position given that head digits are different")
+    public void alloc_generatingANewPositionBetween_HeadDigitsAreDifferent() {
+        List<Identifier> before = createIdentifiers(3, ELEPHANT, 1, CHEETAH);
+        List<Identifier> after = createIdentifiers(3, ELEPHANT, 2, CHEETAH);
 
-        List<Identifier> newPos = docService.alloc(before, after, WHALE);
+        List<Identifier> newPos = docService.alloc(before, after, ELEPHANT);
+        assertNotNull(newPos);
         printPositionsInOrder(before, newPos, after);
 
+        assertTrue(comparePositions(before, newPos) < 0);
+        assertTrue(comparePositions(newPos, after) < 0);
+    }
+
+    @Test
+    @DisplayName("Alloc a new position given that head digits are the same and sites are different")
+    public void alloc_generatingANewPositionBetween_HeadDigitsSameSitesDifferent() {
+        List<Identifier> before = createIdentifiers(1, ELEPHANT);
+        List<Identifier> after = createIdentifiers(1, CHEETAH);
+
+        List<Identifier> newPos = docService.alloc(before, after, ELEPHANT);
         assertNotNull(newPos);
+        printPositionsInOrder(before, newPos, after);
+
+        assertTrue(comparePositions(before, newPos) < 0);
+        assertTrue(comparePositions(newPos, after) < 0);
+    }
+
+    @Test
+    @DisplayName("Alloc a new position given that head digits and site ids are the same")
+    public void alloc_generatingANewPositionBetween_HeadDigitsAndSitesSame() {
+        List<Identifier> before = createIdentifiers(1, ELEPHANT);
+        List<Identifier> after = createIdentifiers(1, ELEPHANT, 6, ELEPHANT, 3, CHEETAH);
+
+        List<Identifier> newPos = docService.alloc(before, after, ELEPHANT);
+        assertNotNull(newPos);
+        printPositionsInOrder(before, newPos, after);
+
+        assertTrue(comparePositions(before, newPos) < 0);
+        assertTrue(comparePositions(newPos, after) < 0);
+    }
+
+    @Test
+    @DisplayName("")
+    public void alloc_generatingANewPositionBetween_test() {
+        List<Identifier> before = createIdentifiers(1, ELEPHANT, 2, ELEPHANT, 3, ELEPHANT, 6, ELEPHANT);
+        List<Identifier> after = createIdentifiers(1, CHEETAH);
+
+        List<Identifier> newPos = docService.alloc(before, after, ELEPHANT);
+        assertNotNull(newPos);
+        printPositionsInOrder(before, newPos, after);
+
         assertTrue(comparePositions(before, newPos) < 0);
         assertTrue(comparePositions(newPos, after) < 0);
     }

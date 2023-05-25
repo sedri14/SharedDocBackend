@@ -24,7 +24,7 @@ public class CRDTUtils {
     }
 
     public static Identifier head(List<Identifier> pos) {
-        return pos != null ? pos.get(0) : null;
+        return pos.size() > 0 ? pos.get(0) : null;
     }
 
     public static List<Identifier> cons (Identifier head, List<Identifier> rest) {
@@ -37,7 +37,7 @@ public class CRDTUtils {
 
     public static List<Identifier> rest (List<Identifier> pos) {
         if (pos.size() <= 1) {
-            return null;
+            return new ArrayList<>();
         }
 
         return new ArrayList<>(pos.subList(1, pos.size()));
