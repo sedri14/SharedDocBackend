@@ -1,7 +1,6 @@
 package docSharing.CRDT;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class CRDTUtils {
@@ -16,8 +15,8 @@ public class CRDTUtils {
         return Integer.compare(p1.size(), p2.size());
     }
 
-    public static List<Char> sortByPosition(List<Char> content) {
-        List<Char> sortedContent = new ArrayList<>(content);
+    public static List<CharItem> sortByPosition(List<CharItem> content) {
+        List<CharItem> sortedContent = new ArrayList<>(content);
         sortedContent.sort((char1, char2) -> comparePositions(char1.getPosition(), char2.getPosition()));
 
         return sortedContent;

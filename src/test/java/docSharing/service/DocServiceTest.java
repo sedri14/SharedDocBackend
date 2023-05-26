@@ -90,7 +90,7 @@ public class DocServiceTest {
     }
 
     @Test
-    @DisplayName("")
+    @DisplayName("general test")
     public void alloc_generatingANewPositionBetween_test() {
         List<Identifier> before = createIdentifiers(1, ELEPHANT, 2, ELEPHANT, 3, ELEPHANT, 6, ELEPHANT);
         List<Identifier> after = createIdentifiers(1, CHEETAH);

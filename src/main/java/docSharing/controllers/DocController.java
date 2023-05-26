@@ -1,6 +1,6 @@
 package docSharing.controllers;
 
-import docSharing.CRDT.Char;
+import docSharing.CRDT.CharItem;
 import docSharing.DTO.UpdateTextDTO;
 import docSharing.DTO.User.UserDTO;
 import docSharing.entities.Document;
@@ -34,7 +34,7 @@ public class DocController {
 
     @MessageMapping("/update/{docId}")
     @SendTo("/topic/updates/{docId}")
-    public List<Char> sendUpdatedText(@DestinationVariable Long docId, @RequestBody UpdateTextDTO updateTextDTO) {
+    public List<CharItem> sendUpdatedText(@DestinationVariable Long docId, @RequestBody UpdateTextDTO updateTextDTO) {
         logger.info("char <<{}>> is been added to doc {}", updateTextDTO.ch, docId);
         Document document = docService.fetchDocumentById(docId);
         int siteId = docService.getSiteId(docId, updateTextDTO.email);
@@ -48,7 +48,7 @@ public class DocController {
     public ResponseEntity<DocumentResponse> getDocument(@PathVariable Long docId) {
         logger.info("get document {}", docId);
         Document document = docService.fetchDocumentById(docId);
-        List<Char> rawText = docService.getRawText(document.getContent());
+        List<CharItem> rawText = docService.getRawText(document.getContent());
 
         return ResponseEntity.ok(DocumentResponse.fromDocument(document, rawText));
     }

@@ -1,6 +1,6 @@
 package docSharing.service;
 
-import docSharing.CRDT.Char;
+import docSharing.CRDT.CharItem;
 import docSharing.CRDT.Decimal;
 import docSharing.CRDT.Identifier;
 import docSharing.entities.Document;
@@ -87,7 +87,7 @@ public class DocService {
 
     }
 
-    public List<Char> getRawText(List<Char> content) {
+    public List<CharItem> getRawText(List<CharItem> content) {
         return sortByPosition(content);
     }
 
@@ -217,7 +217,7 @@ public class DocService {
 
     public void addCharBetween(List<Identifier> pos1, List<Identifier> pos2, Document document, char ch, int siteId) {
         List<Identifier> newPos = alloc(pos1, pos2, siteId);
-        Char newChar = Char.NewPositionedChar(newPos, ch);
+        CharItem newChar = CharItem.NewPositionedChar(newPos, ch);
         document.getContent().add(newChar);
     }
 

@@ -21,6 +21,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+
 import static java.util.Objects.isNull;
 import static org.hibernate.internal.util.StringHelper.isBlank;
 
@@ -100,10 +102,16 @@ public class FileSystemController {
     }
 
     @RequestMapping(value = "/root", method = RequestMethod.GET)
-    public ResponseEntity<List<INode>> getRoot(@RequestAttribute User user) {
-        logger.info("start getRoot function");
+    public ResponseEntity<List<INodeResponse>> getRoot(@RequestAttribute User user) {
+        //logger.info("start getRoot function");
 
-        return ResponseEntity.ok(fsService.getRootDirectory(user));
+
+        List<INode> inodes = fsService.getRootDirectory(user);
+        List<INodeResponse> responseINodesList = inodes.stream()
+                .map(INodeResponse::fromINode)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(responseINodesList);
     }
 
     @RequestMapping(value = "/shared-with-me", method = RequestMethod.GET)
