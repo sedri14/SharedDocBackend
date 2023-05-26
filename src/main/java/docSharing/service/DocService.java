@@ -5,6 +5,7 @@ import docSharing.CRDT.Decimal;
 import docSharing.CRDT.Identifier;
 import docSharing.entities.Document;
 import docSharing.exceptions.INodeNotFoundException;
+import docSharing.exceptions.IllegalOperationException;
 import docSharing.repository.DocRepository;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -17,17 +18,23 @@ import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static docSharing.CRDT.CRDTUtils.*;
 
 @Service
 public class DocService {
 
+    public static final int MAX_USERS = 5;
     @Autowired
     private DocRepository docRepository;
 
     static Map<Long, String> docContentByDocId = new HashMap<>();
-    static Map<Long, List<String>> connectedUsersByDocId = new HashMap<>();
+    //2 maps: one docId to map of users email to siteid.
+    //document id to arraylist - map that will hold the available ids for a document (using random number from array, limit array to size of max users)
+    static Map<Long, Map<String, Integer>> connectedUsersByDocId = new HashMap<>();
+    static Map<Long, List<Integer>> availableSiteIdsByDocId = new HashMap<>();
     private static final Logger logger = LogManager.getLogger(DocService.class.getName());
 
     public DocService() {
@@ -87,31 +94,84 @@ public class DocService {
 
     public List<String> addUserToDocConnectedUsers(Long docId, String userEmail) {
         logger.info("{} is ADDED to connected users of doc {}", userEmail, docId);
-        if (connectedUsersByDocId.containsKey(docId)) {
-            if (!connectedUsersByDocId.get(docId).contains(userEmail)) {
-                connectedUsersByDocId.get(docId).add(userEmail);
-            }
-        } else {
-            List<String> list = new ArrayList<>();
-            list.add(userEmail);
-            connectedUsersByDocId.put(docId, list);
+        if (!connectedUsersByDocId.containsKey(docId)) {
+            connectedUsersByDocId.put(docId, new HashMap<>());
         }
-        logger.info("Someone joined - Online users: {}", connectedUsersByDocId.get(docId));
 
-        return connectedUsersByDocId.get(docId);
+        Map<String, Integer> connectedUsersMap = connectedUsersByDocId.get(docId);
+        if (!connectedUsersMap.containsKey(userEmail)) {
+            //Add userEmail key and attach a new unique site id
+            connectedUsersMap.put(userEmail, attachUniqueSiteIdToUser(docId));
+        } else {
+            //User already connected and have a unique site id
+            throw new IllegalOperationException(String.format("User %s already connected", userEmail));
+        }
+        List<String> connectedUsers = new ArrayList<>(connectedUsersMap.keySet());
+        logger.info("{} joined - Online users: {}", userEmail, connectedUsers);
+
+        return connectedUsers;
+    }
+
+    private synchronized int attachUniqueSiteIdToUser(Long docId) {
+        if (isFirstConnectedUser(docId)) {
+            initializeSiteIdPool(docId);
+        }
+        Random random = new Random();
+        List<Integer> siteIdsPool = availableSiteIdsByDocId.get(docId);
+        int randIndex = random.nextInt(siteIdsPool.size());
+
+        //swap value of random index with last value
+        int lastIndex = (siteIdsPool.size() - 1);
+        int temp = siteIdsPool.get(randIndex);
+        siteIdsPool.set(randIndex, siteIdsPool.get(lastIndex));
+        siteIdsPool.set(lastIndex, temp);
+
+        int siteId = siteIdsPool.remove(lastIndex);
+
+        return siteId;
+    }
+
+    private boolean isFirstConnectedUser(Long docId) {
+        return connectedUsersByDocId.get(docId).isEmpty();
+    }
+
+    private void initializeSiteIdPool(Long docId) {
+        availableSiteIdsByDocId.get(docId).addAll(IntStream.rangeClosed(1, MAX_USERS)
+                .boxed().collect(Collectors.toList()));
     }
 
     public List<String> removeUserFromDocConnectedUsers(Long docId, String userEmail) {
         logger.info("{} is REMOVED from connected users of doc {}", userEmail, docId);
-        if (connectedUsersByDocId.containsKey(docId)) {
-            connectedUsersByDocId.get(docId).remove(userEmail);
-            if (connectedUsersByDocId.get(docId).isEmpty()) {
-                connectedUsersByDocId.remove(docId);
-            }
-        }
-        logger.info("Someone left - Online users: {}", connectedUsersByDocId.get(docId));
 
-        return connectedUsersByDocId.get(docId);
+        if (!connectedUsersByDocId.containsKey(docId)) {
+            throw new IllegalOperationException("No one connected to this document");
+        }
+
+        Map<String, Integer> connectedUsersMap = connectedUsersByDocId.get(docId);
+        if (!connectedUsersMap.containsKey(userEmail)) {
+            throw new IllegalOperationException("User was not connected to document");
+        }
+
+        int siteId = connectedUsersMap.remove(userEmail);
+        returnSiteIdToPool(docId, siteId);
+
+        if (connectedUsersMap.isEmpty()) {
+            connectedUsersByDocId.remove(docId);
+        }
+        List<String> connectedUsers = new ArrayList<>(connectedUsersMap.keySet());
+        logger.info("{} left - Online users: {}", userEmail, connectedUsers);
+
+        return connectedUsers;
+    }
+
+    private synchronized void returnSiteIdToPool(Long docId, int siteId) {
+        List<Integer> siteIdsPool = availableSiteIdsByDocId.get(docId);
+        siteIdsPool.add(siteId);
+
+        if (siteIdsPool.size() == MAX_USERS) {
+            //Nobody is connected to the document
+            availableSiteIdsByDocId.remove(docId);
+        }
     }
 
     /**
@@ -129,6 +189,7 @@ public class DocService {
         return doc.getOwner().getId();
 
     }
+
     List<Identifier> alloc(List<Identifier> pos1, List<Identifier> pos2, int siteId) {
         Identifier head1 = head(pos1) != null ? head(pos1) : Identifier.create(0, siteId);
         Identifier head2 = head(pos2) != null ? head(pos2) : Identifier.create(Decimal.BASE, siteId);
@@ -136,7 +197,7 @@ public class DocService {
         if (head1.getDigit() != head2.getDigit()) {
             //Case 1: Head digits are different
             List<Integer> n1 = pos1.size() > 0 ? Decimal.fromIdentifierList(pos1) : new ArrayList<>(List.of(head1.getDigit()));
-            List<Integer> n2 = pos2.size() > 0 ? Decimal.fromIdentifierList(pos2) : new ArrayList<>(List.of(2,5,6));
+            List<Integer> n2 = pos2.size() > 0 ? Decimal.fromIdentifierList(pos2) : new ArrayList<>(List.of(2, 5, 6));
             List<Integer> delta = Decimal.substractGreaterThan(n2, n1);
             List<Integer> next = Decimal.increment(n1, delta);
 
@@ -158,5 +219,9 @@ public class DocService {
         List<Identifier> newPos = alloc(pos1, pos2, siteId);
         Char newChar = Char.NewPositionedChar(newPos, ch);
         document.getContent().add(newChar);
+    }
+
+    public int getSiteId(Long docId, String email) {
+        return connectedUsersByDocId.get(docId).get(email);
     }
 }

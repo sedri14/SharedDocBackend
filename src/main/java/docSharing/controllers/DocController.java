@@ -37,7 +37,8 @@ public class DocController {
     public List<Char> sendUpdatedText(@DestinationVariable Long docId, @RequestBody UpdateTextDTO updateTextDTO) {
         logger.info("char <<{}>> is been added to doc {}", updateTextDTO.ch, docId);
         Document document = docService.fetchDocumentById(docId);
-        docService.addCharBetween(updateTextDTO.p, updateTextDTO.q, document, updateTextDTO.ch, updateTextDTO.siteId);
+        int siteId = docService.getSiteId(docId, updateTextDTO.email);
+        docService.addCharBetween(updateTextDTO.p, updateTextDTO.q, document, updateTextDTO.ch, siteId);
 
         return docService.getRawText(document.getContent());
     }
