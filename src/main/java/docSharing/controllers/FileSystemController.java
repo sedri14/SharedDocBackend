@@ -103,9 +103,7 @@ public class FileSystemController {
 
     @RequestMapping(value = "/root", method = RequestMethod.GET)
     public ResponseEntity<List<INodeResponse>> getRoot(@RequestAttribute User user) {
-        //logger.info("start getRoot function");
-
-
+        logger.info("start getRoot function");
         List<INode> inodes = fsService.getRootDirectory(user);
         List<INodeResponse> responseINodesList = inodes.stream()
                 .map(INodeResponse::fromINode)
@@ -115,10 +113,14 @@ public class FileSystemController {
     }
 
     @RequestMapping(value = "/shared-with-me", method = RequestMethod.GET)
-    public ResponseEntity<List<INode>> getSharedWithMe(@RequestAttribute User user) {
+    public ResponseEntity<List<INodeResponse>> getSharedWithMe(@RequestAttribute User user) {
         logger.info("start getSharedWithMe function");
+        List<INode> sharedWithMe = fsService.getSharedWithMe(user);
+        List<INodeResponse> responseINodesList = sharedWithMe.stream()
+                .map(INodeResponse::fromINode)
+                .collect(Collectors.toList());
 
-        return ResponseEntity.ok(fsService.getSharedWithMe(user));
+        return ResponseEntity.ok(responseINodesList);
     }
 
     /**

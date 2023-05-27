@@ -31,8 +31,6 @@ public class DocService {
     private DocRepository docRepository;
 
     static Map<Long, String> docContentByDocId = new HashMap<>();
-    //2 maps: one docId to map of users email to siteid.
-    //document id to arraylist - map that will hold the available ids for a document (using random number from array, limit array to size of max users)
     static Map<Long, Map<String, Integer>> connectedUsersByDocId = new HashMap<>();
     static Map<Long, List<Integer>> availableSiteIdsByDocId = new HashMap<>();
     private static final Logger logger = LogManager.getLogger(DocService.class.getName());
@@ -101,7 +99,9 @@ public class DocService {
         Map<String, Integer> connectedUsersMap = connectedUsersByDocId.get(docId);
         if (!connectedUsersMap.containsKey(userEmail)) {
             //Add userEmail key and attach a new unique site id
-            connectedUsersMap.put(userEmail, attachUniqueSiteIdToUser(docId));
+            int siteId = attachUniqueSiteIdToUser(docId);
+            connectedUsersMap.put(userEmail, siteId);
+            logger.info("User {} site id is {}", userEmail, siteId);
         } else {
             //User already connected and have a unique site id
             throw new IllegalOperationException(String.format("User %s already connected", userEmail));
@@ -136,6 +136,7 @@ public class DocService {
     }
 
     private void initializeSiteIdPool(Long docId) {
+        availableSiteIdsByDocId.put(docId, new ArrayList<>());
         availableSiteIdsByDocId.get(docId).addAll(IntStream.rangeClosed(1, MAX_USERS)
                 .boxed().collect(Collectors.toList()));
     }
@@ -154,6 +155,7 @@ public class DocService {
 
         int siteId = connectedUsersMap.remove(userEmail);
         returnSiteIdToPool(docId, siteId);
+        logger.info("User {} returned site id {}", userEmail, siteId);
 
         if (connectedUsersMap.isEmpty()) {
             connectedUsersByDocId.remove(docId);

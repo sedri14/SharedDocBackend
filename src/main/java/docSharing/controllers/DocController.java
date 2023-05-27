@@ -4,6 +4,7 @@ import docSharing.CRDT.CharItem;
 import docSharing.DTO.UpdateTextDTO;
 import docSharing.DTO.User.UserDTO;
 import docSharing.entities.Document;
+import docSharing.response.CharItemResponse;
 import docSharing.response.DocumentResponse;
 import docSharing.service.*;
 import org.apache.logging.log4j.LogManager;
@@ -15,6 +16,7 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RequestMapping("/doc")
 @CrossOrigin
@@ -34,13 +36,16 @@ public class DocController {
 
     @MessageMapping("/update/{docId}")
     @SendTo("/topic/updates/{docId}")
-    public List<CharItem> sendUpdatedText(@DestinationVariable Long docId, @RequestBody UpdateTextDTO updateTextDTO) {
+    public List<CharItemResponse> sendUpdatedText(@DestinationVariable Long docId, @RequestBody UpdateTextDTO updateTextDTO) {
         logger.info("char <<{}>> is been added to doc {}", updateTextDTO.ch, docId);
+        //todo: solve problem: if there are connected users to doc, get it from a cache and not from the db...
         Document document = docService.fetchDocumentById(docId);
+        //Document document = docService.getCachedDocument(docId);
         int siteId = docService.getSiteId(docId, updateTextDTO.email);
         docService.addCharBetween(updateTextDTO.p, updateTextDTO.q, document, updateTextDTO.ch, siteId);
+        List<CharItem> rawText = docService.getRawText(document.getContent());
 
-        return docService.getRawText(document.getContent());
+        return rawText.stream().map(CharItemResponse::fromCharItem).collect(Collectors.toList());
     }
 
 

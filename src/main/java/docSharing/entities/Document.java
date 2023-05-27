@@ -20,7 +20,7 @@ public class Document extends INode {
     private LocalDateTime lastEdited;
 
     //Logoot CRDT
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<CharItem> content;
 
     private long logicalSize;
