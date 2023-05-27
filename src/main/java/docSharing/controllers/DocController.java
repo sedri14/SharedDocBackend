@@ -38,9 +38,7 @@ public class DocController {
     @SendTo("/topic/updates/{docId}")
     public List<CharItemResponse> sendUpdatedText(@DestinationVariable Long docId, @RequestBody UpdateTextDTO updateTextDTO) {
         logger.info("char <<{}>> is been added to doc {}", updateTextDTO.ch, docId);
-        //todo: solve problem: if there are connected users to doc, get it from a cache and not from the db...
-        Document document = docService.fetchDocumentById(docId);
-        //Document document = docService.getCachedDocument(docId);
+        Document document = docService.getCachedDocument(docId);
         int siteId = docService.getSiteId(docId, updateTextDTO.email);
         docService.addCharBetween(updateTextDTO.p, updateTextDTO.q, document, updateTextDTO.ch, siteId);
         List<CharItem> rawText = docService.getRawText(document.getContent());
@@ -48,11 +46,10 @@ public class DocController {
         return rawText.stream().map(CharItemResponse::fromCharItem).collect(Collectors.toList());
     }
 
-
     @RequestMapping(value = "/{docId}", method = RequestMethod.GET)
     public ResponseEntity<DocumentResponse> getDocument(@PathVariable Long docId) {
         logger.info("get document {}", docId);
-        Document document = docService.fetchDocumentById(docId);
+        Document document = docService.getCachedDocument(docId);
         List<CharItem> rawText = docService.getRawText(document.getContent());
 
         return ResponseEntity.ok(DocumentResponse.fromDocument(document, rawText));

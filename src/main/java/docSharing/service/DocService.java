@@ -30,7 +30,7 @@ public class DocService {
     @Autowired
     private DocRepository docRepository;
 
-    static Map<Long, String> docContentByDocId = new HashMap<>();
+    static Map<Long, Document> cachedDocs = new HashMap<>();
     static Map<Long, Map<String, Integer>> connectedUsersByDocId = new HashMap<>();
     static Map<Long, List<Integer>> availableSiteIdsByDocId = new HashMap<>();
     private static final Logger logger = LogManager.getLogger(DocService.class.getName());
@@ -159,11 +159,18 @@ public class DocService {
 
         if (connectedUsersMap.isEmpty()) {
             connectedUsersByDocId.remove(docId);
+            flushAndRemoveDocFromCache(docId);   //doc is not cached anymore because no one is connected to it.
         }
         List<String> connectedUsers = new ArrayList<>(connectedUsersMap.keySet());
         logger.info("{} left - Online users: {}", userEmail, connectedUsers);
 
         return connectedUsers;
+    }
+
+    private synchronized void flushAndRemoveDocFromCache(Long docId) {
+        Document doc = cachedDocs.get(docId);
+        docRepository.save(doc);
+        cachedDocs.remove(docId);
     }
 
     private synchronized void returnSiteIdToPool(Long docId, int siteId) {
@@ -225,5 +232,15 @@ public class DocService {
 
     public int getSiteId(Long docId, String email) {
         return connectedUsersByDocId.get(docId).get(email);
+    }
+
+    public Document getCachedDocument(Long docId) {
+        Document doc = cachedDocs.get(docId);
+        if (null == doc) {
+            doc = fetchDocumentById(docId);
+            cachedDocs.put(docId, doc);
+        }
+
+        return doc;
     }
 }
