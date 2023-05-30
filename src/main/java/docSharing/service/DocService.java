@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import javax.print.Doc;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -38,51 +39,19 @@ public class DocService {
     public DocService() {
         logger.info("init Doc Service instance");
 
-        Runnable saveContentToDBRunnable = new Runnable() {
-            public void run() {
-                //saveAllChangesToDB(docContentByDocId);
+        Runnable autoSaveTask = () -> {
+            logger.info("start saveChangesToDB function");
+            for (Map.Entry<Long, Document> entry : cachedDocs.entrySet()) {
+                docRepository.save(entry.getValue());
             }
         };
 
         ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
-        executor.scheduleAtFixedRate(saveContentToDBRunnable, 0, 5, TimeUnit.SECONDS);
-
+        executor.scheduleAtFixedRate(autoSaveTask, 0, 5, TimeUnit.SECONDS);
     }
 
     public Document fetchDocumentById(Long id) {
         return docRepository.findById(id).orElseThrow(() -> new INodeNotFoundException("Document not found with id " + id));
-    }
-
-    /**
-     * @param map documents content by docId hashMap.
-     */
-    public void saveAllChangesToDB(Map<Long, String> map) {
-        logger.info("start saveChangesToDB function");
-        for (Map.Entry<Long, String> entry : map.entrySet()) {
-            saveOneDocContentToDB(entry.getKey(), entry.getValue());
-        }
-    }
-
-
-    /**
-     * @param docId           document id
-     * @param documentContent document new content
-     */
-    private void saveOneDocContentToDB(Long docId, String documentContent) {
-
-        logger.info("start saveOneDocContentToDB function");
-        boolean docIsPresent = docRepository.findById(docId).isPresent();
-        if (!docIsPresent) {
-            logger.error("there is no document with this id");
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "there is no document with this id");
-            //this should be changed.
-        }
-        Document doc = docRepository.findById(docId).get();
-        //doc.setContent(documentContent);
-
-        docRepository.save(doc);
-        logger.info("document is saved");
-
     }
 
     public List<CharItem> getRawText(List<CharItem> content) {
