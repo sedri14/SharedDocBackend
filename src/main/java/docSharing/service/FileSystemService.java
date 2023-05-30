@@ -169,8 +169,9 @@ public class FileSystemService {
         INode parent = inode.getParent();
         parent.getChildren().remove(inode.getName());
         fsRepository.save(parent);
+        INode removedInode = fsRepository.removeById(id).get();
 
-        return fsRepository.removeById(id);
+        return removedInode;
     }
 
     /**

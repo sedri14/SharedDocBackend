@@ -205,8 +205,12 @@ public class DocService {
 
         if (head1.getDigit() != head2.getDigit()) {
             //Case 1: Head digits are different
-            List<Integer> n1 = pos1.size() > 0 ? Decimal.fromIdentifierList(pos1) : new ArrayList<>(List.of(head1.getDigit()));
-            List<Integer> n2 = pos2.size() > 0 ? Decimal.fromIdentifierList(pos2) : new ArrayList<>(List.of(2, 5, 6));
+            if (pos1.isEmpty() && pos2.isEmpty()) {
+                return Decimal.toIdentifierList(List.of(0, 1), pos1, pos2, siteId);
+
+            }
+            List<Integer> n1 = Decimal.fromIdentifierList(pos1);
+            List<Integer> n2 = Decimal.fromIdentifierList(pos2);
             List<Integer> delta = Decimal.substractGreaterThan(n2, n1);
             List<Integer> next = Decimal.increment(n1, delta);
 
