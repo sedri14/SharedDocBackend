@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import docSharing.DTO.User.UserDTO;
 
 import javax.persistence.*;
+import javax.print.Doc;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
@@ -30,7 +31,7 @@ public class User implements Serializable {
     @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL)
     private Set<Document> myDocs;   //my owned docs
 
-    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private Set<INode> sharedWithMe;
 
     User() {

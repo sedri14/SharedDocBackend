@@ -1,9 +1,10 @@
 package docSharing.controllers;
 
-import docSharing.CRDT.Char;
+import docSharing.CRDT.CharItem;
 import docSharing.DTO.UpdateTextDTO;
 import docSharing.DTO.User.UserDTO;
 import docSharing.entities.Document;
+import docSharing.response.CharItemResponse;
 import docSharing.response.DocumentResponse;
 import docSharing.service.*;
 import org.apache.logging.log4j.LogManager;
@@ -15,6 +16,7 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RequestMapping("/doc")
 @CrossOrigin
@@ -34,20 +36,21 @@ public class DocController {
 
     @MessageMapping("/update/{docId}")
     @SendTo("/topic/updates/{docId}")
-    public List<Char> sendUpdatedText(@DestinationVariable Long docId, @RequestBody UpdateTextDTO updateTextDTO) {
+    public List<CharItemResponse> sendUpdatedText(@DestinationVariable Long docId, @RequestBody UpdateTextDTO updateTextDTO) {
         logger.info("char <<{}>> is been added to doc {}", updateTextDTO.ch, docId);
-        Document document = docService.fetchDocumentById(docId);
-        docService.addCharBetween(updateTextDTO.p, updateTextDTO.q, document, updateTextDTO.ch, updateTextDTO.siteId);
+        Document document = docService.getCachedDocument(docId);
+        int siteId = docService.getSiteId(docId, updateTextDTO.email);
+        docService.addCharBetween(updateTextDTO.p, updateTextDTO.q, document, updateTextDTO.ch, siteId);
+        List<CharItem> rawText = docService.getRawText(document.getContent());
 
-        return docService.getRawText(document.getContent());
+        return rawText.stream().map(CharItemResponse::fromCharItem).collect(Collectors.toList());
     }
-
 
     @RequestMapping(value = "/{docId}", method = RequestMethod.GET)
     public ResponseEntity<DocumentResponse> getDocument(@PathVariable Long docId) {
         logger.info("get document {}", docId);
-        Document document = docService.fetchDocumentById(docId);
-        List<Char> rawText = docService.getRawText(document.getContent());
+        Document document = docService.getCachedDocument(docId);
+        List<CharItem> rawText = docService.getRawText(document.getContent());
 
         return ResponseEntity.ok(DocumentResponse.fromDocument(document, rawText));
     }

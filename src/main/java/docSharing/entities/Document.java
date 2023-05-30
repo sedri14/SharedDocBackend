@@ -1,7 +1,6 @@
 package docSharing.entities;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import docSharing.CRDT.Char;
+import docSharing.CRDT.CharItem;
 import docSharing.enums.INodeType;
 import lombok.Getter;
 
@@ -21,9 +20,8 @@ public class Document extends INode {
     private LocalDateTime lastEdited;
 
     //Logoot CRDT
-    @JsonIgnore
-    @OneToOne(cascade = CascadeType.PERSIST)
-    private List<Char> content;
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    private List<CharItem> content;
 
     private long logicalSize;
 
@@ -32,7 +30,7 @@ public class Document extends INode {
     }
 
 
-    public Document(String name, INodeType type, LocalDateTime creationDate, Set<INode> children, INode parent, User owner, List<Char> content, LocalDateTime lastEdited) {
+    public Document(String name, INodeType type, LocalDateTime creationDate, Set<INode> children, INode parent, User owner, List<CharItem> content, LocalDateTime lastEdited) {
         super(name, type, creationDate, owner, null, parent);
         this.content = content;
         this.lastEdited = lastEdited;
@@ -43,7 +41,7 @@ public class Document extends INode {
 //    }
 
     public static Document createNewEmptyDocument(String name, INode parent, User owner) {
-        List<Char> emptyContent = new ArrayList<>();
+        List<CharItem> emptyContent = new ArrayList<>();
         return new Document(name, INodeType.FILE, LocalDateTime.now(), null, parent, owner, emptyContent, LocalDateTime.now());
     }
 
