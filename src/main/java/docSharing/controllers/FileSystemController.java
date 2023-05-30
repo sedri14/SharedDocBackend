@@ -12,6 +12,7 @@ import docSharing.response.DocumentResponse;
 import docSharing.response.INodeResponse;
 import docSharing.service.DocService;
 import docSharing.service.FileSystemService;
+import docSharing.service.SharedRoleService;
 import docSharing.service.UserService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -39,21 +40,24 @@ public class FileSystemController {
     @Autowired
     DocService docService;
 
+    @Autowired
+    SharedRoleService sharedRoleService;
+
     private static Logger logger = LogManager.getLogger(FileSystemController.class.getName());
 
     /**
      * Adds an inode
      *
      * @param inodeDTO - contains: userId - id of owner user
-     *                    parentId - id of parent inode
-     *                    name - inode name
-     *                    type - type of inode (DIR/FILE)
+     *                 parentId - id of parent inode
+     *                 name - inode name
+     *                 type - type of inode (DIR/FILE)
      * @return a new inode
      */
     @RequestMapping(value = "/add", method = RequestMethod.POST)
     public ResponseEntity<INodeResponse> addInode(@RequestBody INodeDTO inodeDTO, @RequestAttribute User user) {
         logger.info("adding a new inode to by user {}", user.getEmail());
-        logger.debug("addInode function parameters: name:{}, type:{}, parentId:{}",  inodeDTO.name, inodeDTO.type, inodeDTO.parentId);
+        logger.debug("addInode function parameters: name:{}, type:{}, parentId:{}", inodeDTO.name, inodeDTO.type, inodeDTO.parentId);
         if (isBlank(inodeDTO.name)) {
             throw new MissingControllerParameterException("name");
         }
@@ -66,7 +70,7 @@ public class FileSystemController {
         INode inode = fsService.addInode(inodeDTO, user);
 
         if (inode.getType() == INodeType.FILE) {
-            Document document = (Document)inode;
+            Document document = (Document) inode;
             return ResponseEntity.ok(DocumentResponse.fromDocument(document, new ArrayList<>()));
         }
         return ResponseEntity.ok(INodeResponse.fromINode(inode));
@@ -76,7 +80,7 @@ public class FileSystemController {
      * Renames an inode
      *
      * @param inodeDTO contains: id - inode id
-     *                       name - inode name
+     *                 name - inode name
      * @return renamed inode
      */
     @RequestMapping(value = "/rename", method = RequestMethod.PATCH)
@@ -115,7 +119,7 @@ public class FileSystemController {
     @RequestMapping(value = "/shared-with-me", method = RequestMethod.GET)
     public ResponseEntity<List<INodeResponse>> getSharedWithMe(@RequestAttribute User user) {
         logger.info("start getSharedWithMe function");
-        List<INode> sharedWithMe = fsService.getSharedWithMe(user);
+        List<INode> sharedWithMe = sharedRoleService.getAllSharedFilesWithUser(user);
         List<INodeResponse> responseINodesList = sharedWithMe.stream()
                 .map(INodeResponse::fromINode)
                 .collect(Collectors.toList());
@@ -163,25 +167,26 @@ public class FileSystemController {
      * @return if the change is done or note
      */
     @RequestMapping(value = "changeUserRole/{inodeId}", method = RequestMethod.POST)
-    public ResponseEntity<UserRole> changeUserRole(@PathVariable Long inodeId, @RequestBody ChangeRoleDTO changeRoleDTO) {
+    public ResponseEntity<SharedRole> changeUserRole(@PathVariable Long inodeId, @RequestBody ChangeRoleDTO changeRoleDTO) {
 
         logger.info("start changeUserRollInDoc function");
 
-        if (isNull(changeRoleDTO)){
+        if (isNull(changeRoleDTO)) {
             throw new MissingControllerParameterException("http request body");
         }
         if (isBlank(changeRoleDTO.email)) {
             throw new MissingControllerParameterException("email");
         }
-        if (isNull(changeRoleDTO.userRole)){
+        if (isNull(changeRoleDTO.userRole)) {
             throw new MissingControllerParameterException("user role");
         }
 
         INode inode = fsService.fetchINodeById(inodeId);
         User user = userService.findByEmail(changeRoleDTO.email);
-        UserRole userRole = (changeRoleDTO.isDeleteRole) ? UserRole.NON : changeRoleDTO.userRole;
-        userService.addINodeToSharedWithMe(user, inode);
+        if (changeRoleDTO.isDeleteRole) {
+            return ResponseEntity.ok(sharedRoleService.deleteRole(inode, user));
+        }
 
-        return ResponseEntity.ok(fsService.changeUserRole(inode, user, userRole));
+        return ResponseEntity.ok(sharedRoleService.changeUserRole(inode, user, changeRoleDTO.userRole));
     }
 }

@@ -8,6 +8,7 @@ import javax.persistence.*;
 import javax.print.Doc;
 import java.io.Serializable;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -27,12 +28,8 @@ public class User implements Serializable {
     @OneToOne(cascade = CascadeType.ALL)
     private INode rootDirectory;
 
-    @JsonIgnore
-    @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL)
-    private Set<Document> myDocs;   //my owned docs
-
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-    private Set<INode> sharedWithMe;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE)
+    private List<SharedRole> sharedItems;
 
     User() {
 
@@ -89,13 +86,5 @@ public class User implements Serializable {
     @Override
     public String toString() {
         return "User: id=" + id + ", name='" + name + ", email='" + email + ", password='" + password;
-    }
-
-    public Set<Document> getMyDocs() {
-        return myDocs;
-    }
-
-    public Set<INode> getSharedWithMe() {
-        return sharedWithMe;
     }
 }

@@ -9,6 +9,7 @@ import docSharing.exceptions.INodeNameExistsException;
 import docSharing.exceptions.INodeNotFoundException;
 import docSharing.exceptions.IllegalOperationException;
 import docSharing.repository.FileSystemRepository;
+import docSharing.repository.SharedRoleRepository;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -31,6 +32,8 @@ public class FileSystemService {
 
 
     private static Logger logger = LogManager.getLogger(FileSystemService.class.getName());
+    @Autowired
+    private SharedRoleRepository sharedRoleRepository;
 
 
     public INode fetchINodeById(Long id) {
@@ -300,25 +303,9 @@ public class FileSystemService {
         }
     }
 
-    public UserRole changeUserRole(INode inode, User user, UserRole userRole) {
-
-        if (userRole == UserRole.NON) {
-            inode.getRoles().remove(user);
-        } else {
-            inode.getRoles().put(user, userRole);
-        }
-        fsRepository.save(inode);
-
-        return userRole;
-    }
-
     public List<INode> getRootDirectory(User user) {
         return user.getRootDirectory().getChildren().values().stream().collect(Collectors.toList());
     }
 
-    public List<INode> getSharedWithMe(User user) {
-        Set<INode> sharedWithMe = user.getSharedWithMe();
-        logger.info("GOT SHARED");
-        return sharedWithMe.stream().collect(Collectors.toList());
-    }
+
 }

@@ -99,12 +99,4 @@ public class UserService {
     public List<User> findAll() {
         return userRepository.findAll();
     }
-
-    public void addINodeToSharedWithMe(User user, INode inode) {
-        logger.info("sharing inode {} with user {}", inode.getId(), user.getEmail());
-        if (!user.getSharedWithMe().contains(inode)) {
-            user.getSharedWithMe().add(inode);
-            userRepository.save(user);
-        }
-    }
 }
