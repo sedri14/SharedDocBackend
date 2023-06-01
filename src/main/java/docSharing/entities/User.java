@@ -81,6 +81,10 @@ public class User implements Serializable {
         this.rootDirectory = rootDirectory;
     }
 
+    public List<SharedRole> getSharedItems() {
+        return sharedItems;
+    }
+
     //Todo:change the hashcode and the equal to newer one.
 
     @Override

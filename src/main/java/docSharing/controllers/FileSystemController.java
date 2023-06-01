@@ -71,7 +71,7 @@ public class FileSystemController {
 
         if (inode.getType() == INodeType.FILE) {
             Document document = (Document) inode;
-            return ResponseEntity.ok(DocumentResponse.fromDocument(document, new ArrayList<>()));
+            return ResponseEntity.ok(DocumentResponse.fromDocument(document));
         }
         return ResponseEntity.ok(INodeResponse.fromINode(inode));
     }

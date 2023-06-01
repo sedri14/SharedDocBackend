@@ -121,6 +121,10 @@ public class INode implements Serializable {
         this.children = children;
     }
 
+    public List<SharedRole> getSharedItems() {
+        return sharedItems;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

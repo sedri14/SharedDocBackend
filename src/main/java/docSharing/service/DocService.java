@@ -10,11 +10,7 @@ import docSharing.repository.DocRepository;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
-
-import javax.print.Doc;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -40,14 +36,18 @@ public class DocService {
         logger.info("init Doc Service instance");
 
         Runnable autoSaveTask = () -> {
-            logger.info("start saveChangesToDB function");
+            //logger.info("start saveChangesToDB function");
             for (Map.Entry<Long, Document> entry : cachedDocs.entrySet()) {
-                docRepository.save(entry.getValue());
+                logger.info("writing to db size: {}", entry.getValue().getContent().size());
+                //find, set, save.
+                Document doc = fetchDocumentById(entry.getKey());
+                doc.setContent(entry.getValue().getContent());
+                docRepository.save(doc);
             }
         };
 
-        ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
-        executor.scheduleAtFixedRate(autoSaveTask, 0, 5, TimeUnit.SECONDS);
+//        ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+//        executor.scheduleAtFixedRate(autoSaveTask, 0, 5, TimeUnit.SECONDS);
     }
 
     public Document fetchDocumentById(Long id) {
@@ -59,7 +59,7 @@ public class DocService {
     }
 
 
-    public List<String> addUserToDocConnectedUsers(Long docId, String userEmail) {
+    public synchronized List<String> addUserToDocConnectedUsers(Long docId, String userEmail) {
         logger.info("{} is ADDED to connected users of doc {}", userEmail, docId);
         if (!connectedUsersByDocId.containsKey(docId)) {
             connectedUsersByDocId.put(docId, new HashMap<>());
@@ -110,7 +110,7 @@ public class DocService {
                 .boxed().collect(Collectors.toList()));
     }
 
-    public List<String> removeUserFromDocConnectedUsers(Long docId, String userEmail) {
+    public synchronized List<String> removeUserFromDocConnectedUsers(Long docId, String userEmail) {
         logger.info("{} is REMOVED from connected users of doc {}", userEmail, docId);
 
         if (!connectedUsersByDocId.containsKey(docId)) {
@@ -137,9 +137,13 @@ public class DocService {
     }
 
     private synchronized void flushAndRemoveDocFromCache(Long docId) {
-        Document doc = cachedDocs.get(docId);
+        logger.info(">>>flush docs to db and remove from cache<<<");
+        logger.info("doc content about to be saved: size: {}", cachedDocs.get(docId).getContent().size());
+        Document doc = fetchDocumentById(docId);
+        doc.setContent(cachedDocs.get(docId).getContent());
         docRepository.save(doc);
         cachedDocs.remove(docId);
+        logger.info("after remove, cachedDocs size: {}", cachedDocs.size());
     }
 
     private synchronized void returnSiteIdToPool(Long docId, int siteId) {
@@ -209,8 +213,10 @@ public class DocService {
 
     public Document getCachedDocument(Long docId) {
         Document doc = cachedDocs.get(docId);
+        logger.info(null == doc ? " getting doc from db" : "getting doc from cache");
         if (null == doc) {
             doc = fetchDocumentById(docId);
+            logger.info("after add to cachedDocs, cachedDocs size: {}", cachedDocs.size());
             cachedDocs.put(docId, doc);
         }
 

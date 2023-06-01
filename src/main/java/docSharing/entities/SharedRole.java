@@ -4,11 +4,12 @@ import docSharing.enums.UserRole;
 import lombok.Getter;
 
 import javax.persistence.*;
+import java.io.Serializable;
 
 @Entity
 @Table(name = "shared")
 @Getter
-public class SharedRole {
+public class SharedRole  implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

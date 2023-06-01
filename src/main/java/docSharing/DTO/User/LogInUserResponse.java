@@ -6,10 +6,13 @@ public class LogInUserResponse {
 
     String email;
 
+    Long rootId;
 
-    public LogInUserResponse(String token, String email) {
+
+    public LogInUserResponse(String token, String email, Long rootId) {
         this.token = token;
         this.email = email;
+        this.rootId = rootId;
     }
 
     public String getEmail() {
@@ -22,6 +25,10 @@ public class LogInUserResponse {
 
     public void setToken(String token) {
         this.token = token;
+    }
+
+    public Long getRootId() {
+        return rootId;
     }
 }
 

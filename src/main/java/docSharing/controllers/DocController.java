@@ -48,11 +48,11 @@ public class DocController {
 
     @RequestMapping(value = "/{docId}", method = RequestMethod.GET)
     public ResponseEntity<DocumentResponse> getDocument(@PathVariable Long docId) {
-        logger.info("get document {}", docId);
+        logger.info("get document {}...", docId);
         Document document = docService.getCachedDocument(docId);
         List<CharItem> rawText = docService.getRawText(document.getContent());
 
-        return ResponseEntity.ok(DocumentResponse.fromDocument(document, rawText));
+        return ResponseEntity.ok(DocumentResponse.fromDocument(document));
     }
 
     @MessageMapping("/join/{docId}")

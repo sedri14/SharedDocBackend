@@ -60,13 +60,14 @@ public class AuthService {
 
         User user = userRepository.findByEmail(userDTO.getEmail());
         if (!user.getPassword().equals(userDTO.getPassword())) {
+
             throw new InvalidFormatException(userDTO.getEmail());
         }
         String token = generateToken();
         userByToken.put(token, user);
         logger.info(token);
 
-        return new LogInUserResponse(token, userDTO.email);
+        return new LogInUserResponse(token, userDTO.email, user.getRootDirectory().getId());
     }
 
     public User getCachedUser(String token) {
