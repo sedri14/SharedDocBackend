@@ -6,10 +6,10 @@ import docSharing.DTO.FS.MoveINodeDTO;
 import docSharing.entities.INode;
 import docSharing.entities.*;
 import docSharing.enums.INodeType;
-import docSharing.enums.UserRole;
 import docSharing.exceptions.MissingControllerParameterException;
 import docSharing.response.DocumentResponse;
 import docSharing.response.INodeResponse;
+import docSharing.response.SharedRoleResponse;
 import docSharing.service.DocService;
 import docSharing.service.FileSystemService;
 import docSharing.service.SharedRoleService;
@@ -20,7 +20,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -84,7 +83,7 @@ public class FileSystemController {
      * @return renamed inode
      */
     @RequestMapping(value = "/rename", method = RequestMethod.PATCH)
-    public ResponseEntity<INode> rename(@RequestBody INodeDTO inodeDTO) {
+    public ResponseEntity<INode> rename(@RequestBody INodeDTO inodeDTO, @RequestAttribute INode inode) {
         logger.info("start rename inode function");
         logger.debug("rename function parameters: name:{}, id:{}", inodeDTO.name, inodeDTO.parentId);
         if (isBlank(inodeDTO.name)) {
@@ -94,15 +93,20 @@ public class FileSystemController {
             throw new MissingControllerParameterException("id");
         }
 
-        return ResponseEntity.ok(fsService.renameInode(inodeDTO.parentId, inodeDTO.name));
+        return ResponseEntity.ok(fsService.renameInode(inode, inodeDTO.name));
     }
 
     @RequestMapping(value = "/level/{inodeId}", method = RequestMethod.GET)
-    public ResponseEntity<List<INode>> getChildren(@PathVariable Long inodeId) {
+    public ResponseEntity<List<INodeResponse>> getChildren(@PathVariable Long inodeId, @RequestAttribute INode inode) {
         logger.info("start getChildren function");
         logger.debug("getChildren function parameters: id:%{}", inodeId);
 
-        return ResponseEntity.ok(fsService.getAllChildrenInodes(inodeId));
+        List<INode> inodes = fsService.getAllChildrenInodes(inode);
+        List<INodeResponse> responseINodesList = inodes.stream()
+                .map(INodeResponse::fromINode)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(responseINodesList);
     }
 
     @RequestMapping(value = "/root", method = RequestMethod.GET)
@@ -167,7 +171,7 @@ public class FileSystemController {
      * @return if the change is done or note
      */
     @RequestMapping(value = "changeUserRole/{inodeId}", method = RequestMethod.POST)
-    public ResponseEntity<SharedRole> changeUserRole(@PathVariable Long inodeId, @RequestBody ChangeRoleDTO changeRoleDTO) {
+    public ResponseEntity<SharedRoleResponse> changeUserRole(@PathVariable Long inodeId, @RequestBody ChangeRoleDTO changeRoleDTO, @RequestAttribute INode inode) {
 
         logger.info("start changeUserRollInDoc function");
 
@@ -177,16 +181,20 @@ public class FileSystemController {
         if (isBlank(changeRoleDTO.email)) {
             throw new MissingControllerParameterException("email");
         }
-        if (isNull(changeRoleDTO.userRole)) {
-            throw new MissingControllerParameterException("user role");
+        if (!changeRoleDTO.isDeleteRole) {
+            if (isNull(changeRoleDTO.userRole)) {
+                throw new MissingControllerParameterException("user role");
+            }
         }
 
-        INode inode = fsService.fetchINodeById(inodeId);
         User user = userService.findByEmail(changeRoleDTO.email);
         if (changeRoleDTO.isDeleteRole) {
-            return ResponseEntity.ok(sharedRoleService.deleteRole(inode, user));
+            SharedRole deletedRole = sharedRoleService.deleteRole(inode, user);
+            return ResponseEntity.ok(SharedRoleResponse.fromSharedRole(deletedRole));
         }
 
-        return ResponseEntity.ok(sharedRoleService.changeUserRole(inode, user, changeRoleDTO.userRole));
+        SharedRole sharedRole = sharedRoleService.changeUserRole(inode, user, changeRoleDTO.userRole);
+
+        return ResponseEntity.ok(SharedRoleResponse.fromSharedRole(sharedRole));
     }
 }

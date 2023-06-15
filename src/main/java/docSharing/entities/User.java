@@ -28,6 +28,9 @@ public class User implements Serializable {
     @OneToOne(cascade = CascadeType.ALL)
     private INode rootDirectory;
 
+    @Column(name = "site_id", nullable = false)
+    private int siteId;
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE)
     private List<SharedRole> sharedItems;
 
@@ -85,7 +88,15 @@ public class User implements Serializable {
         return sharedItems;
     }
 
-    //Todo:change the hashcode and the equal to newer one.
+    public int getSiteId() {
+        return siteId;
+    }
+
+    public void setSiteId(int siteId) {
+        this.siteId = siteId;
+    }
+
+//Todo:change the hashcode and the equal to newer one.
 
     @Override
     public String toString() {

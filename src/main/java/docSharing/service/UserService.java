@@ -3,6 +3,8 @@ package docSharing.service;
 import docSharing.controllers.AuthController;
 import docSharing.entities.INode;
 import docSharing.entities.User;
+import docSharing.exceptions.INodeNotFoundException;
+import docSharing.exceptions.UserNotFoundException;
 import docSharing.repository.UserRepository;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -71,19 +73,15 @@ public class UserService {
     }
 
 
-    public User findByEmail(String email) {
-        return userRepository.findByEmail(email);
+    public User fetchUserById(Long id) {
+        return userRepository.findById(id).orElseThrow(() -> new UserNotFoundException());
     }
 
-    public User getById(Long id) {
+    public User findByEmail(String email) {
+        User user = userRepository.findByEmail(email);
+        if (null == user) throw new UserNotFoundException();
 
-        boolean isPresent = userRepository.findById(id).isPresent();
-
-        if (!isPresent) {
-            throw new IllegalArgumentException("User not found");
-        }
-
-        return userRepository.findById(id).get();
+        return user;
     }
 
     private Optional<User> getUpdatedUser(Long id, int lines) {

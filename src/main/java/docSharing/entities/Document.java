@@ -1,5 +1,6 @@
 package docSharing.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import docSharing.CRDT.CharItem;
 import docSharing.enums.INodeType;
 import lombok.Getter;
@@ -22,6 +23,7 @@ public class Document extends INode {
     private LocalDateTime lastEdited;
 
     //Logoot CRDT
+    @JsonIgnore
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<CharItem> content;
 

@@ -35,7 +35,6 @@ public class AuthController {
     @RequestMapping(value = "register", method = RequestMethod.POST)
     public ResponseEntity<User> register(@RequestBody UserDTO userDTO) {
         //parameters validation
-
         return ResponseEntity.ok(authService.register(userDTO));
     }
 //

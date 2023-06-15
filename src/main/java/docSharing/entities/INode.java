@@ -44,6 +44,7 @@ public class INode implements Serializable {
     @JoinColumn(name = "parent_id", referencedColumnName = "id")
     protected INode parent;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "inode", cascade = CascadeType.REMOVE)
     private List<SharedRole> sharedItems;
 

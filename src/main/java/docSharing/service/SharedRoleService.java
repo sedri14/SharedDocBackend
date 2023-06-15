@@ -54,10 +54,11 @@ public class SharedRoleService {
         return sharedWithUser.stream().map(SharedRole::getInode).collect(Collectors.toList());
     }
 
-    public Map<User, UserRole> getAllUsersWithPermission(INode inode) {
+    public List<SharedRole> getAllUsersWithPermission(INode inode) {
         //return all users that have editor or viewer permissions to this inode.
         List<SharedRole> usersEnrolled = sharedRoleRepository.findByInode(inode);
-        return usersEnrolled.stream().collect(Collectors.toMap(SharedRole::getUser, SharedRole::getRole));
+
+        return usersEnrolled;
     }
 
     public SharedRole deleteRole(INode inode, User user) {
@@ -69,5 +70,9 @@ public class SharedRoleService {
         }
 
         return SharedRole.createSharedRole(inode, user, UserRole.NON);
+    }
+
+    public boolean hasRole(INode inode, User user) {
+        return sharedRoleRepository.findByInodeAndUser(inode, user).isPresent();
     }
 }

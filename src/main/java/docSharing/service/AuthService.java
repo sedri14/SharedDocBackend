@@ -40,6 +40,7 @@ public class AuthService {
         User newUser = User.createNewUserFromUserDTO(userDTO);
         INode rootDir = INode.createRootDir(newUser);
         newUser.setRootDirectory(rootDir);
+        newUser.setSiteId(Objects.hashCode(userDTO.email));
 
         return userRepository.save(newUser);
     }

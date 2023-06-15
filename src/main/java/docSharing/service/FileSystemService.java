@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -46,13 +47,12 @@ public class FileSystemService {
      * @param id the parent inode id
      * @return A List of children inodes
      */
-    public List<INode> getAllChildrenInodes(Long id) {
-        INode parent = fetchINodeById(id);
+    public List<INode> getAllChildrenInodes(INode parent) {
         if (parent.getType() != INodeType.DIR) {
             throw new IllegalOperationException("INode must be a directory");
         }
 
-        return parent.getChildren().values().stream().collect(Collectors.toList());
+        return new ArrayList<>(parent.getChildren().values());
     }
 
     /**
@@ -184,8 +184,7 @@ public class FileSystemService {
      * @param newName - new name
      * @return the renamed inode
      */
-    public INode renameInode(Long id, String newName) {
-        INode inode = fetchINodeById(id);
+    public INode renameInode(INode inode, String newName) {
         Long parentId = inode.getParent().getId();
         INode parent = inode.getParent();
         INodeType inodeType = inode.getType();
