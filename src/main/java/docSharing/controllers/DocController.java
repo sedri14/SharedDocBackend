@@ -55,12 +55,12 @@ public class DocController {
     }
 
     @RequestMapping(value = "/getDoc/{docId}", method = RequestMethod.GET)
-    public ResponseEntity<DocumentResponse> getDocument(@PathVariable Long docId) {
+    public ResponseEntity<DocumentResponse> getDocument(@PathVariable Long docId, @RequestAttribute UserRole userRole) {
         logger.info("get document {}...", docId);
         Document document = docService.getCachedDocument(docId);
         List<CharItem> rawText = docService.getRawText(document.getContent());
 
-        return ResponseEntity.ok(DocumentResponse.fromDocument(document));
+        return ResponseEntity.ok(DocumentResponse.fromDocument(document, userRole));
     }
 
     @MessageMapping("/join/{docId}")
