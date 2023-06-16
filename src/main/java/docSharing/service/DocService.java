@@ -4,16 +4,14 @@ import docSharing.CRDT.CharItem;
 import docSharing.CRDT.Decimal;
 import docSharing.CRDT.Identifier;
 import docSharing.entities.Document;
+import docSharing.entities.User;
 import docSharing.exceptions.INodeNotFoundException;
 import docSharing.exceptions.IllegalOperationException;
 import docSharing.repository.DocRepository;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
-
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -32,57 +30,28 @@ public class DocService {
 
     static Map<Long, Document> cachedDocs = new HashMap<>();
     static Map<Long, Map<String, Integer>> connectedUsersByDocId = new HashMap<>();
-    static Map<Long, List<Integer>> availableSiteIdsByDocId = new HashMap<>();
     private static final Logger logger = LogManager.getLogger(DocService.class.getName());
 
     public DocService() {
         logger.info("init Doc Service instance");
 
-        Runnable saveContentToDBRunnable = new Runnable() {
-            public void run() {
-                //saveAllChangesToDB(docContentByDocId);
+        Runnable autoSaveTask = () -> {
+            //logger.info("start saveChangesToDB function");
+            for (Map.Entry<Long, Document> entry : cachedDocs.entrySet()) {
+                logger.info("writing to db size: {}", entry.getValue().getContent().size());
+                //find, set, save.
+                Document doc = fetchDocumentById(entry.getKey());
+                doc.setContent(entry.getValue().getContent());
+                docRepository.save(doc);
             }
         };
 
-        ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
-        executor.scheduleAtFixedRate(saveContentToDBRunnable, 0, 5, TimeUnit.SECONDS);
-
+//        ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+//        executor.scheduleAtFixedRate(autoSaveTask, 0, 5, TimeUnit.SECONDS);
     }
 
     public Document fetchDocumentById(Long id) {
         return docRepository.findById(id).orElseThrow(() -> new INodeNotFoundException("Document not found with id " + id));
-    }
-
-    /**
-     * @param map documents content by docId hashMap.
-     */
-    public void saveAllChangesToDB(Map<Long, String> map) {
-        logger.info("start saveChangesToDB function");
-        for (Map.Entry<Long, String> entry : map.entrySet()) {
-            saveOneDocContentToDB(entry.getKey(), entry.getValue());
-        }
-    }
-
-
-    /**
-     * @param docId           document id
-     * @param documentContent document new content
-     */
-    private void saveOneDocContentToDB(Long docId, String documentContent) {
-
-        logger.info("start saveOneDocContentToDB function");
-        boolean docIsPresent = docRepository.findById(docId).isPresent();
-        if (!docIsPresent) {
-            logger.error("there is no document with this id");
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "there is no document with this id");
-            //this should be changed.
-        }
-        Document doc = docRepository.findById(docId).get();
-        //doc.setContent(documentContent);
-
-        docRepository.save(doc);
-        logger.info("document is saved");
-
     }
 
     public List<CharItem> getRawText(List<CharItem> content) {
@@ -90,7 +59,7 @@ public class DocService {
     }
 
 
-    public List<String> addUserToDocConnectedUsers(Long docId, String userEmail) {
+    public synchronized List<String> addUserToDocConnectedUsers(Long docId, User user, String userEmail) {
         logger.info("{} is ADDED to connected users of doc {}", userEmail, docId);
         if (!connectedUsersByDocId.containsKey(docId)) {
             connectedUsersByDocId.put(docId, new HashMap<>());
@@ -98,8 +67,8 @@ public class DocService {
 
         Map<String, Integer> connectedUsersMap = connectedUsersByDocId.get(docId);
         if (!connectedUsersMap.containsKey(userEmail)) {
-            //Add userEmail key and attach a new unique site id
-            int siteId = attachUniqueSiteIdToUser(docId);
+            //Add userEmail key and site id
+            int siteId = user.getSiteId();
             connectedUsersMap.put(userEmail, siteId);
             logger.info("User {} site id is {}", userEmail, siteId);
         } else {
@@ -112,36 +81,7 @@ public class DocService {
         return connectedUsers;
     }
 
-    private synchronized int attachUniqueSiteIdToUser(Long docId) {
-        if (isFirstConnectedUser(docId)) {
-            initializeSiteIdPool(docId);
-        }
-        Random random = new Random();
-        List<Integer> siteIdsPool = availableSiteIdsByDocId.get(docId);
-        int randIndex = random.nextInt(siteIdsPool.size());
-
-        //swap value of random index with last value
-        int lastIndex = (siteIdsPool.size() - 1);
-        int temp = siteIdsPool.get(randIndex);
-        siteIdsPool.set(randIndex, siteIdsPool.get(lastIndex));
-        siteIdsPool.set(lastIndex, temp);
-
-        int siteId = siteIdsPool.remove(lastIndex);
-
-        return siteId;
-    }
-
-    private boolean isFirstConnectedUser(Long docId) {
-        return connectedUsersByDocId.get(docId).isEmpty();
-    }
-
-    private void initializeSiteIdPool(Long docId) {
-        availableSiteIdsByDocId.put(docId, new ArrayList<>());
-        availableSiteIdsByDocId.get(docId).addAll(IntStream.rangeClosed(1, MAX_USERS)
-                .boxed().collect(Collectors.toList()));
-    }
-
-    public List<String> removeUserFromDocConnectedUsers(Long docId, String userEmail) {
+    public synchronized List<String> removeUserFromDocConnectedUsers(Long docId, String userEmail) {
         logger.info("{} is REMOVED from connected users of doc {}", userEmail, docId);
 
         if (!connectedUsersByDocId.containsKey(docId)) {
@@ -153,9 +93,7 @@ public class DocService {
             throw new IllegalOperationException("User was not connected to document");
         }
 
-        int siteId = connectedUsersMap.remove(userEmail);
-        returnSiteIdToPool(docId, siteId);
-        logger.info("User {} returned site id {}", userEmail, siteId);
+        connectedUsersMap.remove(userEmail);
 
         if (connectedUsersMap.isEmpty()) {
             connectedUsersByDocId.remove(docId);
@@ -168,19 +106,13 @@ public class DocService {
     }
 
     private synchronized void flushAndRemoveDocFromCache(Long docId) {
-        Document doc = cachedDocs.get(docId);
+        logger.info(">>>flush docs to db and remove from cache<<<");
+        logger.info("doc content about to be saved: size: {}", cachedDocs.get(docId).getContent().size());
+        Document doc = fetchDocumentById(docId);
+        doc.setContent(cachedDocs.get(docId).getContent());
         docRepository.save(doc);
         cachedDocs.remove(docId);
-    }
-
-    private synchronized void returnSiteIdToPool(Long docId, int siteId) {
-        List<Integer> siteIdsPool = availableSiteIdsByDocId.get(docId);
-        siteIdsPool.add(siteId);
-
-        if (siteIdsPool.size() == MAX_USERS) {
-            //Nobody is connected to the document
-            availableSiteIdsByDocId.remove(docId);
-        }
+        logger.info("after remove, cachedDocs size: {}", cachedDocs.size());
     }
 
     /**
@@ -230,6 +162,10 @@ public class DocService {
 
     public void addCharBetween(List<Identifier> pos1, List<Identifier> pos2, Document document, char ch, int siteId) {
         List<Identifier> newPos = alloc(pos1, pos2, siteId);
+        //check for a white space char
+        if (ch == ' ') {
+            ch = 0x00; // ascii value of space
+        }
         CharItem newChar = CharItem.NewPositionedChar(newPos, ch);
         document.getContent().add(newChar);
     }
@@ -240,8 +176,10 @@ public class DocService {
 
     public Document getCachedDocument(Long docId) {
         Document doc = cachedDocs.get(docId);
+        logger.info(null == doc ? " getting doc from db" : "getting doc from cache");
         if (null == doc) {
             doc = fetchDocumentById(docId);
+            logger.info("after add to cachedDocs, cachedDocs size: {}", cachedDocs.size());
             cachedDocs.put(docId, doc);
         }
 

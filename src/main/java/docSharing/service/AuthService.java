@@ -40,6 +40,7 @@ public class AuthService {
         User newUser = User.createNewUserFromUserDTO(userDTO);
         INode rootDir = INode.createRootDir(newUser);
         newUser.setRootDirectory(rootDir);
+        newUser.setSiteId(Objects.hashCode(userDTO.email));
 
         return userRepository.save(newUser);
     }
@@ -60,13 +61,14 @@ public class AuthService {
 
         User user = userRepository.findByEmail(userDTO.getEmail());
         if (!user.getPassword().equals(userDTO.getPassword())) {
+
             throw new InvalidFormatException(userDTO.getEmail());
         }
         String token = generateToken();
         userByToken.put(token, user);
         logger.info(token);
 
-        return new LogInUserResponse(token, userDTO.email);
+        return new LogInUserResponse(token, userDTO.email, user.getRootDirectory().getId());
     }
 
     public User getCachedUser(String token) {

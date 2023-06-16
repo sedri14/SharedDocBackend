@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 public class AppExceptionHandler extends ResponseEntityExceptionHandler {
 
 
-    @ExceptionHandler({INodeNotFoundException.class})
+    @ExceptionHandler({INodeNotFoundException.class, UserNotFoundException.class})
     public ResponseEntity<ApiError> handleNotFound(RuntimeException ex) {
         return ApiError.newResponseApiError(ex.getMessage(), HttpStatus.NOT_FOUND);
     }

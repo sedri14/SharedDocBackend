@@ -4,8 +4,13 @@ import docSharing.CRDT.CharItem;
 import docSharing.DTO.UpdateTextDTO;
 import docSharing.DTO.User.UserDTO;
 import docSharing.entities.Document;
+import docSharing.entities.INode;
+import docSharing.entities.SharedRole;
+import docSharing.entities.User;
+import docSharing.enums.UserRole;
 import docSharing.response.CharItemResponse;
 import docSharing.response.DocumentResponse;
+import docSharing.response.SharedRoleResponse;
 import docSharing.service.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -32,6 +37,9 @@ public class DocController {
     @Autowired
     AuthService authService;
 
+    @Autowired
+    SharedRoleService sharedRoleService;
+
     private static final Logger logger = LogManager.getLogger(DocController.class.getName());
 
     @MessageMapping("/update/{docId}")
@@ -46,21 +54,21 @@ public class DocController {
         return rawText.stream().map(CharItemResponse::fromCharItem).collect(Collectors.toList());
     }
 
-    @RequestMapping(value = "/{docId}", method = RequestMethod.GET)
+    @RequestMapping(value = "/getDoc/{docId}", method = RequestMethod.GET)
     public ResponseEntity<DocumentResponse> getDocument(@PathVariable Long docId) {
-        logger.info("get document {}", docId);
+        logger.info("get document {}...", docId);
         Document document = docService.getCachedDocument(docId);
         List<CharItem> rawText = docService.getRawText(document.getContent());
 
-        return ResponseEntity.ok(DocumentResponse.fromDocument(document, rawText));
+        return ResponseEntity.ok(DocumentResponse.fromDocument(document));
     }
 
     @MessageMapping("/join/{docId}")
     @SendTo("/topic/usersJoin/{docId}")
     public List<String> addUserToConnectedUsers(@DestinationVariable Long docId, UserDTO userDto) {
-        logger.info("User {} is now connected to doc: {}", userDto.email, docId);
-
-        return docService.addUserToDocConnectedUsers(docId, userDto.email);
+        logger.info("User {} is connecting to doc: {}", userDto.email, docId);
+        User user = userService.findByEmail(userDto.email);
+        return docService.addUserToDocConnectedUsers(docId, user, userDto.email);
     }
 
     @MessageMapping("/disconnect/{docId}")
@@ -68,5 +76,17 @@ public class DocController {
     public List<String> removeUserFromConnectedUsers(@DestinationVariable Long docId, UserDTO userDto) {
         logger.info("User {} disconnected from doc: {}", userDto.email, docId);
         return docService.removeUserFromDocConnectedUsers(docId, userDto.email);
+    }
+
+    @RequestMapping(value = "roles/{docId}", method = RequestMethod.GET)
+    public ResponseEntity<List<SharedRoleResponse>> getDocumentRoles(@PathVariable Long docId, @RequestAttribute INode inode) {
+        logger.info("get roles for document {}...", docId);
+        Document doc = (Document)inode;
+        List<SharedRole> sharedRoles = sharedRoleService.getAllUsersWithPermission(doc);
+        List<SharedRoleResponse> peopleWithAccess = sharedRoles.stream().map(item -> new SharedRoleResponse(item.getUser().getEmail(), item.getUser().getName(), item.getRole())).collect(Collectors.toList());
+        //Add owner to list
+        peopleWithAccess.add(0, new SharedRoleResponse(doc.getOwner().getEmail(), doc.getOwner().getName(), UserRole.OWNER));
+
+        return ResponseEntity.ok(peopleWithAccess);
     }
 }

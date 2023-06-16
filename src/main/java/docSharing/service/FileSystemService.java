@@ -9,6 +9,7 @@ import docSharing.exceptions.INodeNameExistsException;
 import docSharing.exceptions.INodeNotFoundException;
 import docSharing.exceptions.IllegalOperationException;
 import docSharing.repository.FileSystemRepository;
+import docSharing.repository.SharedRoleRepository;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -18,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -31,6 +33,8 @@ public class FileSystemService {
 
 
     private static Logger logger = LogManager.getLogger(FileSystemService.class.getName());
+    @Autowired
+    private SharedRoleRepository sharedRoleRepository;
 
 
     public INode fetchINodeById(Long id) {
@@ -43,13 +47,12 @@ public class FileSystemService {
      * @param id the parent inode id
      * @return A List of children inodes
      */
-    public List<INode> getAllChildrenInodes(Long id) {
-        INode parent = fetchINodeById(id);
+    public List<INode> getAllChildrenInodes(INode parent) {
         if (parent.getType() != INodeType.DIR) {
             throw new IllegalOperationException("INode must be a directory");
         }
 
-        return parent.getChildren().values().stream().collect(Collectors.toList());
+        return new ArrayList<>(parent.getChildren().values());
     }
 
     /**
@@ -181,8 +184,7 @@ public class FileSystemService {
      * @param newName - new name
      * @return the renamed inode
      */
-    public INode renameInode(Long id, String newName) {
-        INode inode = fetchINodeById(id);
+    public INode renameInode(INode inode, String newName) {
         Long parentId = inode.getParent().getId();
         INode parent = inode.getParent();
         INodeType inodeType = inode.getType();
@@ -300,25 +302,9 @@ public class FileSystemService {
         }
     }
 
-    public UserRole changeUserRole(INode inode, User user, UserRole userRole) {
-
-        if (userRole == UserRole.NON) {
-            inode.getRoles().remove(user);
-        } else {
-            inode.getRoles().put(user, userRole);
-        }
-        fsRepository.save(inode);
-
-        return userRole;
-    }
-
     public List<INode> getRootDirectory(User user) {
         return user.getRootDirectory().getChildren().values().stream().collect(Collectors.toList());
     }
 
-    public List<INode> getSharedWithMe(User user) {
-        Set<INode> sharedWithMe = user.getSharedWithMe();
-        logger.info("GOT SHARED");
-        return sharedWithMe.stream().collect(Collectors.toList());
-    }
+
 }

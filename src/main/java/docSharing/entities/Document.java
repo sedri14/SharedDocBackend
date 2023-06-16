@@ -1,8 +1,10 @@
 package docSharing.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import docSharing.CRDT.CharItem;
 import docSharing.enums.INodeType;
 import lombok.Getter;
+import lombok.Setter;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -11,6 +13,7 @@ import java.util.List;
 import java.util.Set;
 
 @Getter
+@Setter
 @Entity
 @Table(name = "Document")
 public class Document extends INode {
@@ -20,6 +23,7 @@ public class Document extends INode {
     private LocalDateTime lastEdited;
 
     //Logoot CRDT
+    @JsonIgnore
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<CharItem> content;
 

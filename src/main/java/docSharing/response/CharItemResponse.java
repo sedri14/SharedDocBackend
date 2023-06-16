@@ -21,6 +21,10 @@ public class CharItemResponse implements Serializable {
     }
 
     public static CharItemResponse fromCharItem (CharItem charItem) {
-        return new CharItemResponse(charItem.getPosition().stream().map(IdentifierResponse::fromIdentifier).collect(Collectors.toList()), charItem.getValue());
+        char c = charItem.getValue();
+        if (c == 0x00) {
+            c = ' ';
+        }
+        return new CharItemResponse(charItem.getPosition().stream().map(IdentifierResponse::fromIdentifier).collect(Collectors.toList()), c);
     }
 }

@@ -31,7 +31,7 @@ public class TokenFilter implements Filter {
         MutableHttpServletRequest request = new MutableHttpServletRequest((HttpServletRequest) servletRequest);
         HttpServletResponse response = (HttpServletResponse) servletResponse;
 
-        //TODO: check this "/ws" path
+        //Verify token for each endpoint except Auth and Ws.
         if (!((HttpServletRequest) servletRequest).getServletPath().startsWith("/auth/") && !((HttpServletRequest) servletRequest).getServletPath().startsWith("/ws")) {
             String token = request.getHeader("token");
             if (null != token) {
