@@ -52,8 +52,13 @@ public class PermissionFilter implements Filter {
             boolean isOwner = isOwner(user, inode);
 
             if (servletPath.startsWith("/doc/getDoc")){
-                if (!isOwner && !hasRole(user, inode)) {
+                //UserRole roleForDoc = getRole(inode, user);
+                if (!isOwner) { // && null == roleForDoc
                     returnBadResponse(response);
+                } else {
+                    //request.setAttribute("userRole", roleForDoc);
+                    filterChain.doFilter(request, response);
+                    return;
                 }
             } else {
                 if(!isOwner) {
@@ -69,8 +74,8 @@ public class PermissionFilter implements Filter {
         return user.getId().equals(inode.getOwner().getId());
     }
 
-    private boolean hasRole(User user, INode inode) {
-       return sharedRoleService.hasRole(inode, user);
+    private UserRole getRole(User user, INode inode) {
+       return null; //todo: change to funcion that gets the role.
     }
 
     private void returnBadResponse(HttpServletResponse res) throws IOException {

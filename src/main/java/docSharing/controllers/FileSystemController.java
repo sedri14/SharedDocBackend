@@ -6,6 +6,7 @@ import docSharing.DTO.FS.MoveINodeDTO;
 import docSharing.entities.INode;
 import docSharing.entities.*;
 import docSharing.enums.INodeType;
+import docSharing.enums.UserRole;
 import docSharing.exceptions.MissingControllerParameterException;
 import docSharing.response.DocumentResponse;
 import docSharing.response.INodeResponse;
@@ -70,7 +71,7 @@ public class FileSystemController {
 
         if (inode.getType() == INodeType.FILE) {
             Document document = (Document) inode;
-            return ResponseEntity.ok(DocumentResponse.fromDocument(document));
+            return ResponseEntity.ok(DocumentResponse.fromDocument(document, UserRole.NON));
         }
         return ResponseEntity.ok(INodeResponse.fromINode(inode));
     }
