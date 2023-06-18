@@ -12,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -72,7 +71,9 @@ public class SharedRoleService {
         return SharedRole.createSharedRole(inode, user, UserRole.NON);
     }
 
-    public boolean hasRole(INode inode, User user) {
-        return sharedRoleRepository.findByInodeAndUser(inode, user).isPresent();
+    public UserRole getRole(INode inode, User user) {
+        Optional<SharedRole> role = sharedRoleRepository.findByInodeAndUser(inode, user);
+        return role.map(SharedRole::getRole).orElse(null);
+
     }
 }

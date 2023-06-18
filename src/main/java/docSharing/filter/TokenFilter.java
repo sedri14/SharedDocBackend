@@ -26,7 +26,6 @@ public class TokenFilter implements Filter {
 
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
-        logger.info("In Token Filter doFilter");
 
         MutableHttpServletRequest request = new MutableHttpServletRequest((HttpServletRequest) servletRequest);
         HttpServletResponse response = (HttpServletResponse) servletResponse;
@@ -39,6 +38,7 @@ public class TokenFilter implements Filter {
                 if (null != user) {
                     request.setAttribute("token", token);
                     request.setAttribute("user", user);
+                    logger.info("In Token Filter doFilter");
                     filterChain.doFilter(request, response);
                 } else returnBadResponse(response);
             } else returnBadResponse(response);

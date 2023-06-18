@@ -5,10 +5,7 @@ import docSharing.DTO.FS.INodeDTO;
 import docSharing.DTO.FS.MoveINodeDTO;
 import docSharing.entities.INode;
 import docSharing.entities.*;
-import docSharing.enums.INodeType;
-import docSharing.enums.UserRole;
 import docSharing.exceptions.MissingControllerParameterException;
-import docSharing.response.DocumentResponse;
 import docSharing.response.INodeResponse;
 import docSharing.response.SharedRoleResponse;
 import docSharing.service.DocService;
@@ -36,9 +33,6 @@ public class FileSystemController {
     private FileSystemService fsService;
     @Autowired
     UserService userService;
-
-    @Autowired
-    DocService docService;
 
     @Autowired
     SharedRoleService sharedRoleService;
@@ -69,10 +63,6 @@ public class FileSystemController {
         }
         INode inode = fsService.addInode(inodeDTO, user);
 
-        if (inode.getType() == INodeType.FILE) {
-            Document document = (Document) inode;
-            return ResponseEntity.ok(DocumentResponse.fromDocument(document, UserRole.NON));
-        }
         return ResponseEntity.ok(INodeResponse.fromINode(inode));
     }
 
@@ -197,5 +187,12 @@ public class FileSystemController {
         SharedRole sharedRole = sharedRoleService.changeUserRole(inode, user, changeRoleDTO.userRole);
 
         return ResponseEntity.ok(SharedRoleResponse.fromSharedRole(sharedRole));
+    }
+
+    @RequestMapping(value = "/myCats", method = RequestMethod.GET)
+    public ResponseEntity<List<String>> myCats() {
+        logger.info("start test function");
+
+        return ResponseEntity.ok(List.of("Chuchi", "Tuti", "Shahori", "Charlie"));
     }
 }
