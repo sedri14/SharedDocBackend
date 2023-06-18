@@ -9,7 +9,7 @@ import docSharing.entities.SharedRole;
 import docSharing.entities.User;
 import docSharing.enums.UserRole;
 import docSharing.response.CharItemResponse;
-import docSharing.response.DocumentResponse;
+import docSharing.response.DocumentWithUserRoleResponse;
 import docSharing.response.SharedRoleResponse;
 import docSharing.service.*;
 import org.apache.logging.log4j.LogManager;
@@ -55,12 +55,12 @@ public class DocController {
     }
 
     @RequestMapping(value = "/getDoc/{docId}", method = RequestMethod.GET)
-    public ResponseEntity<DocumentResponse> getDocument(@PathVariable Long docId, @RequestAttribute UserRole userRole) {
+    public ResponseEntity<DocumentWithUserRoleResponse> getDocument(@PathVariable Long docId, @RequestAttribute UserRole userRole) {
         logger.info("get document {}...", docId);
         Document document = docService.getCachedDocument(docId);
         List<CharItem> rawText = docService.getRawText(document.getContent());
 
-        return ResponseEntity.ok(DocumentResponse.fromDocument(document, userRole));
+        return ResponseEntity.ok(DocumentWithUserRoleResponse.fromDocument(document, userRole));
     }
 
     @MessageMapping("/join/{docId}")

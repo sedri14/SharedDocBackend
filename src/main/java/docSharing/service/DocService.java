@@ -179,8 +179,8 @@ public class DocService {
         logger.info(null == doc ? " getting doc from db" : "getting doc from cache");
         if (null == doc) {
             doc = fetchDocumentById(docId);
-            logger.info("after add to cachedDocs, cachedDocs size: {}", cachedDocs.size());
             cachedDocs.put(docId, doc);
+            logger.info("after add to cachedDocs, cachedDocs size: {}", cachedDocs.size());
         }
 
         return doc;

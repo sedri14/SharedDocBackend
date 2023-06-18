@@ -3,7 +3,6 @@ package docSharing.filter;
 import docSharing.entities.INode;
 import docSharing.entities.User;
 import docSharing.enums.UserRole;
-import docSharing.service.AuthService;
 import docSharing.service.FileSystemService;
 import docSharing.service.SharedRoleService;
 import org.apache.logging.log4j.LogManager;
@@ -48,23 +47,24 @@ public class PermissionFilter implements Filter {
         if (isIncluded) {
             Long inodeId = Long.parseLong(request.getHeader("inodeId"));
             INode inode = fileSystemService.fetchINodeById(inodeId);
-            User user = (User)request.getAttribute("user");
+            User user = (User) request.getAttribute("user");
             boolean isOwner = isOwner(user, inode);
 
-            if (servletPath.startsWith("/doc/getDoc")){
-                //UserRole roleForDoc = getRole(inode, user);
-                if (!isOwner) { // && null == roleForDoc
+            if (servletPath.startsWith("/doc/getDoc")) {
+                UserRole roleForDoc = getRole(inode, user);
+                if (!isOwner && null == roleForDoc) {
                     returnBadResponse(response);
                 } else {
-                    //request.setAttribute("userRole", roleForDoc);
+                    request.setAttribute("userRole", isOwner ? UserRole.OWNER : roleForDoc);
                     filterChain.doFilter(request, response);
                     return;
                 }
-            } else {
-                if(!isOwner) {
-                    returnBadResponse(response);
-                }
             }
+
+            if (!isOwner) {
+                returnBadResponse(response);
+            }
+
             request.setAttribute("inode", inode);
         }
         filterChain.doFilter(request, response);
@@ -74,8 +74,8 @@ public class PermissionFilter implements Filter {
         return user.getId().equals(inode.getOwner().getId());
     }
 
-    private UserRole getRole(User user, INode inode) {
-       return null; //todo: change to funcion that gets the role.
+    private UserRole getRole(INode inode, User user) {
+        return sharedRoleService.getRole(inode, user);
     }
 
     private void returnBadResponse(HttpServletResponse res) throws IOException {
