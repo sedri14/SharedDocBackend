@@ -1,15 +1,10 @@
 package docSharing.entities;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import docSharing.DTO.User.UserDTO;
-
 import javax.persistence.*;
-import javax.print.Doc;
 import java.io.Serializable;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 @Entity
 @Table(name = "User")
@@ -25,7 +20,7 @@ public class User implements Serializable {
     @Column(name = "password", nullable = false)
     private String password;
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private INode rootDirectory;
 
     @Column(name = "site_id", nullable = false)

@@ -3,9 +3,6 @@ package docSharing.entities;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIncludeProperties;
 import docSharing.enums.INodeType;
-import docSharing.enums.UserRole;
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -28,7 +25,7 @@ public class INode implements Serializable {
     protected LocalDateTime creationDate;
 
     @JsonIncludeProperties(value = {"id"})
-    @ManyToOne (fetch = FetchType.LAZY)
+    @ManyToOne (fetch = FetchType.EAGER)
     @JoinColumn(name="owner_id", referencedColumnName = "id")
     private User owner;
     @JsonIgnore

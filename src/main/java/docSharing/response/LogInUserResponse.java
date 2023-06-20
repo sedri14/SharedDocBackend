@@ -1,4 +1,4 @@
-package docSharing.DTO.User;
+package docSharing.response;
 
 public class LogInUserResponse {
 

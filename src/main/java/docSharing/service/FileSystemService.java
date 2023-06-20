@@ -1,28 +1,20 @@
 package docSharing.service;
 
-import com.google.gson.internal.Streams;
 import docSharing.DTO.FS.INodeDTO;
 import docSharing.entities.*;
 import docSharing.enums.INodeType;
-import docSharing.enums.UserRole;
 import docSharing.exceptions.INodeNameExistsException;
 import docSharing.exceptions.INodeNotFoundException;
 import docSharing.exceptions.IllegalOperationException;
 import docSharing.repository.FileSystemRepository;
 import docSharing.repository.SharedRoleRepository;
-import org.apache.commons.io.FilenameUtils;
+import docSharing.response.PathItem;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -44,7 +36,6 @@ public class FileSystemService {
     /**
      * Returns all children of an inode of type directory
      *
-     * @param id the parent inode id
      * @return A List of children inodes
      */
     public List<INode> getAllChildrenInodes(INode parent) {
@@ -180,7 +171,6 @@ public class FileSystemService {
     /**
      * Sets a new name to an inode
      *
-     * @param id      - inode id
      * @param newName - new name
      * @return the renamed inode
      */
@@ -306,5 +296,19 @@ public class FileSystemService {
         return user.getRootDirectory().getChildren().values().stream().collect(Collectors.toList());
     }
 
+    public static List<PathItem> getInodePath(INode inode) {
+        List<PathItem> path = new ArrayList<>();
+        if (null == inode.getParent()) return path;
+
+        INode root = inode.getOwner().getRootDirectory();
+        INode current = inode.getParent();
+        while (current.getId() != root.getId()) {
+            path.add(new PathItem(current.getId(), current.getName()));
+            current = current.getParent();
+        }
+        Collections.reverse(path);
+
+        return path;
+    }
 
 }

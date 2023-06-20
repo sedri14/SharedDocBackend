@@ -1,7 +1,7 @@
 package docSharing.service;
 
 import com.google.gson.Gson;
-import docSharing.DTO.User.LogInUserResponse;
+import docSharing.response.LogInUserResponse;
 import docSharing.DTO.User.UserDTO;
 import docSharing.entities.INode;
 import docSharing.entities.User;

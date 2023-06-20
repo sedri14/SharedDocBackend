@@ -6,9 +6,10 @@ import docSharing.DTO.FS.MoveINodeDTO;
 import docSharing.entities.INode;
 import docSharing.entities.*;
 import docSharing.exceptions.MissingControllerParameterException;
+import docSharing.response.INodeDataResponse;
 import docSharing.response.INodeResponse;
+import docSharing.response.PathItem;
 import docSharing.response.SharedRoleResponse;
-import docSharing.service.DocService;
 import docSharing.service.FileSystemService;
 import docSharing.service.SharedRoleService;
 import docSharing.service.UserService;
@@ -88,7 +89,7 @@ public class FileSystemController {
     }
 
     @RequestMapping(value = "/level/{inodeId}", method = RequestMethod.GET)
-    public ResponseEntity<List<INodeResponse>> getChildren(@PathVariable Long inodeId, @RequestAttribute INode inode) {
+    public ResponseEntity<INodeDataResponse> getChildren(@PathVariable Long inodeId, @RequestAttribute INode inode) {
         logger.info("start getChildren function");
         logger.debug("getChildren function parameters: id:%{}", inodeId);
 
@@ -97,7 +98,10 @@ public class FileSystemController {
                 .map(INodeResponse::fromINode)
                 .collect(Collectors.toList());
 
-        return ResponseEntity.ok(responseINodesList);
+        List<PathItem> path = fsService.getInodePath(inode);
+        INodeDataResponse childrenWithPath = INodeDataResponse.getChildrenWithPath(path, responseINodesList);
+
+        return ResponseEntity.ok(childrenWithPath);
     }
 
     @RequestMapping(value = "/root", method = RequestMethod.GET)
@@ -134,9 +138,6 @@ public class FileSystemController {
     public ResponseEntity<INode> move(@RequestBody MoveINodeDTO moveINodeDTO) {
         logger.info("start move inode function");
         logger.debug("move function parameters: sourceId:{}, targetId:{}", moveINodeDTO.sourceId, moveINodeDTO.targetId);
-        if (isNull(moveINodeDTO)) {
-            throw new MissingControllerParameterException("http request body");
-        }
         if (isNull(moveINodeDTO.sourceId) || isNull(moveINodeDTO.targetId)) {
             throw new MissingControllerParameterException("source or target inode");
         }

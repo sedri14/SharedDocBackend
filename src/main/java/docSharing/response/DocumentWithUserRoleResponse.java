@@ -14,16 +14,15 @@ public class DocumentWithUserRoleResponse extends INodeResponse {
     UserRole userRole;
     List<CharItemResponse> rawText;
 
-    private DocumentWithUserRoleResponse(Long id, String name, String type, LocalDateTime creationDate, LocalDateTime lastEdited, List<CharItemResponse> rawText, UserRole userRole) {
-        super(id, name, type, creationDate);
-        this.lastEdited = lastEdited;
-        this.rawText = rawText;
+    private DocumentWithUserRoleResponse(Document doc, UserRole userRole) {
+        super(doc);
+        this.lastEdited = doc.getLastEdited();
+        this.rawText = doc.getContent().stream().map(CharItemResponse::fromCharItem).collect(Collectors.toList());
         this.userRole = userRole;
     }
 
     public static DocumentWithUserRoleResponse fromDocument(Document doc, UserRole userRole) {
-        List<CharItemResponse> rawTextResponse = doc.getContent().stream().map(CharItemResponse::fromCharItem).collect(Collectors.toList());
-        return new DocumentWithUserRoleResponse(doc.getId(), doc.getName(), doc.getType().toString(), doc.getCreationDate(), doc.getLastEdited(), rawTextResponse, userRole);
+        return new DocumentWithUserRoleResponse(doc, userRole);
     }
 
     public LocalDateTime getLastEdited() {
