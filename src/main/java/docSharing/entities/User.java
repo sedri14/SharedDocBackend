@@ -2,14 +2,30 @@ package docSharing.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import docSharing.DTO.User.UserDTO;
-import javax.persistence.*;
-import java.io.Serializable;
-import java.util.List;
+import docSharing.enums.UserType;
+import lombok.*;
+import org.hibernate.Hibernate;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
+import javax.persistence.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
+
+
+@Getter
+@Setter
+@ToString
+@RequiredArgsConstructor
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@JsonIgnoreProperties(value = {"handler", "hibernateLazyInitializer", "FieldHandler"})
 @Entity
 @Table(name = "User")
-@JsonIgnoreProperties(value = {"handler", "hibernateLazyInitializer", "FieldHandler"})
-public class User implements Serializable {
+public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
@@ -27,11 +43,11 @@ public class User implements Serializable {
     private int siteId;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE)
+    @ToString.Exclude
     private List<SharedRole> sharedItems;
 
-    User() {
-
-    }
+    @Enumerated (EnumType.STRING)
+    private UserType userType;
 
     public User(String name, String email, String password) {
         this.name = name;
@@ -43,58 +59,51 @@ public class User implements Serializable {
         return new User(userDTO.name, userDTO.email, userDTO.password);
     }
 
-    public Long getId() {
-        return id;
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of(new SimpleGrantedAuthority(userType.name()));
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
+    @Override
     public String getPassword() {
         return password;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
+    @Override
+    public String getUsername() {
+        return email;
     }
-
-    public INode getRootDirectory() {
-        return rootDirectory;
-    }
-
-    public void setRootDirectory(INode rootDirectory) {
-        this.rootDirectory = rootDirectory;
-    }
-
-    public List<SharedRole> getSharedItems() {
-        return sharedItems;
-    }
-
-    public int getSiteId() {
-        return siteId;
-    }
-
-    public void setSiteId(int siteId) {
-        this.siteId = siteId;
-    }
-
-//Todo:change the hashcode and the equal to newer one.
 
     @Override
-    public String toString() {
-        return "User: id=" + id + ", name='" + name + ", email='" + email + ", password='" + password;
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
+        User user = (User) o;
+        return getId() != null && Objects.equals(getId(), user.getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
     }
 }

@@ -45,12 +45,6 @@ public class AuthService {
         return userRepository.save(newUser);
     }
 
-
-    private boolean isExistingEmail(String email) {
-        User user = userRepository.findByEmail(email);
-        return user != null;
-    }
-
     public String generateToken() {
         return UUID.randomUUID().toString();
     }
@@ -59,7 +53,7 @@ public class AuthService {
     public LogInUserResponse login(UserDTO userDTO) {
         logger.info("in login");
 
-        User user = userRepository.findByEmail(userDTO.getEmail());
+        User user = userRepository.findByEmail(userDTO.getEmail()).get();
         if (!user.getPassword().equals(userDTO.getPassword())) {
 
             throw new InvalidFormatException(userDTO.getEmail());
@@ -74,80 +68,5 @@ public class AuthService {
     public User getCachedUser(String token) {
         return userByToken.get(token);
     }
-
-    // ------------------ verification token ------------------
-
-//    public boolean isValidToken(String email, String token) {
-//        return mapUserTokens.get(email).compareTo(token) == 0;
-//    }
-
-//    public boolean isValidToken(Long userId, String token) {
-//        return mapUserTokens.get(userId).compareTo(token) == 0;
-//    }
-//
-//    public UserDTO updateTokenEmailKey(UserDTO user, String newEmail) {
-//        User createduser = createUserFactory(user);
-//        mapUserTokens.put(createduser.getId(), mapUserTokens.get(user.getEmail()));
-//        mapUserTokens.remove(user.getEmail());
-//        return user;
-//    }
-
-//    private boolean isValidCredentials(String email, String password) {
-//        User user = userRepository.findByEmail(email);
-//
-//        if (user != null) {
-//            return user.getPassword().equals(password);
-//        }
-//
-//        return false;
-//    }
-
-//    public User getUser(String verificationToken) {
-//        User user = tokenRepository.findByToken(verificationToken).getUser();
-//        return user;
-//    }
-
-//    public void createVerificationToken(User user, String token) {
-//        VerificationToken myToken = new VerificationToken(token, user);
-//        tokenRepository.save(myToken);
-//    }
-
-
-//    public void publishRegistrationEvent(UserDTO createdUser, Locale locale, String appUrl) {
-//        User user = userRepository.findByEmail(createdUser.getEmail());
-//        eventPublisher.publishEvent(new OnRegistrationCompleteEvent(user, locale, appUrl));
-//        System.out.println("inside publishRegistrationEvent");
-//    }
-
-//    public void deleteVerificationToken(String token) {
-//        tokenRepository.deleteByToken(token);
-//    }
-//
-//    public VerificationToken getVerificationToken(String VerificationToken) {
-//        return tokenRepository.findByToken(VerificationToken);
-//    }
-
-
-//    @Scheduled(fixedRate = SCHEDULE)
-//    public void scheduleDeleteNotActivatedUsers() {
-//        logger.info("---------- in scheduleDeleteNotActivatedUsers-------------");
-//        List<VerificationToken> tokens = tokenRepository.findAll();
-//
-//        Calendar cal = Calendar.getInstance();
-//        List<VerificationToken> expiredTokens = tokens.stream().
-//                filter(token -> token.getExpiryDate().getTime() - cal.getTime().getTime() <= 0)
-//                .collect(Collectors.toList());
-//
-//        for (VerificationToken token : expiredTokens) {
-//            deleteVerificationToken(token.getToken());
-//            userRepository.deleteById(token.getUser().getId());
-//            logger.debug("verification token for user_id#" + token.getUser().getId() + " and non activated user was deleted");
-//        }
-//    }
-//
-//    public void saveRegisteredUser(User user) {
-//        userRepository.save(user);
-//    }
-
 
 }

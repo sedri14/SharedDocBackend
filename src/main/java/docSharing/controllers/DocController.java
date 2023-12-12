@@ -67,7 +67,7 @@ public class DocController {
     @SendTo("/topic/usersJoin/{docId}")
     public List<String> addUserToConnectedUsers(@DestinationVariable Long docId, UserDTO userDto) {
         logger.info("User {} is connecting to doc: {}", userDto.email, docId);
-        User user = userService.findByEmail(userDto.email);
+        User user = userService.fetchUserByEmail(userDto.email);
         return docService.addUserToDocConnectedUsers(docId, user, userDto.email);
     }
 

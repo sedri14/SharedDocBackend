@@ -179,7 +179,7 @@ public class FileSystemController {
             }
         }
 
-        User user = userService.findByEmail(changeRoleDTO.email);
+        User user = userService.fetchUserByEmail(changeRoleDTO.email);
         if (changeRoleDTO.isDeleteRole) {
             SharedRole deletedRole = sharedRoleService.deleteRole(inode, user);
             return ResponseEntity.ok(SharedRoleResponse.fromSharedRole(deletedRole));
