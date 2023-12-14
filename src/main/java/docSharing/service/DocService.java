@@ -4,7 +4,7 @@ import docSharing.CRDT.CharItem;
 import docSharing.CRDT.Decimal;
 import docSharing.CRDT.Identifier;
 import docSharing.entities.Document;
-import docSharing.entities.User;
+import docSharing.user.User;
 import docSharing.exceptions.INodeNotFoundException;
 import docSharing.exceptions.IllegalOperationException;
 import docSharing.repository.DocRepository;
@@ -13,11 +13,6 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.*;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import static docSharing.CRDT.CRDTUtils.*;
 

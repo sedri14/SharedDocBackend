@@ -3,6 +3,7 @@ package docSharing.entities;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIncludeProperties;
 import docSharing.enums.INodeType;
+import docSharing.user.User;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -63,7 +64,7 @@ public class INode implements Serializable {
         return new INode(name, INodeType.DIR, LocalDateTime.now(), owner, new HashMap<>(), parent);
     }
 
-    public static INode createRootDir(User user) {
+    public static INode createUserRootDirectory(User user) {
         return createNewDirectory("root_" + user.getEmail(), null, user);
     }
 

@@ -1,6 +1,6 @@
 package docSharing.service;
 
-import docSharing.DTO.FS.INodeDTO;
+import docSharing.requestObjects.FS.INodeDTO;
 import docSharing.entities.*;
 import docSharing.enums.INodeType;
 import docSharing.exceptions.INodeNameExistsException;
@@ -8,7 +8,8 @@ import docSharing.exceptions.INodeNotFoundException;
 import docSharing.exceptions.IllegalOperationException;
 import docSharing.repository.FileSystemRepository;
 import docSharing.repository.SharedRoleRepository;
-import docSharing.response.PathItem;
+import docSharing.responseObjects.PathItem;
+import docSharing.user.User;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;

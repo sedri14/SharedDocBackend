@@ -2,7 +2,7 @@ package docSharing.repository;
 
 import docSharing.entities.INode;
 import docSharing.entities.SharedRole;
-import docSharing.entities.User;
+import docSharing.user.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

@@ -3,6 +3,7 @@ package docSharing.entities;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import docSharing.CRDT.CharItem;
 import docSharing.enums.INodeType;
+import docSharing.user.User;
 import lombok.Getter;
 import lombok.Setter;
 

@@ -1,17 +1,19 @@
 package docSharing.controllers;
 
 import docSharing.CRDT.CharItem;
-import docSharing.DTO.UpdateTextDTO;
-import docSharing.DTO.User.UserDTO;
+import docSharing.auth.AuthService;
+import docSharing.requestObjects.UpdateTextDTO;
+import docSharing.auth.RegisterRequest;
 import docSharing.entities.Document;
 import docSharing.entities.INode;
 import docSharing.entities.SharedRole;
-import docSharing.entities.User;
-import docSharing.enums.UserRole;
-import docSharing.response.CharItemResponse;
-import docSharing.response.DocumentWithUserRoleResponse;
-import docSharing.response.SharedRoleResponse;
+import docSharing.user.User;
+import docSharing.user.UserRole;
+import docSharing.responseObjects.CharItemResponse;
+import docSharing.responseObjects.DocumentWithUserRoleResponse;
+import docSharing.responseObjects.SharedRoleResponse;
 import docSharing.service.*;
+import docSharing.user.UserService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,17 +67,17 @@ public class DocController {
 
     @MessageMapping("/join/{docId}")
     @SendTo("/topic/usersJoin/{docId}")
-    public List<String> addUserToConnectedUsers(@DestinationVariable Long docId, UserDTO userDto) {
-        logger.info("User {} is connecting to doc: {}", userDto.email, docId);
-        User user = userService.fetchUserByEmail(userDto.email);
-        return docService.addUserToDocConnectedUsers(docId, user, userDto.email);
+    public List<String> addUserToConnectedUsers(@DestinationVariable Long docId, RegisterRequest registerRequest) {
+        logger.info("User {} is connecting to doc: {}", registerRequest.getEmail(), docId);
+        User user = userService.fetchUserByEmail(registerRequest.getEmail());
+        return docService.addUserToDocConnectedUsers(docId, user, registerRequest.getEmail());
     }
 
     @MessageMapping("/disconnect/{docId}")
     @SendTo("/topic/usersDisconnect/{docId}")
-    public List<String> removeUserFromConnectedUsers(@DestinationVariable Long docId, UserDTO userDto) {
-        logger.info("User {} disconnected from doc: {}", userDto.email, docId);
-        return docService.removeUserFromDocConnectedUsers(docId, userDto.email);
+    public List<String> removeUserFromConnectedUsers(@DestinationVariable Long docId, RegisterRequest registerRequest) {
+        logger.info("User {} disconnected from doc: {}", registerRequest.getEmail(), docId);
+        return docService.removeUserFromDocConnectedUsers(docId, registerRequest.getEmail());
     }
 
     @RequestMapping(value = "roles/{docId}", method = RequestMethod.GET)

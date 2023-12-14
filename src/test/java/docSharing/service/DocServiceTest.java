@@ -3,14 +3,12 @@ package docSharing.service;
 import docSharing.CRDT.Decimal;
 import docSharing.CRDT.Identifier;
 import docSharing.entities.Document;
-import docSharing.entities.User;
+import docSharing.user.User;
 import docSharing.enums.INodeType;
 import docSharing.repository.DocRepository;
-import org.checkerframework.checker.units.qual.C;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestTemplate;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -43,7 +41,7 @@ public class DocServiceTest {
 
     @BeforeEach
     void setUp() {
-        user = new User("user", "user@gmail.com", "1234");
+        user = User.builder().email("user@gmail.com").name("user").password("123").build();
         document = new Document("document1", INodeType.FILE, LocalDateTime.now(), null, null, user, new ArrayList<>(), LocalDateTime.now());
         emptyDoc = Document.createNewEmptyDocument("empty document", null, user);
     }

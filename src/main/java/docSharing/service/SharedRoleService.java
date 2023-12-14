@@ -2,8 +2,8 @@ package docSharing.service;
 
 import docSharing.entities.INode;
 import docSharing.entities.SharedRole;
-import docSharing.entities.User;
-import docSharing.enums.UserRole;
+import docSharing.user.User;
+import docSharing.user.UserRole;
 import docSharing.exceptions.IllegalOperationException;
 import docSharing.repository.SharedRoleRepository;
 import org.apache.logging.log4j.LogManager;

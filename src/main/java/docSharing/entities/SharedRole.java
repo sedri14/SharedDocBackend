@@ -1,6 +1,7 @@
 package docSharing.entities;
 
-import docSharing.enums.UserRole;
+import docSharing.user.UserRole;
+import docSharing.user.User;
 import lombok.Getter;
 
 import javax.persistence.*;

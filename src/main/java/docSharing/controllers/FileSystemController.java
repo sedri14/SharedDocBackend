@@ -1,18 +1,19 @@
 package docSharing.controllers;
 
-import docSharing.DTO.ChangeRoleDTO;
-import docSharing.DTO.FS.INodeDTO;
-import docSharing.DTO.FS.MoveINodeDTO;
+import docSharing.requestObjects.ChangeRoleDTO;
+import docSharing.requestObjects.FS.INodeDTO;
+import docSharing.requestObjects.FS.MoveINodeDTO;
 import docSharing.entities.INode;
 import docSharing.entities.*;
 import docSharing.exceptions.MissingControllerParameterException;
-import docSharing.response.INodeDataResponse;
-import docSharing.response.INodeResponse;
-import docSharing.response.PathItem;
-import docSharing.response.SharedRoleResponse;
+import docSharing.responseObjects.INodeDataResponse;
+import docSharing.responseObjects.INodeResponse;
+import docSharing.responseObjects.PathItem;
+import docSharing.responseObjects.SharedRoleResponse;
 import docSharing.service.FileSystemService;
 import docSharing.service.SharedRoleService;
-import docSharing.service.UserService;
+import docSharing.user.UserService;
+import docSharing.user.User;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -188,12 +189,5 @@ public class FileSystemController {
         SharedRole sharedRole = sharedRoleService.changeUserRole(inode, user, changeRoleDTO.userRole);
 
         return ResponseEntity.ok(SharedRoleResponse.fromSharedRole(sharedRole));
-    }
-
-    @RequestMapping(value = "/myCats", method = RequestMethod.GET)
-    public ResponseEntity<List<String>> myCats() {
-        logger.info("start test function");
-
-        return ResponseEntity.ok(List.of("Chuchi", "Tuti", "Shahori", "Charlie"));
     }
 }
