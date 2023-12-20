@@ -69,6 +69,7 @@ public class AuthService {
 
             User user = userRepository.findByEmail(request.getEmail()).orElseThrow(UserNotFoundException::new);
             String jwtToken = jwtService.generateToken(user);
+            logger.info("JWT: {}", jwtToken);
 
             return AuthenticationResponse.builder()
                     .token(jwtToken)

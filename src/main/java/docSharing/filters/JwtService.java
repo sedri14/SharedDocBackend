@@ -1,5 +1,6 @@
 package docSharing.filters;
 
+import docSharing.user.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -33,6 +34,8 @@ public class JwtService {
                 .setSubject(userDetails.getUsername())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 48))
+                .claim("name", ((User)userDetails).getName())
+                .claim("rootId", ((User)userDetails).getRootDirectory().getId())
                 .signWith(getSignInKey(), SignatureAlgorithm.HS256)
                 .compact();
     }

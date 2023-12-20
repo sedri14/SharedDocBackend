@@ -27,7 +27,7 @@ import static java.util.Objects.isNull;
 import static org.hibernate.internal.util.StringHelper.isBlank;
 
 @RestController
-@CrossOrigin
+@CrossOrigin(origins = "http://localhost:3000")
 @RequestMapping("/fs")
 public class FileSystemController {
 

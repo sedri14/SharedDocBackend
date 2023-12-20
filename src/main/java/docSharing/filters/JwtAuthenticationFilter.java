@@ -1,5 +1,7 @@
 package docSharing.filters;
 
+import docSharing.user.User;
+import docSharing.user.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -21,6 +23,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
     private final UserDetailsService userDetailsService;
+
+    private final UserService userService;
 
     @Override
     protected void doFilterInternal(
@@ -57,7 +61,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             }
         }
-        request.setAttribute("user", userEmail);
+
+        User user = userService.fetchUserByEmail(userEmail);
+        request.setAttribute("user", user);
         filterChain.doFilter(request, response);
     }
 }
