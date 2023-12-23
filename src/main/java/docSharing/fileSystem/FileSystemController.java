@@ -1,69 +1,52 @@
-package docSharing.controllers;
+package docSharing.fileSystem;
 
 import docSharing.requestObjects.ChangeRoleDTO;
-import docSharing.requestObjects.FS.INodeDTO;
 import docSharing.requestObjects.FS.MoveINodeDTO;
-import docSharing.entities.INode;
 import docSharing.entities.*;
 import docSharing.exceptions.MissingControllerParameterException;
 import docSharing.responseObjects.INodeDataResponse;
-import docSharing.responseObjects.INodeResponse;
 import docSharing.responseObjects.PathItem;
 import docSharing.responseObjects.SharedRoleResponse;
-import docSharing.service.FileSystemService;
 import docSharing.service.SharedRoleService;
 import docSharing.user.UserService;
 import docSharing.user.User;
+import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 import java.util.stream.Collectors;
-
 import static java.util.Objects.isNull;
 import static org.hibernate.internal.util.StringHelper.isBlank;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:3000")
+@RequiredArgsConstructor
 @RequestMapping("/fs")
 public class FileSystemController {
 
-    @Autowired
-    private FileSystemService fsService;
-    @Autowired
-    UserService userService;
+    private final FileSystemService fsService;
+    private final UserService userService;
 
-    @Autowired
-    SharedRoleService sharedRoleService;
+    private final SharedRoleService sharedRoleService;
 
     private static Logger logger = LogManager.getLogger(FileSystemController.class.getName());
 
-    /**
-     * Adds an inode
-     *
-     * @param inodeDTO - contains: userId - id of owner user
-     *                 parentId - id of parent inode
-     *                 name - inode name
-     *                 type - type of inode (DIR/FILE)
-     * @return a new inode
-     */
     @RequestMapping(value = "/add", method = RequestMethod.POST)
-    public ResponseEntity<INodeResponse> addInode(@RequestBody INodeDTO inodeDTO, @RequestAttribute User user) {
-        logger.info("adding a new inode to by user {}", user.getEmail());
-        logger.debug("addInode function parameters: name:{}, type:{}, parentId:{}", inodeDTO.name, inodeDTO.type, inodeDTO.parentId);
-        if (isBlank(inodeDTO.name)) {
+    public ResponseEntity<INodeResponse> addInode(@RequestBody addINodeRequest inodeRequest, @RequestAttribute User user) {
+        logger.info("adding a new inode {} {} by user {}", inodeRequest.getType(), inodeRequest.getName(), user.getEmail());
+
+        if (isBlank(inodeRequest.getName())) {
             throw new MissingControllerParameterException("name");
         }
-        if (isNull(inodeDTO.type)) {
+        if (isNull(inodeRequest.getType())) {
             throw new MissingControllerParameterException("inode type");
         }
-        if (isNull(inodeDTO.parentId)) {
+        if (isNull(inodeRequest.getParentId())) {
             throw new MissingControllerParameterException("parent id");
         }
-        INode inode = fsService.addInode(inodeDTO, user);
+        INode inode = fsService.addInode(inodeRequest, user);
 
         return ResponseEntity.ok(INodeResponse.fromINode(inode));
     }
@@ -71,22 +54,22 @@ public class FileSystemController {
     /**
      * Renames an inode
      *
-     * @param inodeDTO contains: id - inode id
+     * @param inodeRequestAdd contains: id - inode id
      *                 name - inode name
      * @return renamed inode
      */
     @RequestMapping(value = "/rename", method = RequestMethod.PATCH)
-    public ResponseEntity<INode> rename(@RequestBody INodeDTO inodeDTO, @RequestAttribute INode inode) {
+    public ResponseEntity<INode> rename(@RequestBody addINodeRequest inodeRequestAdd, @RequestAttribute INode inode) {
         logger.info("start rename inode function");
-        logger.debug("rename function parameters: name:{}, id:{}", inodeDTO.name, inodeDTO.parentId);
-        if (isBlank(inodeDTO.name)) {
+        logger.debug("rename function parameters: name:{}, id:{}", inodeRequestAdd.getName(), inodeRequestAdd.getParentId());
+        if (isBlank(inodeRequestAdd.getName())) {
             throw new MissingControllerParameterException("name");
         }
-        if (isNull(inodeDTO.parentId)) {
+        if (isNull(inodeRequestAdd.getParentId())) {
             throw new MissingControllerParameterException("id");
         }
 
-        return ResponseEntity.ok(fsService.renameInode(inode, inodeDTO.name));
+        return ResponseEntity.ok(fsService.renameInode(inode, inodeRequestAdd.getName()));
     }
 
     @RequestMapping(value = "/level/{inodeId}", method = RequestMethod.GET)

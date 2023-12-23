@@ -1,16 +1,22 @@
-package docSharing.responseObjects;
+package docSharing.fileSystem;
 
-import docSharing.entities.INode;
-
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
+@Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class INodeResponse implements Serializable {
 
-    Long id;
-    String name;
-    String type;
-    LocalDateTime creationDate;
+    private Long id;
+    private String name;
+    private String type;
+    private LocalDateTime creationDate;
 
     protected INodeResponse(INode inode) {
         this.id = inode.getId();
@@ -21,21 +27,5 @@ public class INodeResponse implements Serializable {
 
     public static INodeResponse fromINode(INode inode) {
         return new INodeResponse(inode);
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public LocalDateTime getCreationDate() {
-        return creationDate;
     }
 }

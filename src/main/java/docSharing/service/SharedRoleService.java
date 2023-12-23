@@ -1,6 +1,6 @@
 package docSharing.service;
 
-import docSharing.entities.INode;
+import docSharing.fileSystem.INode;
 import docSharing.entities.SharedRole;
 import docSharing.user.User;
 import docSharing.user.UserRole;

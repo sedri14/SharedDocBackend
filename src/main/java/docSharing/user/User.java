@@ -1,6 +1,6 @@
 package docSharing.user;
 
-import docSharing.entities.INode;
+import docSharing.fileSystem.INode;
 import docSharing.entities.SharedRole;
 import lombok.*;
 import org.hibernate.Hibernate;

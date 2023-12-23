@@ -1,10 +1,9 @@
-package docSharing.responseObjects;
+package docSharing.fileSystem;
 
 import docSharing.entities.Document;
+import docSharing.responseObjects.CharItemResponse;
 import docSharing.user.UserRole;
-import lombok.Data;
 import lombok.Getter;
-import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.util.List;

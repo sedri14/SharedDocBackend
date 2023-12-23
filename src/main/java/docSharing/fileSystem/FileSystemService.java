@@ -1,34 +1,24 @@
-package docSharing.service;
+package docSharing.fileSystem;
 
-import docSharing.requestObjects.FS.INodeDTO;
-import docSharing.entities.*;
 import docSharing.enums.INodeType;
 import docSharing.exceptions.INodeNameExistsException;
 import docSharing.exceptions.INodeNotFoundException;
 import docSharing.exceptions.IllegalOperationException;
-import docSharing.repository.FileSystemRepository;
-import docSharing.repository.SharedRoleRepository;
 import docSharing.responseObjects.PathItem;
 import docSharing.user.User;
+import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class FileSystemService {
 
-    @Autowired
-    private FileSystemRepository fsRepository;
+    private final FileSystemRepository fsRepository;
 
-
-    private static Logger logger = LogManager.getLogger(FileSystemService.class.getName());
-    @Autowired
-    private SharedRoleRepository sharedRoleRepository;
-
+    private static final Logger logger = LogManager.getLogger(FileSystemService.class.getName());
 
     public INode fetchINodeById(Long id) {
         return fsRepository.findById(id).orElseThrow(() -> new INodeNotFoundException("INode not found with id " + id));
@@ -48,41 +38,33 @@ public class FileSystemService {
     }
 
     /**
-     * add a new inode of type DIR or FILE to the filesystem.
-     *
-     * @param addInode include: owner id - owner of the inode,
-     *                 parent id - added inode's parent,
-     *                 name - name of inode
-     *                 type - type of inode (DIR/FILE)
-     * @return added inode
+     * Adds a new INode (document or directory) to the file system.
+     * @param inodeRequest The request object containing information about the new INode.
+     * @param owner The user who owns the newly created INode.
+     * @return The newly created INode.
+     * @throws IllegalOperationException If the destination to add the INode is not a directory.
+     * @throws INodeNameExistsException If an INode with the same name already exists in the destination directory.
      */
-    public INode addInode(INodeDTO addInode, User owner) {
-        if (inodeNameExistsInDir(addInode.parentId, addInode.type, addInode.name)) {
-            throw new INodeNameExistsException(String.format("Can not add %s, Name %s already exists in this directory.",
-                    addInode.type == INodeType.DIR ? "directory" : "file", addInode.name));
-        }
 
-        INode parent = fetchINodeById(addInode.parentId);
-        if (!isDir(parent)) {
+    INode addInode(addINodeRequest inodeRequest, User owner) {
+        INode parent = fetchINodeById(inodeRequest.getParentId());
+        if (!isDirectory(parent)) {
             throw new IllegalOperationException("Destination to add must be a directory");
         }
 
-        INode newInode;
-        switch (addInode.type) {
-            case DIR:
-                newInode = INode.createNewDirectory(addInode.name, parent, owner);
-                break;
-            case FILE:
-                newInode = Document.createNewEmptyDocument(addInode.name, parent, owner);
-                break;
-            default:
-                throw new IllegalOperationException("Illegal Inode type");
+        if (inodeNameExistsInDir(inodeRequest.getParentId(), inodeRequest.getType(), inodeRequest.getName())) {
+            throw new INodeNameExistsException(String.format("Can not add %s, Name %s already exists in this directory.",
+                    inodeRequest.getType() == INodeType.DIR ? "directory" : "file", inodeRequest.getName()));
         }
-        parent.getChildren().put(addInode.name, newInode);
 
+        INode newINode = switch (inodeRequest.getType()) {
+            case DIR -> INodeFactory.createNewDirectory(inodeRequest.getName(), parent, owner);
+            case FILE -> INodeFactory.createNewEmptyDocument(inodeRequest.getName(), parent, owner);
+        };
+        parent.getChildren().put(inodeRequest.getName(), newINode);
         fsRepository.save(parent);
 
-        return parent.getChildren().get(addInode.name);
+        return parent.getChildren().get(inodeRequest.getName());
     }
 
 
@@ -97,7 +79,7 @@ public class FileSystemService {
         INode sourceInode = fetchINodeById(sourceId);
         INode targetInode = fetchINodeById(targetId);
 
-        if (!isDir(targetInode)) {
+        if (!isDirectory(targetInode)) {
             throw new IllegalOperationException("Destination of move must be a directory");
         }
 
@@ -131,22 +113,6 @@ public class FileSystemService {
         return true;
     }
 
-    /**
-     * Checks if an inode is of type DIR
-     *
-     * @param inode
-     * @return true of false
-     */
-    public boolean isDir(INode inode) {
-        return inode.getType().equals(INodeType.DIR);
-    }
-
-    /**
-     * Removes an inode and all its descendants
-     *
-     * @param id - inode id
-     * @return list of inodes removed
-     */
     public INode removeById(Long id) {
         INode inode;
         try {
@@ -164,17 +130,10 @@ public class FileSystemService {
         INode parent = inode.getParent();
         parent.getChildren().remove(inode.getName());
         fsRepository.save(parent);
-        INode removedInode = fsRepository.removeById(id).get();
 
-        return removedInode;
+        return fsRepository.removeById(id).get();
     }
 
-    /**
-     * Sets a new name to an inode
-     *
-     * @param newName - new name
-     * @return the renamed inode
-     */
     public INode renameInode(INode inode, String newName) {
         Long parentId = inode.getParent().getId();
         INode parent = inode.getParent();
@@ -190,16 +149,6 @@ public class FileSystemService {
         fsRepository.save(parent);
 
         return parent.getChildren().get(newName);
-    }
-
-    /**
-     * Checks if there is an inode with inodeId in DB
-     *
-     * @param inodeId
-     * @return true or false
-     */
-    public boolean isExist(Long inodeId) {
-        return fsRepository.existsById(inodeId);
     }
 
 //    /**
@@ -243,58 +192,8 @@ public class FileSystemService {
 //     * @return true or false
 //     */
 
-    public boolean inodeNameExistsInDir(Long parentId, INodeType type, String name) {
-        INode parent = fetchINodeById(parentId);
-        boolean isNameExists;
-        switch (type) {
-            case DIR:
-                isNameExists = isDirNameExistsInDir(parent, name);
-                break;
-            case FILE:
-                isNameExists = isFileNameExistsInDir(parent, name);
-                break;
-            default:
-                throw new IllegalArgumentException("Inode type not supported");
-        }
-
-        return isNameExists;
-    }
-
-
-    /**
-     * Checks if a file name already exists in a specific directory.
-     *
-     * @param parent
-     * @param fileName name of file
-     * @return true or false
-     */
-    public boolean isFileNameExistsInDir(INode parent, String fileName) {
-        INode file = parent.getChildren().get(fileName);
-        if (null == file || file.getType() == INodeType.DIR) {
-            return false;
-        } else {
-            return true;
-        }
-    }
-
-    /**
-     * Checks if a directory name already exists in a specific directory.
-     *
-     * @param parent
-     * @param dirName name of directory
-     * @return true or false
-     */
-    private boolean isDirNameExistsInDir(INode parent, String dirName) {
-        INode dir = parent.getChildren().get(dirName);
-        if (null == dir || dir.getType() == INodeType.FILE) {
-            return false;
-        } else {
-            return true;
-        }
-    }
-
     public List<INode> getRootDirectory(User user) {
-        return user.getRootDirectory().getChildren().values().stream().collect(Collectors.toList());
+        return new ArrayList<>(user.getRootDirectory().getChildren().values());
     }
 
     public static List<PathItem> getInodePath(INode inode) {
@@ -303,7 +202,7 @@ public class FileSystemService {
 
         INode root = inode.getOwner().getRootDirectory();
         INode current = inode.getParent();
-        while (current.getId() != root.getId()) {
+        while (!Objects.equals(current.getId(), root.getId())) {
             path.add(new PathItem(current.getId(), current.getName()));
             current = current.getParent();
         }
@@ -312,4 +211,28 @@ public class FileSystemService {
         return path;
     }
 
+    /* Helper Methods */
+
+    private boolean isDirectory(INode inode) {
+        return inode.getType().equals(INodeType.DIR);
+    }
+
+    private boolean inodeNameExistsInDir(Long parentId, INodeType type, String name) {
+        INode parent = fetchINodeById(parentId);
+
+        return switch (type) {
+            case DIR -> isDirNameExistsInDir(parent, name);
+            case FILE -> isDocumentNameExistsInDir(parent, name);
+        };
+    }
+
+    private boolean isDocumentNameExistsInDir(INode parent, String docName) {
+        INode doc = parent.getChildren().get(docName);
+        return !(null == doc || doc.getType() == INodeType.DIR);
+    }
+
+    private boolean isDirNameExistsInDir(INode parent, String dirName) {
+        INode dir = parent.getChildren().get(dirName);
+        return !(null == dir || dir.getType() == INodeType.FILE);
+    }
 }

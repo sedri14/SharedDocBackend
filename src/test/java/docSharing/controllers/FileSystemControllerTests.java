@@ -2,10 +2,10 @@
 //
 //import docSharing.DTO.FS.INodeDTO;
 //import docSharing.DTO.User.UserDTO;
-//import docSharing.entities.INode;
+//import docSharing.fileSystem.INode;
 //import docSharing.enums.INodeType;
 //import docSharing.repository.DocRepository;
-//import docSharing.repository.FileSystemRepository;
+//import docSharing.fileSystem.FileSystemRepository;
 //import docSharing.repository.LogRepository;
 //import docSharing.repository.PermissionRepository;
 //import docSharing.response.LoginObject;

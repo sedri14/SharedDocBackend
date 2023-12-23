@@ -42,8 +42,8 @@ public class DocServiceTest {
     @BeforeEach
     void setUp() {
         user = User.builder().email("user@gmail.com").name("user").password("123").build();
-        document = new Document("document1", INodeType.FILE, LocalDateTime.now(), null, null, user, new ArrayList<>(), LocalDateTime.now());
-        emptyDoc = Document.createNewEmptyDocument("empty document", null, user);
+        document = new Document("document1", INodeType.FILE, LocalDateTime.now(), null, user, new ArrayList<>(), LocalDateTime.now());
+        //emptyDoc = Document.createNewEmptyDocument("empty document", null, user);
     }
 
     @Test

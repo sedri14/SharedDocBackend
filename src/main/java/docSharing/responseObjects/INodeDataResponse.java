@@ -1,5 +1,6 @@
 package docSharing.responseObjects;
 
+import docSharing.fileSystem.INodeResponse;
 import lombok.Getter;
 import java.util.List;
 

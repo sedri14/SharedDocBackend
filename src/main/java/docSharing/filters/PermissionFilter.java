@@ -1,9 +1,9 @@
 package docSharing.filters;
 
-import docSharing.entities.INode;
+import docSharing.fileSystem.INode;
 import docSharing.user.User;
 import docSharing.user.UserRole;
-import docSharing.service.FileSystemService;
+import docSharing.fileSystem.FileSystemService;
 import docSharing.service.SharedRoleService;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;

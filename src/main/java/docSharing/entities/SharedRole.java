@@ -1,5 +1,6 @@
 package docSharing.entities;
 
+import docSharing.fileSystem.INode;
 import docSharing.user.UserRole;
 import docSharing.user.User;
 import lombok.Getter;

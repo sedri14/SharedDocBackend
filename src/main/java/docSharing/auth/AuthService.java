@@ -1,7 +1,8 @@
 package docSharing.auth;
 
+import docSharing.fileSystem.INodeFactory;
 import docSharing.utils.SiteIdGenerator;
-import docSharing.entities.INode;
+import docSharing.fileSystem.INode;
 import docSharing.user.UserType;
 import docSharing.exceptions.IllegalOperationException;
 import docSharing.exceptions.UserNotFoundException;
@@ -45,7 +46,7 @@ public class AuthService {
                 .userType(UserType.USER)
                 .build();
 
-        INode rootDir = INode.createUserRootDirectory(user);
+        INode rootDir = INodeFactory.createRootDirectoryForUser(user);
         user.setRootDirectory(rootDir);
         userRepository.save(user);
 

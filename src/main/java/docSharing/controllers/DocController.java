@@ -2,15 +2,16 @@ package docSharing.controllers;
 
 import docSharing.CRDT.CharItem;
 import docSharing.auth.AuthService;
+import docSharing.fileSystem.FileSystemService;
 import docSharing.requestObjects.UpdateTextDTO;
 import docSharing.auth.RegisterRequest;
 import docSharing.entities.Document;
-import docSharing.entities.INode;
+import docSharing.fileSystem.INode;
 import docSharing.entities.SharedRole;
 import docSharing.user.User;
 import docSharing.user.UserRole;
 import docSharing.responseObjects.CharItemResponse;
-import docSharing.responseObjects.DocumentWithUserRoleResponse;
+import docSharing.fileSystem.DocumentWithUserRoleResponse;
 import docSharing.responseObjects.SharedRoleResponse;
 import docSharing.service.*;
 import docSharing.user.UserService;
@@ -29,15 +30,10 @@ import java.util.stream.Collectors;
 @CrossOrigin
 @RestController
 public class DocController {
-
-    @Autowired
-    FileSystemService fsService;
     @Autowired
     DocService docService;
     @Autowired
     UserService userService;
-    @Autowired
-    AuthService authService;
 
     @Autowired
     SharedRoleService sharedRoleService;
@@ -60,7 +56,7 @@ public class DocController {
     public ResponseEntity<DocumentWithUserRoleResponse> getDocument(@PathVariable Long docId, @RequestAttribute UserRole userRole) {
         logger.info("get document {}...", docId);
         Document document = docService.getCachedDocument(docId);
-        List<CharItem> rawText = docService.getRawText(document.getContent());
+        //List<CharItem> rawText = docService.getRawText(document.getContent());
 
         return ResponseEntity.ok(DocumentWithUserRoleResponse.fromDocument(document, userRole));
     }
