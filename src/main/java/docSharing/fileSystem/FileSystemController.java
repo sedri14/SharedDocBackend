@@ -13,6 +13,7 @@ import docSharing.user.User;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.modelmapper.ModelMapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -28,10 +29,9 @@ public class FileSystemController {
 
     private final FileSystemService fsService;
     private final UserService userService;
-
     private final SharedRoleService sharedRoleService;
-
-    private static Logger logger = LogManager.getLogger(FileSystemController.class.getName());
+    private static final Logger logger = LogManager.getLogger(FileSystemController.class.getName());
+    private static final ModelMapper modelMapper = new ModelMapper();
 
     @RequestMapping(value = "/add", method = RequestMethod.POST)
     public ResponseEntity<INodeResponse> addInode(@RequestBody addINodeRequest inodeRequest, @RequestAttribute User user) {
@@ -48,7 +48,7 @@ public class FileSystemController {
         }
         INode inode = fsService.addInode(inodeRequest, user);
 
-        return ResponseEntity.ok(INodeResponse.fromINode(inode));
+        return ResponseEntity.ok(modelMapper.map(inode, INodeResponse.class));
     }
 
     /**

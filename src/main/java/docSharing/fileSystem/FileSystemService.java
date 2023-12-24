@@ -20,23 +20,6 @@ public class FileSystemService {
 
     private static final Logger logger = LogManager.getLogger(FileSystemService.class.getName());
 
-    public INode fetchINodeById(Long id) {
-        return fsRepository.findById(id).orElseThrow(() -> new INodeNotFoundException("INode not found with id " + id));
-    }
-
-    /**
-     * Returns all children of an inode of type directory
-     *
-     * @return A List of children inodes
-     */
-    public List<INode> getAllChildrenInodes(INode parent) {
-        if (parent.getType() != INodeType.DIR) {
-            throw new IllegalOperationException("INode must be a directory");
-        }
-
-        return new ArrayList<>(parent.getChildren().values());
-    }
-
     /**
      * Adds a new INode (document or directory) to the file system.
      * @param inodeRequest The request object containing information about the new INode.
@@ -45,7 +28,6 @@ public class FileSystemService {
      * @throws IllegalOperationException If the destination to add the INode is not a directory.
      * @throws INodeNameExistsException If an INode with the same name already exists in the destination directory.
      */
-
     INode addInode(addINodeRequest inodeRequest, User owner) {
         INode parent = fetchINodeById(inodeRequest.getParentId());
         if (!isDirectory(parent)) {
@@ -67,6 +49,23 @@ public class FileSystemService {
         return parent.getChildren().get(inodeRequest.getName());
     }
 
+
+    public INode fetchINodeById(Long id) {
+        return fsRepository.findById(id).orElseThrow(() -> new INodeNotFoundException("INode not found with id " + id));
+    }
+
+    /**
+     * Returns all children of an inode of type directory
+     *
+     * @return A List of children inodes
+     */
+    public List<INode> getAllChildrenInodes(INode parent) {
+        if (parent.getType() != INodeType.DIR) {
+            throw new IllegalOperationException("INode must be a directory");
+        }
+
+        return new ArrayList<>(parent.getChildren().values());
+    }
 
     /**
      * Sets inode with targetInodeId to be the parent of inode with inodeId.
