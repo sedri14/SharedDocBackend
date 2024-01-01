@@ -106,24 +106,6 @@ public class FileSystemController {
     }
 
     /**
-     * Moves an inode to another inode of type DIR
-     *
-     * @param moveINodeDTO contains: sourceId - id of an inode that is going to be moved
-     *                     targetId - id of an inode that is the new parent
-     * @return inode with a new parent
-     */
-    @RequestMapping(value = "/move", method = RequestMethod.POST)
-    public ResponseEntity<INode> move(@RequestBody MoveINodeDTO moveINodeDTO) {
-        logger.info("start move inode function");
-        logger.debug("move function parameters: sourceId:{}, targetId:{}", moveINodeDTO.sourceId, moveINodeDTO.targetId);
-        if (isNull(moveINodeDTO.sourceId) || isNull(moveINodeDTO.targetId)) {
-            throw new MissingControllerParameterException("source or target inode");
-        }
-
-        return ResponseEntity.ok(fsService.move(moveINodeDTO.sourceId, moveINodeDTO.targetId));
-    }
-
-    /**
      * Deletes an inode and all of its descendants
      *
      * @return number of inodes deleted

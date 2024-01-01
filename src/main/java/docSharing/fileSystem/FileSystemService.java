@@ -98,51 +98,6 @@ public class FileSystemService {
         return fsRepository.findById(id).orElseThrow(() -> new INodeNotFoundException("INode not found with id " + id));
     }
 
-    /**
-     * Sets inode with targetInodeId to be the parent of inode with inodeId.
-     *
-     * @param sourceId - id of the inode to move
-     * @param targetId - id of the new parent inode
-     * @return the moved inode
-     */
-    public INode move(Long sourceId, Long targetId) {
-        INode sourceInode = fetchINodeById(sourceId);
-        INode targetInode = fetchINodeById(targetId);
-
-        if (!isDirectory(targetInode)) {
-            throw new IllegalOperationException("Destination of move must be a directory");
-        }
-
-        INodeType sourceType = sourceInode.getType();
-        if (inodeNameExistsInDir(targetId, sourceType, sourceInode.getName())) {
-            throw new IllegalOperationException(String.format("Can not move %s. the name \"%s\" already exists in target directory.",
-                    sourceType == INodeType.DIR ? "directory" : "file", sourceInode.getName()));
-        }
-
-        if (!isHierarchicallyLegalMove(sourceInode, targetInode)) {
-            throw new IllegalOperationException("Illegal move");
-
-        }
-
-        sourceInode.setParent(targetInode);
-
-        return fsRepository.save(sourceInode);
-    }
-
-
-    //check if source node is an ancestor of target node
-    private boolean isHierarchicallyLegalMove(INode sourceInode, INode targetInode) {
-        INode current = targetInode;
-        while (null != current.getParent()) {
-            if (current.equals(sourceInode)) {
-                return false;
-            }
-            current = current.getParent();
-        }
-
-        return true;
-    }
-
     public INode removeById(Long id) {
         INode inode;
         try {
@@ -180,47 +135,6 @@ public class FileSystemService {
 
         return parent.getChildren().get(newName);
     }
-
-//    /**
-//     * Creates a new inode of type FILE (document)
-//     *
-//     * @param file     - uploaded file
-//     * @param parentId - parent node id under which the created document will be assigned
-//     * @param owner    - owner User
-//     * @return a new Document inode created from the uploaded .txt file
-//     */
-//    public Document uploadFile(MultipartFile file, Long parentId, User owner) throws IllegalArgumentException {
-//        String nameWithExtension = FilenameUtils.removeExtension(file.getOriginalFilename());
-//        String content = null;
-//        try {
-//            content = new String(file.getBytes());
-//        } catch (IOException e) {
-//            logger.error("Can not parse file content: %{}", file.getOriginalFilename());
-//            throw new IllegalArgumentException("Can not parse file content");
-//        }
-//
-//        INode parent = fsRepository.findById(parentId).get();
-//        if (!isDir(parent)) {
-//            throw new IllegalArgumentException("Files can be imported only to directory");
-//        }
-//        if (isFileNameExistsInDir(parentId, nameWithExtension)) {
-//            throw new IllegalArgumentException(String.format("File name %s already exist in this directory", FilenameUtils.removeExtension(nameWithExtension)));
-//        }
-//
-//        Document newDoc = Document.createNewImportedDocument(nameWithExtension, content, parent, owner);
-//        Document savedDoc = fsRepository.save(newDoc);
-//
-//        return newDoc;
-//    }
-//
-//    /**
-//     * Checks if there already is an inode of same type (DIR/FILE) with the same name in a specific directory.
-//     *
-//     * @param parentId - the id of the directory
-//     * @param type     - type of inode
-//     * @param name     - inode name
-//     * @return true or false
-//     */
 
     public List<INode> getRootDirectory(User user) {
         return new ArrayList<>(user.getRootDirectory().getChildren().values());
