@@ -1,7 +1,6 @@
 package docSharing.fileSystem;
 
 import docSharing.requestObjects.ChangeRoleDTO;
-import docSharing.requestObjects.FS.MoveINodeDTO;
 import docSharing.entities.*;
 import docSharing.exceptions.MissingControllerParameterException;
 import docSharing.responseObjects.SharedRoleResponse;
@@ -32,19 +31,19 @@ public class FileSystemController {
     private static final ModelMapper modelMapper = new ModelMapper();
 
     @RequestMapping(value = "/add", method = RequestMethod.POST)
-    public ResponseEntity<INodeResponse> addInode(@RequestBody addINodeRequest inodeRequest, @RequestAttribute User user) {
-        logger.info("adding a new inode {} {} by user {}", inodeRequest.getType(), inodeRequest.getName(), user.getEmail());
+    public ResponseEntity<INodeResponse> addInode(@RequestBody AddINodeRequest request, @RequestAttribute User user) {
+        logger.info("adding a new inode {} {} by user {}", request.getType(), request.getName(), user.getEmail());
 
-        if (isBlank(inodeRequest.getName())) {
+        if (isBlank(request.getName())) {
             throw new MissingControllerParameterException("name");
         }
-        if (isNull(inodeRequest.getType())) {
+        if (isNull(request.getType())) {
             throw new MissingControllerParameterException("inode type");
         }
-        if (isNull(inodeRequest.getParentId())) {
+        if (isNull(request.getParentId())) {
             throw new MissingControllerParameterException("parent id");
         }
-        INode inode = fsService.addInode(inodeRequest, user);
+        INode inode = fsService.addInode(request, user);
 
         return ResponseEntity.ok(modelMapper.map(inode, INodeResponse.class));
     }
@@ -65,21 +64,16 @@ public class FileSystemController {
                 .build());
     }
 
-    /**
-
-     */
     @RequestMapping(value = "/rename", method = RequestMethod.PATCH)
-    public ResponseEntity<INode> rename(@RequestBody addINodeRequest inodeRequestAdd, @RequestAttribute INode inode) {
-        logger.info("start rename inode function");
-        logger.debug("rename function parameters: name:{}, id:{}", inodeRequestAdd.getName(), inodeRequestAdd.getParentId());
-        if (isBlank(inodeRequestAdd.getName())) {
+    public ResponseEntity<INodeResponse> rename(@RequestBody  RenameINodeRequest request, @RequestAttribute INode inode) {
+        logger.info("rename inode {} to new name {}", inode.getName(), request.getName());
+
+        if (isBlank(request.getName())) {
             throw new MissingControllerParameterException("name");
         }
-        if (isNull(inodeRequestAdd.getParentId())) {
-            throw new MissingControllerParameterException("id");
-        }
+        INode renamedInode = fsService.rename(inode, request.getName());
 
-        return ResponseEntity.ok(fsService.renameInode(inode, inodeRequestAdd.getName()));
+        return ResponseEntity.ok(modelMapper.map(renamedInode, INodeResponse.class));
     }
 
     @RequestMapping(value = "/root", method = RequestMethod.GET)

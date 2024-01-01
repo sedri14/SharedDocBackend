@@ -29,7 +29,7 @@ public class FileSystemService {
      * @throws IllegalOperationException If the destination to add the INode is not a directory.
      * @throws INodeNameExistsException  If an INode with the same name already exists in the destination directory.
      */
-    INode addInode(addINodeRequest inodeRequest, User owner) {
+    INode addInode(AddINodeRequest inodeRequest, User owner) {
         INode parent = fetchINodeById(inodeRequest.getParentId());
         if (!isDirectory(parent)) {
             throw new IllegalOperationException("Destination to add must be a directory");
@@ -94,6 +94,32 @@ public class FileSystemService {
     }
 
 
+    /**
+     * Renames an INode (file or directory).
+     *
+     * @param inode The INode (file or directory) to be renamed.
+     * @param newName The new name to assign to the INode.
+     * @return The INode with the updated name.
+     * @throws IllegalOperationException If an INode of the same type with the same name already exists in the parent directory.
+     */
+    INode rename(INode inode, String newName) {
+        Long parentId = inode.getParent().getId();
+        INode parent = inode.getParent();
+        INodeType inodeType = inode.getType();
+
+        if (inodeNameExistsInDir(parentId, inodeType, newName)) {
+            throw new IllegalOperationException(String.format("%s name \"%s\" already exists in this directory", inodeType == INodeType.DIR ? "directory" : "file", newName));
+        }
+        // reinsert child entry with new name to parent map
+        INode removedInode = parent.getChildren().remove(inode.getName());
+        parent.getChildren().put(newName, removedInode);
+        inode.setName(newName);
+        fsRepository.save(parent);
+
+        return parent.getChildren().get(newName);
+    }
+
+
     public INode fetchINodeById(Long id) {
         return fsRepository.findById(id).orElseThrow(() -> new INodeNotFoundException("INode not found with id " + id));
     }
@@ -117,23 +143,6 @@ public class FileSystemService {
         fsRepository.save(parent);
 
         return fsRepository.removeById(id).get();
-    }
-
-    public INode renameInode(INode inode, String newName) {
-        Long parentId = inode.getParent().getId();
-        INode parent = inode.getParent();
-        INodeType inodeType = inode.getType();
-
-        if (inodeNameExistsInDir(parentId, inodeType, newName)) {
-            throw new IllegalOperationException(String.format("%s name \"%s\" already exists in this directory", inodeType == INodeType.DIR ? "directory" : "file", newName));
-        }
-        //reinsert child entry with new name to parent map
-        INode removedInode = parent.getChildren().remove(inode.getName());
-        parent.getChildren().put(newName, removedInode);
-        inode.setName(newName);
-        fsRepository.save(parent);
-
-        return parent.getChildren().get(newName);
     }
 
     public List<INode> getRootDirectory(User user) {
