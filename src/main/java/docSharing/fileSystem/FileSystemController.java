@@ -4,8 +4,6 @@ import docSharing.requestObjects.ChangeRoleDTO;
 import docSharing.requestObjects.FS.MoveINodeDTO;
 import docSharing.entities.*;
 import docSharing.exceptions.MissingControllerParameterException;
-import docSharing.responseObjects.INodeDataResponse;
-import docSharing.responseObjects.PathItem;
 import docSharing.responseObjects.SharedRoleResponse;
 import docSharing.service.SharedRoleService;
 import docSharing.user.UserService;
@@ -51,12 +49,24 @@ public class FileSystemController {
         return ResponseEntity.ok(modelMapper.map(inode, INodeResponse.class));
     }
 
+    @RequestMapping(value = "/children/{inodeId}", method = RequestMethod.GET)
+    public ResponseEntity<ChildrenDataResponse> getChildren(@PathVariable Long inodeId, @RequestAttribute INode inode) {
+        logger.info("getting all children of inode {}", inodeId);
+
+        List<INode> inodes = fsService.getAllChildren(inode);
+        List<INodeResponse> responseINodesList = inodes.stream()
+                .map(item -> modelMapper.map(item, INodeResponse.class))
+                .collect(Collectors.toList());
+        List<BreadCrumb> path = fsService.getPath(inode);
+
+        return ResponseEntity.ok(ChildrenDataResponse.builder()
+                .children(responseINodesList)
+                .path(path)
+                .build());
+    }
+
     /**
-     * Renames an inode
-     *
-     * @param inodeRequestAdd contains: id - inode id
-     *                 name - inode name
-     * @return renamed inode
+
      */
     @RequestMapping(value = "/rename", method = RequestMethod.PATCH)
     public ResponseEntity<INode> rename(@RequestBody addINodeRequest inodeRequestAdd, @RequestAttribute INode inode) {
@@ -72,28 +82,12 @@ public class FileSystemController {
         return ResponseEntity.ok(fsService.renameInode(inode, inodeRequestAdd.getName()));
     }
 
-    @RequestMapping(value = "/level/{inodeId}", method = RequestMethod.GET)
-    public ResponseEntity<INodeDataResponse> getChildren(@PathVariable Long inodeId, @RequestAttribute INode inode) {
-        logger.info("start getChildren function");
-        logger.debug("getChildren function parameters: id:%{}", inodeId);
-
-        List<INode> inodes = fsService.getAllChildrenInodes(inode);
-        List<INodeResponse> responseINodesList = inodes.stream()
-                .map(INodeResponse::fromINode)
-                .collect(Collectors.toList());
-
-        List<PathItem> path = fsService.getInodePath(inode);
-        INodeDataResponse childrenWithPath = INodeDataResponse.getChildrenWithPath(path, responseINodesList);
-
-        return ResponseEntity.ok(childrenWithPath);
-    }
-
     @RequestMapping(value = "/root", method = RequestMethod.GET)
     public ResponseEntity<List<INodeResponse>> getRoot(@RequestAttribute User user) {
         logger.info("start getRoot function");
         List<INode> inodes = fsService.getRootDirectory(user);
         List<INodeResponse> responseINodesList = inodes.stream()
-                .map(INodeResponse::fromINode)
+                .map(i -> modelMapper.map(i, INodeResponse.class))
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(responseINodesList);
@@ -104,7 +98,7 @@ public class FileSystemController {
         logger.info("start getSharedWithMe function");
         List<INode> sharedWithMe = sharedRoleService.getAllSharedFilesWithUser(user);
         List<INodeResponse> responseINodesList = sharedWithMe.stream()
-                .map(INodeResponse::fromINode)
+                .map(i -> modelMapper.map(i, INodeResponse.class))
                 .collect(Collectors.toList());
 
 

@@ -4,12 +4,12 @@ import docSharing.enums.INodeType;
 import docSharing.exceptions.INodeNameExistsException;
 import docSharing.exceptions.INodeNotFoundException;
 import docSharing.exceptions.IllegalOperationException;
-import docSharing.responseObjects.PathItem;
 import docSharing.user.User;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
+
 import java.util.*;
 
 @Service
@@ -22,11 +22,12 @@ public class FileSystemService {
 
     /**
      * Adds a new INode (document or directory) to the file system.
+     *
      * @param inodeRequest The request object containing information about the new INode.
-     * @param owner The user who owns the newly created INode.
+     * @param owner        The user who owns the newly created INode.
      * @return The newly created INode.
      * @throws IllegalOperationException If the destination to add the INode is not a directory.
-     * @throws INodeNameExistsException If an INode with the same name already exists in the destination directory.
+     * @throws INodeNameExistsException  If an INode with the same name already exists in the destination directory.
      */
     INode addInode(addINodeRequest inodeRequest, User owner) {
         INode parent = fetchINodeById(inodeRequest.getParentId());
@@ -49,22 +50,52 @@ public class FileSystemService {
         return parent.getChildren().get(inodeRequest.getName());
     }
 
-
-    public INode fetchINodeById(Long id) {
-        return fsRepository.findById(id).orElseThrow(() -> new INodeNotFoundException("INode not found with id " + id));
-    }
-
     /**
-     * Returns all children of an inode of type directory
+     * Retrieves all children nodes of a given parent node.
      *
-     * @return A List of children inodes
+     * @param parent The parent node.
+     * @return A List of INode objects.
+     * @throws IllegalOperationException Thrown if the provided parent node is not of type INodeType.DIR (directory).
      */
-    public List<INode> getAllChildrenInodes(INode parent) {
+
+    List<INode> getAllChildren(INode parent) {
         if (parent.getType() != INodeType.DIR) {
             throw new IllegalOperationException("INode must be a directory");
         }
 
         return new ArrayList<>(parent.getChildren().values());
+    }
+
+    /**
+     * Retrieves the path from the root directory to the specified INode, represented as a list of breadcrumbs.
+     *
+     * @param inode The INode for which to retrieve the path.
+     * @return A List of BreadCrumb objects representing the path from the root directory to the specified INode.
+     *         If the provided INode is the root directory or null, an empty list is returned.
+     */
+    List<BreadCrumb> getPath(INode inode) {
+        List<BreadCrumb> path = new ArrayList<>();
+
+        // root directory
+        if (null == inode.getParent()) return path;
+
+        INode root = inode.getOwner().getRootDirectory();
+        INode current = inode.getParent();
+        while (!Objects.equals(current.getId(), root.getId())) {
+            path.add(BreadCrumb.builder()
+                    .id(current.getId())
+                    .name(current.getName())
+                    .build());
+            current = current.getParent();
+        }
+        Collections.reverse(path);
+
+        return path;
+    }
+
+
+    public INode fetchINodeById(Long id) {
+        return fsRepository.findById(id).orElseThrow(() -> new INodeNotFoundException("INode not found with id " + id));
     }
 
     /**
@@ -193,21 +224,6 @@ public class FileSystemService {
 
     public List<INode> getRootDirectory(User user) {
         return new ArrayList<>(user.getRootDirectory().getChildren().values());
-    }
-
-    public static List<PathItem> getInodePath(INode inode) {
-        List<PathItem> path = new ArrayList<>();
-        if (null == inode.getParent()) return path;
-
-        INode root = inode.getOwner().getRootDirectory();
-        INode current = inode.getParent();
-        while (!Objects.equals(current.getId(), root.getId())) {
-            path.add(new PathItem(current.getId(), current.getName()));
-            current = current.getParent();
-        }
-        Collections.reverse(path);
-
-        return path;
     }
 
     /* Helper Methods */

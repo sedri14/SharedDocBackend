@@ -24,8 +24,4 @@ public class INodeResponse implements Serializable {
         this.type = inode.getType().toString();
         this.creationDate = inode.getCreationDate();
     }
-
-    public static INodeResponse fromINode(INode inode) {
-        return new INodeResponse(inode);
-    }
 }
