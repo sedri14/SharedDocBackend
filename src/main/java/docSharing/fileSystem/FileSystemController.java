@@ -1,11 +1,11 @@
 package docSharing.fileSystem;
 
-import docSharing.requestObjects.ChangeRoleDTO;
-import docSharing.entities.*;
+import docSharing.documentUserAccess.AccessRequest;
+import docSharing.entities.Document;
 import docSharing.exceptions.MissingControllerParameterException;
-import docSharing.responseObjects.SharedRoleResponse;
-import docSharing.service.SharedRoleService;
-import docSharing.user.UserService;
+import docSharing.documentUserAccess.AccessResponse;
+import docSharing.documentUserAccess.AccessService;
+import docSharing.user.UserRole;
 import docSharing.user.User;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
@@ -25,8 +25,7 @@ import static org.hibernate.internal.util.StringHelper.isBlank;
 public class FileSystemController {
 
     private final FileSystemService fsService;
-    private final UserService userService;
-    private final SharedRoleService sharedRoleService;
+    private final AccessService accessService;
     private static final Logger logger = LogManager.getLogger(FileSystemController.class.getName());
     private static final ModelMapper modelMapper = new ModelMapper();
 
@@ -76,27 +75,45 @@ public class FileSystemController {
         return ResponseEntity.ok(modelMapper.map(renamedInode, INodeResponse.class));
     }
 
-    @RequestMapping(value = "/root", method = RequestMethod.GET)
-    public ResponseEntity<List<INodeResponse>> getRoot(@RequestAttribute User user) {
-        logger.info("start getRoot function");
-        List<INode> inodes = fsService.getRootDirectory(user);
-        List<INodeResponse> responseINodesList = inodes.stream()
+    @RequestMapping(value = "/shared-with-me", method = RequestMethod.GET)
+    public ResponseEntity<List<INodeResponse>> getSharedWithMe(@RequestAttribute User user) {
+        logger.info("getting all the documents that are shared with user {}", user.getName());
+
+        List<INode> sharedWithMe = accessService.getAllSharedDocumentsWithUser(user);
+        List<INodeResponse> responseINodesList = sharedWithMe.stream()
                 .map(i -> modelMapper.map(i, INodeResponse.class))
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(responseINodesList);
     }
 
-    @RequestMapping(value = "/shared-with-me", method = RequestMethod.GET)
-    public ResponseEntity<List<INodeResponse>> getSharedWithMe(@RequestAttribute User user) {
-        logger.info("start getSharedWithMe function");
-        List<INode> sharedWithMe = sharedRoleService.getAllSharedFilesWithUser(user);
-        List<INodeResponse> responseINodesList = sharedWithMe.stream()
-                .map(i -> modelMapper.map(i, INodeResponse.class))
-                .collect(Collectors.toList());
+    @RequestMapping(value = "/updateAccess", method = RequestMethod.POST)
+    public ResponseEntity<AccessResponse> updateUserRole(@RequestBody AccessRequest request, @RequestAttribute Document document, @RequestAttribute User user) {
+        logger.info("update user {} with new role {} for document {}", request.getEmail(), request.getUserRole(), document.getId());
 
+        if (isBlank(request.getEmail())) {
+            throw new MissingControllerParameterException("email");
+        }
+        if (!request.isDeleteRole()) {
+            if (isNull(request.getUserRole())) {
+                throw new MissingControllerParameterException("user role");
+            }
+        }
 
-        return ResponseEntity.ok(responseINodesList);
+        if (request.isDeleteRole()) {
+            accessService.deleteRole(document, user);
+            return ResponseEntity.ok(AccessResponse.builder()
+                    .email(request.getEmail())
+                    .role(UserRole.NON)
+                    .build());
+        }
+
+        var newAccess = accessService.changeUserRole(document, user, request.getUserRole());
+
+        return ResponseEntity.ok(AccessResponse.builder()
+                .email(newAccess.getUser().getEmail())
+                .role(newAccess.getRole())
+                .build());
     }
 
     /**
@@ -110,37 +127,5 @@ public class FileSystemController {
         logger.debug("delete function parameters: id:{}", (inodeId));
 
         return ResponseEntity.ok(fsService.removeById(inodeId));
-    }
-
-    /**
-     * @param changeRoleDTO Param to change the role of user
-     * @return if the change is done or note
-     */
-    @RequestMapping(value = "changeUserRole/{inodeId}", method = RequestMethod.POST)
-    public ResponseEntity<SharedRoleResponse> changeUserRole(@PathVariable Long inodeId, @RequestBody ChangeRoleDTO changeRoleDTO, @RequestAttribute INode inode) {
-
-        logger.info("start changeUserRollInDoc function");
-
-        if (isNull(changeRoleDTO)) {
-            throw new MissingControllerParameterException("http request body");
-        }
-        if (isBlank(changeRoleDTO.email)) {
-            throw new MissingControllerParameterException("email");
-        }
-        if (!changeRoleDTO.isDeleteRole) {
-            if (isNull(changeRoleDTO.userRole)) {
-                throw new MissingControllerParameterException("user role");
-            }
-        }
-
-        User user = userService.fetchUserByEmail(changeRoleDTO.email);
-        if (changeRoleDTO.isDeleteRole) {
-            SharedRole deletedRole = sharedRoleService.deleteRole(inode, user);
-            return ResponseEntity.ok(SharedRoleResponse.fromSharedRole(deletedRole));
-        }
-
-        SharedRole sharedRole = sharedRoleService.changeUserRole(inode, user, changeRoleDTO.userRole);
-
-        return ResponseEntity.ok(SharedRoleResponse.fromSharedRole(sharedRole));
     }
 }

@@ -3,7 +3,7 @@ package docSharing.fileSystem;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIncludeProperties;
 import docSharing.entities.BaseEntity;
-import docSharing.entities.SharedRole;
+import docSharing.documentUserAccess.DocumentUserAccess;
 import docSharing.enums.INodeType;
 import docSharing.user.User;
 import lombok.*;
@@ -55,7 +55,7 @@ public class INode extends BaseEntity implements Serializable {
     @JsonIgnore
     @OneToMany(mappedBy = "inode", cascade = CascadeType.REMOVE)
     @ToString.Exclude
-    private List<SharedRole> sharedItems;
+    private List<DocumentUserAccess> sharedItems;
 
     @Override
     public boolean equals(Object o) {

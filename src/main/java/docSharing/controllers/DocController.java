@@ -1,18 +1,17 @@
 package docSharing.controllers;
 
 import docSharing.CRDT.CharItem;
-import docSharing.auth.AuthService;
-import docSharing.fileSystem.FileSystemService;
+import docSharing.documentUserAccess.AccessService;
 import docSharing.requestObjects.UpdateTextDTO;
 import docSharing.auth.RegisterRequest;
 import docSharing.entities.Document;
 import docSharing.fileSystem.INode;
-import docSharing.entities.SharedRole;
+import docSharing.documentUserAccess.DocumentUserAccess;
 import docSharing.user.User;
 import docSharing.user.UserRole;
-import docSharing.responseObjects.CharItemResponse;
+import docSharing.requestObjects.responseObjects.CharItemResponse;
 import docSharing.fileSystem.DocumentWithUserRoleResponse;
-import docSharing.responseObjects.SharedRoleResponse;
+import docSharing.documentUserAccess.AccessResponse;
 import docSharing.service.*;
 import docSharing.user.UserService;
 import org.apache.logging.log4j.LogManager;
@@ -36,7 +35,7 @@ public class DocController {
     UserService userService;
 
     @Autowired
-    SharedRoleService sharedRoleService;
+    AccessService accessService;
 
     private static final Logger logger = LogManager.getLogger(DocController.class.getName());
 
@@ -77,13 +76,13 @@ public class DocController {
     }
 
     @RequestMapping(value = "roles/{docId}", method = RequestMethod.GET)
-    public ResponseEntity<List<SharedRoleResponse>> getDocumentRoles(@PathVariable Long docId, @RequestAttribute INode inode) {
+    public ResponseEntity<List<AccessResponse>> getDocumentRoles(@PathVariable Long docId, @RequestAttribute INode inode) {
         logger.info("get roles for document {}...", docId);
         Document doc = (Document)inode;
-        List<SharedRole> sharedRoles = sharedRoleService.getAllUsersWithPermission(doc);
-        List<SharedRoleResponse> peopleWithAccess = sharedRoles.stream().map(item -> new SharedRoleResponse(item.getUser().getEmail(), item.getUser().getName(), item.getRole())).collect(Collectors.toList());
+        List<DocumentUserAccess> documentUserAccesses = accessService.getAllUsersWithAccess(doc);
+        List<AccessResponse> peopleWithAccess = documentUserAccesses.stream().map(item -> new AccessResponse(item.getUser().getEmail(), item.getUser().getName(), item.getRole())).collect(Collectors.toList());
         //Add owner to list
-        peopleWithAccess.add(0, new SharedRoleResponse(doc.getOwner().getEmail(), doc.getOwner().getName(), UserRole.OWNER));
+        peopleWithAccess.add(0, new AccessResponse(doc.getOwner().getEmail(), doc.getOwner().getName(), UserRole.OWNER));
 
         return ResponseEntity.ok(peopleWithAccess);
     }

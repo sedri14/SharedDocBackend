@@ -57,7 +57,6 @@ public class FileSystemService {
      * @return A List of INode objects.
      * @throws IllegalOperationException Thrown if the provided parent node is not of type INodeType.DIR (directory).
      */
-
     List<INode> getAllChildren(INode parent) {
         if (parent.getType() != INodeType.DIR) {
             throw new IllegalOperationException("INode must be a directory");
@@ -93,7 +92,6 @@ public class FileSystemService {
         return path;
     }
 
-
     /**
      * Renames an INode (file or directory).
      *
@@ -119,11 +117,6 @@ public class FileSystemService {
         return parent.getChildren().get(newName);
     }
 
-
-    public INode fetchINodeById(Long id) {
-        return fsRepository.findById(id).orElseThrow(() -> new INodeNotFoundException("INode not found with id " + id));
-    }
-
     public INode removeById(Long id) {
         INode inode;
         try {
@@ -145,11 +138,11 @@ public class FileSystemService {
         return fsRepository.removeById(id).get();
     }
 
-    public List<INode> getRootDirectory(User user) {
-        return new ArrayList<>(user.getRootDirectory().getChildren().values());
-    }
-
     /* Helper Methods */
+
+    public INode fetchINodeById(Long id) {
+        return fsRepository.findById(id).orElseThrow(() -> new INodeNotFoundException("INode not found with id " + id));
+    }
 
     private boolean isDirectory(INode inode) {
         return inode.getType().equals(INodeType.DIR);

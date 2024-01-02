@@ -1,4 +1,4 @@
-package docSharing.responseObjects;
+package docSharing.requestObjects.responseObjects;
 
 import docSharing.CRDT.CharItem;
 import lombok.Getter;

@@ -1,10 +1,11 @@
 package docSharing.filters;
 
+import docSharing.entities.Document;
 import docSharing.fileSystem.INode;
 import docSharing.user.User;
 import docSharing.user.UserRole;
 import docSharing.fileSystem.FileSystemService;
-import docSharing.service.SharedRoleService;
+import docSharing.documentUserAccess.AccessService;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -24,7 +25,7 @@ public class PermissionFilter implements Filter {
 
     private final FileSystemService fileSystemService;
 
-    private final SharedRoleService sharedRoleService;
+    private final AccessService accessService;
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
@@ -38,7 +39,9 @@ public class PermissionFilter implements Filter {
         HttpServletResponse response = (HttpServletResponse) servletResponse;
         logger.info("url: {}", request.getRequestURL().toString());
 
-        List<String> ownerPermissionEndpoints = Arrays.asList("/fs/rename", "/fs/level", "/fs/move", "/fs/delete", "/fs/changeUserRole", "/doc/getDoc/", "/doc/changeUserRole", "/doc/roles");
+        List<String> ownerPermissionEndpoints = Arrays.asList("/fs/rename", "/fs/children", "/fs/delete", "/fs/changeUserRole", "/doc/getDoc/", "/doc/roles");
+        Set<UserRole> accessDocumentRoles = Set.of(UserRole.OWNER, UserRole.VIEWER, UserRole.EDITOR);
+
         String servletPath = request.getServletPath();
         logger.info("servlet path {}", servletPath);
         boolean isIncluded = ownerPermissionEndpoints.stream().anyMatch(servletPath::startsWith);
@@ -49,18 +52,22 @@ public class PermissionFilter implements Filter {
             User user = (User) request.getAttribute("user");
             boolean isOwner = isOwner(user, inode);
 
-            if (servletPath.startsWith("/doc/getDoc")) {
-                UserRole roleForDoc = getRole(inode, user);
-                if (!isOwner && null == roleForDoc) {
-                    returnBadResponse(response);
-                } else {
-                    request.setAttribute("userRole", isOwner ? UserRole.OWNER : roleForDoc);
+            if (inode instanceof Document) {
+                if (servletPath.startsWith("/fs/changeUserRole") && isOwner) {
+                    request.setAttribute("document", inode);
                     filterChain.doFilter(request, response);
                     return;
                 }
-            }
 
-            if (!isOwner) {
+                if (servletPath.startsWith("/doc/getDoc")) {
+                    UserRole roleForDoc = getRole((Document)inode, user);
+                    if (accessDocumentRoles.contains(roleForDoc)) {
+                        request.setAttribute("userRole", roleForDoc);
+                    } else {
+                        returnBadResponse(response);
+                    }
+                }
+            } else {
                 returnBadResponse(response);
             }
 
@@ -73,8 +80,8 @@ public class PermissionFilter implements Filter {
         return user.getId().equals(inode.getOwner().getId());
     }
 
-    private UserRole getRole(INode inode, User user) {
-        return sharedRoleService.getRole(inode, user);
+    private UserRole getRole(Document inode, User user) {
+        return accessService.getRole(inode, user);
     }
 
     private void returnBadResponse(HttpServletResponse res) throws IOException {

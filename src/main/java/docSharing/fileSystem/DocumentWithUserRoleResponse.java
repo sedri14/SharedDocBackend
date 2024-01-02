@@ -1,7 +1,7 @@
 package docSharing.fileSystem;
 
 import docSharing.entities.Document;
-import docSharing.responseObjects.CharItemResponse;
+import docSharing.requestObjects.responseObjects.CharItemResponse;
 import docSharing.user.UserRole;
 import lombok.Getter;
 

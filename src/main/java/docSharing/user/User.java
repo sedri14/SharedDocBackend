@@ -1,7 +1,7 @@
 package docSharing.user;
 
 import docSharing.fileSystem.INode;
-import docSharing.entities.SharedRole;
+import docSharing.documentUserAccess.DocumentUserAccess;
 import lombok.*;
 import org.hibernate.Hibernate;
 import org.springframework.security.core.GrantedAuthority;
@@ -36,7 +36,7 @@ public class User implements UserDetails {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE)
     @ToString.Exclude
-    private List<SharedRole> sharedItems;
+    private List<DocumentUserAccess> sharedItems;
 
     @Enumerated (EnumType.STRING)
     private UserType userType;
