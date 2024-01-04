@@ -117,25 +117,28 @@ public class FileSystemService {
         return parent.getChildren().get(newName);
     }
 
-    public INode removeById(Long id) {
-        INode inode;
-        try {
-            inode = fetchINodeById(id);
-        } catch (INodeNotFoundException ex) {
-            throw new IllegalOperationException("can not delete non existing inode");
-        }
+    /**
+     * Deletes an INode by Id.
+     * This method protects the root inode of the user.
+     *
+     * @param id THe inode's id.
+     * @return The deleted INode.
+     * @throws IllegalOperationException If an attempt is made to remove the root directory.
+     */
+    INode delete(Long id) {
+        INode inode = fetchINodeById(id);
 
-        //protect root node
+        // protect the root node
         if (null == inode.getParent()) {
-            throw new IllegalOperationException("can not remove root directory");
+            throw new IllegalOperationException("Can not remove root directory");
         }
 
-        //delete from parent map
+        // delete from parent map
         INode parent = inode.getParent();
         parent.getChildren().remove(inode.getName());
         fsRepository.save(parent);
 
-        return fsRepository.removeById(id).get();
+        return fsRepository.removeById(id);
     }
 
     /* Helper Methods */

@@ -116,16 +116,11 @@ public class FileSystemController {
                 .build());
     }
 
-    /**
-     * Deletes an inode and all of its descendants
-     *
-     * @return number of inodes deleted
-     */
     @RequestMapping(value = "/delete/{inodeId}", method = RequestMethod.DELETE)
-    public ResponseEntity<INode> delete(@PathVariable Long inodeId) {
-        logger.info("start delete function");
-        logger.debug("delete function parameters: id:{}", (inodeId));
+    public ResponseEntity<INodeResponse> delete(@PathVariable Long inodeId) {
+        logger.info("delete inode {}", inodeId);
+        INode inode = fsService.delete(inodeId);
 
-        return ResponseEntity.ok(fsService.removeById(inodeId));
+        return ResponseEntity.ok(modelMapper.map(inode, INodeResponse.class));
     }
 }
